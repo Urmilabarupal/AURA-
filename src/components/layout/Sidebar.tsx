@@ -2,21 +2,22 @@
  FILE: src/components/layout/Sidebar.tsx
 
  PURPOSE:
- Authoritative navigation drawer and sidebar.
- Implements Rule 1 (No Page Removal) and Section 22 (Sidebar Navigation).
-
- RESPONSIBILITIES:
- - Host all navigation routes represented in reference screenshots (46 screenshots)
- - Support categorized navigation for Wallets, Trading, Staking, Farming, Community, Jackpot, and Legal
- - Highlight active route and trigger smooth transitions
- - Provide mobile drawer auto-close
- - Render user identity badge, version tag, and authoritative logout
-
- RELATED:
- Used by MainLayout. Every route links to a fully implemented page component.
-
- NOTE:
- Developer documentation only. Never expose sensitive information.
+ Exact 1:1 reproduction of the Left Sidebar from xahmoney.com/Home (Screenshot 1).
+ Features:
+ - Folded ribbon HX logo with "XAH MONEY" typography & collapse arrow
+ - Clean navigation items matching screenshot:
+   * Home (with blue vertical active border indicator)
+   * Trade
+   * Wallets
+   * Profile
+   * International Trip (star badge)
+   * Portfolio
+   * Reward
+   * Transactions
+   * Royalty Slot
+   * Blogging
+ - Bottom SIP Bonus card with purple ribbon icon
+ - Bottom User profile pill with blue cartoon avatar & User ID
 */
 
 import React from 'react';
@@ -24,41 +25,17 @@ import { useAuth } from '../../context/AuthContext';
 import {
   ArrowLeft,
   Award,
-  BarChart3,
+  BarChart2,
   BookOpen,
-  Calendar,
-  CheckSquare,
-  Coins,
-  Compass,
-  CreditCard,
+  ChevronLeft,
   Crown,
-  FileText,
-  Gift,
-  HelpCircle,
   History,
   Home,
-  Layers,
-  LayoutDashboard,
-  LifeBuoy,
-  Lock,
-  LogOut,
-  Mail,
   PieChart,
-  Plane,
-  RefreshCw,
-  Repeat,
-  Send,
-  Share2,
-  Shield,
-  ShieldAlert,
-  Sparkles,
-  Ticket,
+  Star,
   TrendingUp,
-  Trophy,
   User,
-  Users,
   Wallet,
-  Zap,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -66,128 +43,26 @@ interface SidebarProps {
   setMobileOpen: (open: boolean) => void;
 }
 
-interface NavSection {
-  title?: string;
-  items: {
-    id: string;
-    label: string;
-    icon: React.ElementType;
-    badge?: string;
-  }[];
-}
-
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) => {
-  const { activeRoute, setActiveRoute, user, logout, setAuthStage } = useAuth();
+  const { activeRoute, setActiveRoute, user } = useAuth();
 
   const handleNav = (routeId: string) => {
-    if (routeId === 'auth-connect') {
-      setAuthStage('UNAUTHENTICATED');
-      setMobileOpen(false);
-      return;
-    }
-    if (routeId === 'auth-passcode') {
-      setAuthStage('SETUP_PASSCODE');
-      setMobileOpen(false);
-      return;
-    }
-    if (routeId === 'auth-lock') {
-      setAuthStage('LOCKED');
-      setMobileOpen(false);
-      return;
-    }
-
     setActiveRoute(routeId);
     setMobileOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const navSections: NavSection[] = [
-    {
-      title: 'Security & Flow',
-      items: [
-        { id: 'auth-connect', label: 'Wallet Connect', icon: Wallet, badge: 'Step 1' },
-        { id: 'auth-passcode', label: 'Create Passcode', icon: Shield, badge: 'Step 2' },
-        { id: 'auth-lock', label: 'Screen Lock', icon: Lock, badge: 'Step 3' },
-      ],
-    },
-    {
-      items: [
-        { id: 'home', label: 'Home', icon: Home },
-        { id: 'trade', label: 'Trade', icon: BarChart3 },
-        { id: 'wallets', label: 'Wallets', icon: Wallet },
-        { id: 'profile', label: 'Profile', icon: User },
-        { id: 'international-trip', label: 'International Trip', icon: Plane, badge: 'HOT' },
-        { id: 'portfolio', label: 'Portfolio', icon: PieChart },
-        { id: 'reward', label: 'Reward', icon: Award },
-        { id: 'transactions', label: 'Transactions', icon: History },
-        { id: 'royalty-slot', label: 'Royalty Slot', icon: Crown },
-        { id: 'blogging', label: 'Blogging', icon: BookOpen },
-        { id: 'sip-bonus', label: 'SIP Bonus', icon: TrendingUp },
-        { id: 'tickets', label: 'Tickets', icon: Ticket },
-        { id: 'redeem', label: 'Redeem Now', icon: Sparkles },
-      ],
-    },
-    {
-      title: 'Wallets & Assets',
-      items: [
-        { id: 'extra-wallet', label: 'Extra Wallet', icon: Wallet },
-        { id: 'hxc-wallet', label: 'HXC Wallet', icon: Wallet },
-        { id: 'hxc-convert', label: 'HXC Convert', icon: Repeat },
-        { id: 'xah-convert', label: 'XAH Convert', icon: RefreshCw },
-        { id: 'convert', label: 'Direct Convert', icon: Repeat },
-      ],
-    },
-    {
-      title: 'Staking',
-      items: [
-        { id: 'staking', label: 'Staking', icon: Lock },
-        { id: 'staking-plan', label: 'Staking Plan', icon: Layers },
-        { id: 'staking-income', label: 'Staking Income', icon: TrendingUp },
-        { id: 'team-staking', label: 'Team Stakings', icon: Users },
-        { id: 'team-staking-income', label: 'Team Staking Income', icon: Coins },
-        { id: 'team-apr-info', label: 'Team APR Info', icon: BarChart3 },
-      ],
-    },
-    {
-      title: 'Farming',
-      items: [
-        { id: 'farming', label: 'Farming', icon: Zap },
-        { id: 'farming-plan', label: 'Farming Plan', icon: Layers },
-        { id: 'farming-income', label: 'Farming Income', icon: Coins },
-      ],
-    },
-    {
-      title: 'Community',
-      items: [
-        { id: 'community-overview', label: 'Overview', icon: Users },
-        { id: 'community-levels', label: 'Community Levels', icon: Layers },
-        { id: 'community-transactions', label: 'Community Transactions', icon: History },
-        { id: 'community-income', label: 'Community Income', icon: TrendingUp },
-        { id: 'community-share', label: 'Community Share', icon: Share2 },
-      ],
-    },
-    {
-      title: 'Jackpot & Lottery',
-      items: [
-        { id: 'jackpot', label: 'Jackpot', icon: Trophy },
-        { id: 'jackpot-deposit', label: 'Jackpot Deposit', icon: CreditCard },
-        { id: 'jackpot-wallet', label: 'Jackpot Wallet', icon: Wallet },
-        { id: 'jackpot-reward', label: 'Jackpot Reward', icon: Gift },
-        { id: 'jackpot-direct-reward', label: 'Jackpot Direct Reward', icon: Award },
-        { id: 'winner', label: 'Winners', icon: Trophy },
-      ],
-    },
-    {
-      title: 'Company & Policies',
-      items: [
-        { id: 'about', label: 'About Us', icon: HelpCircle },
-        { id: 'contact', label: 'Contact', icon: Mail },
-        { id: 'legal', label: 'Legal Disclosures', icon: Shield },
-        { id: 'privacy', label: 'Privacy Policy', icon: FileText },
-        { id: 'terms', label: 'Terms of Use', icon: FileText },
-        { id: 'sales-policy', label: 'Sales Policy', icon: FileText },
-      ],
-    },
+  const navItems = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'trade', label: 'Trade', icon: BarChart2 },
+    { id: 'wallets', label: 'Wallets', icon: Wallet },
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'international-trip', label: 'International Trip', icon: Star },
+    { id: 'portfolio', label: 'Portfolio', icon: PieChart },
+    { id: 'reward', label: 'Reward', icon: Award },
+    { id: 'transactions', label: 'Transactions', icon: History },
+    { id: 'royalty-slot', label: 'Royalty Slot', icon: Crown },
+    { id: 'bloging', label: 'Blogging', icon: BookOpen },
   ];
 
   return (
@@ -202,99 +77,119 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#0e111d] border-r border-[#192036] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#141622] border-r border-[#1e2334] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
-        {/* Sidebar Brand Header */}
-        <div className="p-4 border-b border-[#181f33] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-600 to-blue-500 p-0.5 shadow-md flex items-center justify-center">
-              <div className="w-full h-full bg-[#0d101d] rounded-[10px] flex items-center justify-center font-black text-xs text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400">
-                AX
+        {/* Top: Brand Header */}
+        <div>
+          <div className="p-5 flex items-center justify-between border-b border-[#1b2030]">
+            <div className="flex items-center gap-3">
+              {/* Folded ribbon HX Logo */}
+              <div className="relative w-8 h-7 flex items-center justify-center">
+                <svg className="w-8 h-7" viewBox="0 0 64 54" fill="none">
+                  <defs>
+                    <linearGradient id="sideRibbonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ff2a6d" />
+                      <stop offset="48%" stopColor="#9d4edd" />
+                      <stop offset="100%" stopColor="#38bdf8" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M 22 13 C 14 13, 10 20, 10 27 C 10 34, 14 41, 22 41 C 28 41, 32 36, 32 27 C 32 18, 36 13, 42 13 C 50 13, 54 20, 54 27 C 54 34, 50 41, 42 41 C 36 41, 32 36, 32 27"
+                    stroke="url(#sideRibbonGrad)"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M 12 27 L 32 27 L 52 27"
+                    stroke="url(#sideRibbonGrad)"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+
+              {/* XAH MONEY Text matching Screenshot 1 */}
+              <div className="leading-tight">
+                <div className="text-sm font-extrabold tracking-[0.25em] text-white">
+                  XAH
+                </div>
+                <div className="text-[11px] font-extrabold tracking-[0.25em] text-slate-300">
+                  MONEY
+                </div>
               </div>
             </div>
-            <div>
-              <h2 className="text-xs font-extrabold tracking-wider text-slate-100 uppercase">
-                AURA <span className="text-purple-400">MONEY</span>
-              </h2>
-              <span className="text-[10px] text-slate-500 font-mono">v26.08.27</span>
-            </div>
+
+            {/* Collapse Arrow matching Screenshot 1 */}
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              aria-label="Collapse sidebar"
+            >
+              <ArrowLeft size={18} />
+            </button>
           </div>
 
-          <button
-            onClick={() => handleNav('home')}
-            className="p-1.5 rounded-lg bg-[#141829] text-slate-400 hover:text-white transition-colors"
-            title="Go to Home"
-          >
-            <ArrowLeft size={16} />
-          </button>
+          {/* Navigation Menu List */}
+          <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-210px)]">
+            {navItems.map((item) => {
+              const isActive = activeRoute === item.id || (item.id === 'bloging' && activeRoute === 'blogging');
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNav(item.id)}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all text-left relative cursor-pointer ${
+                    isActive
+                      ? 'bg-[#1e2538] text-white font-semibold'
+                      : 'text-[#8e98af] hover:text-slate-200 hover:bg-[#181c2a]'
+                  }`}
+                >
+                  {/* Active Blue Left Indicator Bar matching Screenshot 1 */}
+                  {isActive && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[#1d68ff] rounded-r-full" />
+                  )}
+
+                  <Icon
+                    size={16}
+                    className={isActive ? 'text-[#3a86ff]' : 'text-[#8e98af]'}
+                  />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
         </div>
 
-        {/* Scrollable Navigation List */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
-          {navSections.map((section, sIdx) => (
-            <div key={sIdx} className="space-y-1">
-              {section.title && (
-                <p className="px-3 pt-2 pb-1 text-[10px] font-bold tracking-wider uppercase text-slate-500 font-mono">
-                  {section.title}
-                </p>
-              )}
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeRoute === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNav(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-purple-900/60 to-blue-900/40 text-white border border-purple-500/40 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-[#141829]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon
-                        size={15}
-                        className={isActive ? 'text-purple-400' : 'text-slate-400'}
-                      />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-400 border border-pink-500/30">
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Sidebar Footer */}
-        <div className="p-3 border-t border-[#181f33] bg-[#0a0d16] space-y-2">
-          {/* Logout Action (Styled red/gradient per reference screenshot) */}
+        {/* Bottom Section: SIP Bonus & User Profile */}
+        <div className="p-4 space-y-3 border-t border-[#1b2030] bg-[#141622]">
+          {/* SIP Bonus Card matching Screenshot 1 */}
           <button
-            onClick={logout}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 hover:opacity-95 shadow-md shadow-rose-950/40 flex items-center justify-center gap-2 transition-all"
+            onClick={() => handleNav('sip-bonus')}
+            className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#2a1e47] via-[#20203d] to-[#1e2540] border border-[#3b2d66] hover:border-[#6349a8] transition-all flex items-center gap-2.5 cursor-pointer text-left shadow-md group"
           >
-            <LogOut size={14} />
-            <span>Logout</span>
+            <div className="w-6 h-6 rounded-lg bg-[#7c3aed]/20 border border-[#8b5cf6]/40 flex items-center justify-center text-purple-400 group-hover:scale-105 transition-transform">
+              <span className="text-xs font-bold">$</span>
+            </div>
+            <span className="text-xs font-semibold text-slate-200 group-hover:text-white">
+              SIP Bonus
+            </span>
           </button>
 
-          {/* User ID Tag */}
-          {user && (
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#121626] border border-[#1d243b] text-[11px]">
-              <span className="text-slate-400">User ID</span>
-              <span className="font-mono font-bold text-purple-400">{user.id}</span>
+          {/* User Profile Pill matching Screenshot 1 */}
+          <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-[#10131e] border border-[#1c2233]">
+            {/* Blue circle with cartoon face */}
+            <div className="w-8 h-8 rounded-full bg-[#1e88e5] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-inner">
+              <span className="text-sm">👦</span>
             </div>
-          )}
-
-          {/* Copyright & Version (from reference screenshot) */}
-          <div className="text-[9px] text-slate-500 text-center leading-tight pt-1">
-            <p>Copyright © 2026 AURA Financial Inc.</p>
-            <p>All rights reserved. v26.08.27</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-white truncate font-mono">
+                {user?.id || 'HX633547863'}
+              </p>
+            </div>
           </div>
         </div>
       </aside>

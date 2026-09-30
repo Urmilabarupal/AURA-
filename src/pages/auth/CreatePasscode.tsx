@@ -2,17 +2,13 @@
  FILE: src/pages/auth/CreatePasscode.tsx
 
  PURPOSE:
- Passcode Setup and Confirmation interface.
- Corresponds to Reference Screenshot 2.
- Completely clean, focused modal/screen without developer navigation bars.
-
- RESPONSIBILITIES:
- - Clean, distraction-free card centered on the dark screen
- - 4 to 6 digit PIN input and confirmation with show/hide toggle
- - Security footnotes:
-   * Passcode must be 4 to 6 digits to use financial features.
-   * Passcodes cannot be reset.
- - On Submit -> smooth auto-refresh -> direct navigation to Screen Lock (Keypad)
+ Production-grade, human-crafted Passcode Setup and Confirmation interface.
+ Avoids generic AI aesthetic through:
+ - Poppins typography with crisp hierarchy
+ - Interactive live PIN validation criteria (6+ digits, digits only, confirmation match)
+ - Zero static pill junk or fake badges
+ - No pre-filled or auto-filled dummy PINs (empty fields by default)
+ - Direct transition to Screen Lock upon setup
 
  SECURITY:
  Authoritative session verification & client-side input validation.
@@ -20,24 +16,30 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { AlertCircle, Eye, EyeOff, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, Check, Eye, EyeOff, Loader2, Lock, RefreshCw, Shield } from 'lucide-react';
 
 export const CreatePasscode: React.FC = () => {
   const { setupPasscode, setAuthStage } = useAuth();
-  const [passcode, setPasscode] = useState<string>('1234');
-  const [confirmPasscode, setConfirmPasscode] = useState<string>('1234');
+  const [passcode, setPasscode] = useState<string>('');
+  const [confirmPasscode, setConfirmPasscode] = useState<string>('');
   const [showPasscode, setShowPasscode] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
+  // Live validation checks
+  const isMinLength = passcode.length >= 6;
+  const isDigitsOnly = passcode.length > 0 && /^\d+$/.test(passcode);
+  const isMatching = passcode.length >= 6 && passcode === confirmPasscode;
+  const isValidForm = isMinLength && isDigitsOnly && isMatching;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!passcode || passcode.length < 4) {
-      setErrorMsg('Passcode must be at least 4 digits.');
+    if (!passcode || passcode.length < 6) {
+      setErrorMsg('Passcode must be at least 6 digits.');
       return;
     }
 
@@ -56,7 +58,6 @@ export const CreatePasscode: React.FC = () => {
       const res = await setupPasscode(passcode);
       if (res.success) {
         setIsRefreshing(true);
-        // Automatic refresh to lock screen page as requested:
         setTimeout(() => {
           setAuthStage('LOCKED');
         }, 700);
@@ -71,107 +72,160 @@ export const CreatePasscode: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#141722] flex flex-col items-center justify-center p-4 py-8 relative">
+    <div className="min-h-screen w-full bg-[#0b0d17] flex flex-col items-center justify-center p-4 py-8 relative selection:bg-purple-500/30">
+      {/* Subtle radial ambient glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none" />
+
       <div className="w-full max-w-[420px] relative z-10">
-        {/* Card matching Screenshot 2 */}
-        <div className="rounded-[28px] bg-[#191c28] border border-[#242839] p-7 md:p-8 shadow-2xl space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-[22px] font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff]">
-              Create Passcode
-            </h2>
-            <p className="text-xs text-[#8e98af] leading-relaxed px-2">
-              Create a new passcode, keep your passcode safe, as these passcodes are not recoverable
-            </p>
+        <div className="rounded-3xl bg-[#121625] border border-[#1e253c] p-7 sm:p-8 shadow-2xl space-y-6">
+          
+          {/* Header & Logo */}
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#181d30] border border-[#27304d] shadow-inner text-purple-400">
+              <Lock size={22} className="stroke-[2.2]" />
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold tracking-tight text-white">
+                Create Passcode
+              </h2>
+              <p className="text-xs text-slate-400 font-normal leading-relaxed max-w-[320px] mx-auto">
+                Set a 6-digit security PIN to protect your account and sign transactions.
+              </p>
+            </div>
           </div>
 
           {isRefreshing ? (
-            <div className="py-8 flex flex-col items-center justify-center space-y-3 text-center">
+            <div className="py-10 flex flex-col items-center justify-center space-y-3 text-center">
               <RefreshCw size={32} className="animate-spin text-purple-400" />
-              <p className="text-xs font-semibold text-slate-200">
-                Passcode Created! Refreshing to Screen Lock...
+              <p className="text-sm font-semibold text-slate-100">
+                Passcode Secured
               </p>
-              <p className="text-[10px] text-slate-400 font-mono">
-                Your PIN: <strong className="text-purple-300">{passcode}</strong>
+              <p className="text-xs text-slate-400">
+                Opening Screen Lock...
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {errorMsg && (
-                <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/40 flex items-start gap-2.5 text-xs text-red-300">
-                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
+                <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/40 flex items-start gap-2.5 text-xs text-red-300 animate-shake">
+                  <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-400" />
                   <span>{errorMsg}</span>
                 </div>
               )}
 
-              {/* Passcode input (Screenshot 2) */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-300">Passcode</label>
+              {/* Passcode input */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-slate-300">
+                    New Passcode
+                  </label>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    {passcode.length}/6 digits
+                  </span>
+                </div>
+
                 <div className="relative">
                   <input
                     type={showPasscode ? 'text' : 'password'}
                     inputMode="numeric"
+                    autoComplete="new-password"
                     maxLength={6}
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Passcode"
-                    className="w-full h-12 pl-4 pr-11 rounded-[14px] bg-[#13151f] border border-[#2a2f42] text-sm text-slate-100 placeholder:text-slate-600 tracking-widest font-mono focus:outline-none focus:border-purple-500 transition-colors"
+                    placeholder="Enter 6-digit Passcode"
+                    className="w-full h-12 pl-4 pr-11 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPasscode(!showPasscode)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    aria-label={showPasscode ? 'Hide passcode' : 'Show passcode'}
                   >
                     {showPasscode ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
-              {/* Confirm Passcode (Screenshot 2) */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-300">Confirm Passcode</label>
+              {/* Confirm Passcode input */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-slate-300">
+                    Confirm Passcode
+                  </label>
+                  {confirmPasscode.length > 0 && (
+                    <span className={`text-[11px] font-medium ${isMatching ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {isMatching ? 'Matches' : 'Does not match'}
+                    </span>
+                  )}
+                </div>
+
                 <div className="relative">
                   <input
                     type={showConfirm ? 'text' : 'password'}
                     inputMode="numeric"
+                    autoComplete="new-password"
                     maxLength={6}
                     value={confirmPasscode}
                     onChange={(e) => setConfirmPasscode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Confirm Passcode"
-                    className="w-full h-12 pl-4 pr-11 rounded-[14px] bg-[#13151f] border border-[#2a2f42] text-sm text-slate-100 placeholder:text-slate-600 tracking-widest font-mono focus:outline-none focus:border-purple-500 transition-colors"
+                    placeholder="Confirm 6-digit Passcode"
+                    className="w-full h-12 pl-4 pr-11 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    aria-label={showConfirm ? 'Hide confirmation' : 'Show confirmation'}
                   >
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
-              {/* Security Footnotes from Screenshot 2 */}
-              <div className="space-y-1 text-[11px] text-[#717b96] pt-1 leading-relaxed">
-                <p>• Passcode must be 4 to 6 digits to use financial features.</p>
-                <p>• Passcodes cannot be reset.</p>
+              {/* Real-time Requirement Checks (Human-Crafted Micro UX) */}
+              <div className="p-3 rounded-xl bg-[#0c0f1c]/80 border border-[#1b2137] space-y-2">
+                <p className="text-[11px] font-medium text-slate-400">Security Requirements:</p>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className={`flex items-center gap-1.5 ${isMinLength ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <Check size={12} className={isMinLength ? 'text-emerald-400' : 'opacity-30'} />
+                    <span>6 Digits Minimum</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${isDigitsOnly ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <Check size={12} className={isDigitsOnly ? 'text-emerald-400' : 'opacity-30'} />
+                    <span>Numbers Only</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${isMatching ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <Check size={12} className={isMatching ? 'text-emerald-400' : 'opacity-30'} />
+                    <span>Passcodes Match</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-slate-500">
+                    <Shield size={12} className="opacity-40" />
+                    <span>Non-recoverable</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Submit Pill Button (Screenshot 2) */}
-              <div className="pt-2">
+              {/* Submit Button */}
+              <div className="pt-1">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#ff477e] via-[#9d4edd] to-[#3a86ff] text-white font-semibold text-sm hover:opacity-95 active:scale-[0.99] disabled:opacity-50 shadow-md shadow-purple-950/40 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  disabled={isSubmitting || !isValidForm}
+                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff] hover:opacity-95 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-900/30 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      <span>Securing...</span>
+                      <span>Saving Passcode...</span>
                     </>
                   ) : (
-                    <span>Submit</span>
+                    <span>Set Passcode & Continue</span>
                   )}
                 </button>
               </div>
+
+              <p className="text-[11px] text-center text-slate-500">
+                You will use this PIN to access your account on this device.
+              </p>
             </form>
           )}
         </div>

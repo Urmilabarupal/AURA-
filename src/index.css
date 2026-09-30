@@ -1,24 +1,37 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 @layer base {
   :root {
-    --bg-dark: #141722;
-    --card-dark: #191c28;
-    --card-border: #242839;
-    --accent-gradient: linear-gradient(90deg, #ff477e 0%, #9d4edd 50%, #3a86ff 100%);
+    --bg-dark: #0d101d;
+    --card-dark: #131728;
+    --card-border: #1e253e;
+    --accent-gradient: linear-gradient(135deg, #ff3b77 0%, #8b5cf6 50%, #3b82f6 100%);
   }
 
-  body {
-    background-color: #141722;
+  *, *::before, *::after {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  html, body, #root {
+    background-color: #0d101d;
     color: #e2e8f0;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
-  button, input, select, textarea {
-    font-family: 'Poppins', sans-serif;
+  h1, h2, h3, h4, h5, h6, button, input, select, textarea, label {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
   }
 }
 
@@ -29,46 +42,34 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0e17;
+  background: #090c15;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #20273e;
+  background: #1c243a;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #333d5e;
+  background: #2b3756;
 }
 
-/* Crisp Web3 Card and Button Styling matching PDF */
-.web3-card {
-  background-color: #111625;
-  border: 1px solid #1d253c;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+/* Custom micro-animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
 }
 
-.web3-input {
-  background-color: #0c0f1a;
-  border: 1px solid #202842;
-  color: #f1f5f9;
-  transition: all 0.2s ease;
+.animate-shake {
+  animation: shake 0.35s ease-in-out;
 }
 
-.web3-input:focus {
-  border-color: #8b5cf6;
-  outline: none;
-  box-shadow: 0 0 0 1px #8b5cf6;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.web3-gradient-btn {
-  background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
-  color: #ffffff;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.web3-gradient-btn:hover {
-  opacity: 0.95;
-  box-shadow: 0 6px 20px -3px rgba(139, 92, 246, 0.45);
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
 }

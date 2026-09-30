@@ -72,7 +72,7 @@ export const ConnectSignUp: React.FC = () => {
   const [signInStatus, setSignInStatus] = useState<'loading' | 'failed' | 'success'>('loading');
 
   const [walletConnected, setWalletConnected] = useState<boolean>(false);
-  const [walletAddress, setWalletAddress] = useState<string>(contextAddress);
+  const [walletAddress, setWalletAddress] = useState<string>('');
   const [isConnectingMetaMask, setIsConnectingMetaMask] = useState<boolean>(false);
   const [metaMaskNotice, setMetaMaskNotice] = useState<string | null>(null);
 
@@ -98,8 +98,8 @@ export const ConnectSignUp: React.FC = () => {
 
   // Passcode Pop-up Modal State
   const [showPasscodeModal, setShowPasscodeModal] = useState<boolean>(false);
-  const [passcode, setPasscode] = useState<string>('1234');
-  const [confirmPasscode, setConfirmPasscode] = useState<string>('1234');
+  const [passcode, setPasscode] = useState<string>('');
+  const [confirmPasscode, setConfirmPasscode] = useState<string>('');
   const [showPasscodeText, setShowPasscodeText] = useState<boolean>(false);
   const [showConfirmText, setShowConfirmText] = useState<boolean>(false);
   const [passcodeError, setPasscodeError] = useState<string | null>(null);
@@ -118,19 +118,9 @@ export const ConnectSignUp: React.FC = () => {
     'France (+33)',
   ];
 
-  // Auto-detect MetaMask or provider on mount
+  // Keep indicators in loading state until user connects wallet
   useEffect(() => {
-    const checkExistingConnection = async () => {
-      const provider = web3Wallet.getEthereumProvider();
-      if (provider && provider.selectedAddress) {
-        setWalletAddress(provider.selectedAddress);
-        setWalletConnected(true);
-        setWalletStatus('success');
-        setSignUpStatus('success');
-        setSignInStatus('success');
-      }
-    };
-    checkExistingConnection();
+    // Intentionally keep in loading state upon launch matching user rule
   }, []);
 
   // Real MetaMask Connection Handler
@@ -244,8 +234,8 @@ export const ConnectSignUp: React.FC = () => {
     e.preventDefault();
     setPasscodeError(null);
 
-    if (!passcode || passcode.length < 4) {
-      setPasscodeError('Passcode must be at least 4 digits.');
+    if (!passcode || passcode.length < 6) {
+      setPasscodeError('Passcode must be at least 6 digits.');
       return;
     }
     if (!/^\d+$/.test(passcode)) {
@@ -655,17 +645,21 @@ export const ConnectSignUp: React.FC = () => {
                 )}
 
                 {/* Field: Passcode */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Passcode</label>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-slate-300">New Passcode</label>
+                    <span className="text-[10px] text-slate-500 font-mono">{passcode.length}/6 digits</span>
+                  </div>
                   <div className="relative">
                     <input
                       type={showPasscodeText ? 'text' : 'password'}
                       inputMode="numeric"
+                      autoComplete="new-password"
                       maxLength={6}
                       value={passcode}
                       onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Passcode"
-                      className="w-full h-11 pl-3.5 pr-10 rounded-[14px] bg-[#13151f] border border-[#2a2f42] text-sm text-slate-100 placeholder:text-slate-600 tracking-widest font-mono focus:outline-none focus:border-purple-500 transition-colors"
+                      placeholder="Enter 6-digit Passcode"
+                      className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                     />
                     <button
                       type="button"
@@ -678,17 +672,25 @@ export const ConnectSignUp: React.FC = () => {
                 </div>
 
                 {/* Field: Confirm Passcode */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Confirm Passcode</label>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-slate-300">Confirm Passcode</label>
+                    {confirmPasscode.length > 0 && (
+                      <span className={`text-[10px] font-medium ${passcode === confirmPasscode ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        {passcode === confirmPasscode ? 'Matches' : 'Does not match'}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <input
                       type={showConfirmText ? 'text' : 'password'}
                       inputMode="numeric"
+                      autoComplete="new-password"
                       maxLength={6}
                       value={confirmPasscode}
                       onChange={(e) => setConfirmPasscode(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Confirm Passcode"
-                      className="w-full h-11 pl-3.5 pr-10 rounded-[14px] bg-[#13151f] border border-[#2a2f42] text-sm text-slate-100 placeholder:text-slate-600 tracking-widest font-mono focus:outline-none focus:border-purple-500 transition-colors"
+                      placeholder="Confirm 6-digit Passcode"
+                      className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                     />
                     <button
                       type="button"
@@ -700,18 +702,33 @@ export const ConnectSignUp: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Security Footnotes */}
-                <div className="space-y-1 text-[10px] text-slate-400 pt-1 leading-relaxed">
-                  <p>• Passcode must be 4 to 6 digits to use financial features.</p>
-                  <p>• Passcodes cannot be reset.</p>
+                {/* Live validation checklist */}
+                <div className="p-2.5 rounded-xl bg-[#0c0f1c]/90 border border-[#1b2137] grid grid-cols-2 gap-2 text-[11px]">
+                  <div className={`flex items-center gap-1.5 ${passcode.length >= 6 ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <Check size={11} className={passcode.length >= 6 ? 'text-emerald-400' : 'opacity-30'} />
+                    <span>6 Digits Min</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${passcode.length > 0 && /^\d+$/.test(passcode) ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <Check size={11} className={passcode.length > 0 && /^\d+$/.test(passcode) ? 'text-emerald-400' : 'opacity-30'} />
+                    <span>Digits Only</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${passcode.length >= 6 && passcode === confirmPasscode ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <Check size={11} className={passcode.length >= 6 && passcode === confirmPasscode ? 'text-emerald-400' : 'opacity-30'} />
+                    <span>Matches</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-slate-500">
+                    <span className="opacity-40">🔒</span>
+                    <span>Non-recoverable</span>
+                  </div>
                 </div>
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#ff477e] via-[#9d4edd] to-[#3a86ff] text-white font-semibold text-sm hover:opacity-95 shadow-md shadow-purple-950/40 transition-all cursor-pointer"
+                  disabled={passcode.length < 6 || passcode !== confirmPasscode}
+                  className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff] hover:opacity-95 text-white font-semibold text-xs tracking-wide transition-all shadow-md shadow-purple-950/40 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  <span>Submit</span>
+                  <span>Set Passcode & Continue</span>
                 </button>
               </form>
             )}

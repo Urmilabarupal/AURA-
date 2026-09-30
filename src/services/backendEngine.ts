@@ -413,15 +413,18 @@ export class AuthoritativeBackend {
   }
 
   public static async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode: string }>> {
-    if (!passcode || passcode.length < 4) {
+    if (!passcode || passcode.length < 6) {
       return {
         success: false,
-        error: { code: 'INVALID_PASSCODE', message: 'Passcode must be at least 4 digits.' },
+        error: { code: 'INVALID_PASSCODE', message: 'Passcode must be at least 6 digits.' },
       };
     }
 
     this.passHash = hashPasscode(passcode);
     this.lastCreatedPasscode = passcode;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('xah_custom_passcode', passcode);
+    }
     this.user.passcodeConfigured = true;
 
     return {
@@ -432,14 +435,32 @@ export class AuthoritativeBackend {
   }
 
   public static getLastCreatedPasscode(): string {
-    return this.lastCreatedPasscode || '1234';
+    if (this.lastCreatedPasscode) return this.lastCreatedPasscode;
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem('xah_custom_passcode');
+      if (stored) {
+        this.lastCreatedPasscode = stored;
+        this.passHash = hashPasscode(stored);
+        return stored;
+      }
+    }
+    return '';
   }
 
   public static async verifyPasscode(enteredPin: string): Promise<ApiResponse<{ verified: boolean }>> {
-    const expectedHash = this.passHash;
+    let expectedHash = this.passHash;
+    if (!expectedHash && typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem('xah_custom_passcode');
+      if (stored) {
+        expectedHash = hashPasscode(stored);
+        this.passHash = expectedHash;
+        this.lastCreatedPasscode = stored;
+      }
+    }
+
     const testHash = hashPasscode(enteredPin);
 
-    if (testHash === expectedHash) {
+    if (expectedHash && testHash === expectedHash) {
       return {
         success: true,
         data: { verified: true },
@@ -448,7 +469,7 @@ export class AuthoritativeBackend {
     } else {
       return {
         success: false,
-        error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect passcode entered.' },
+        error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect passcode entered. Please try again.' },
       };
     }
   }

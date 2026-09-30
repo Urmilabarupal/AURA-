@@ -65,8 +65,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [securityModalOpen, setSecurityModalOpen] = useState<boolean>(false);
   const [emptyStateMode, setEmptyStateMode] = useState<boolean>(false);
   const [activeRoute, setActiveRoute] = useState<string>('home');
-  const [createdPasscode, setCreatedPasscode] = useState<string>('1234');
-  const [walletAddress, setWalletAddress] = useState<string>('0x7ACCd8BFC2DC0A1135ef3C95973F27d0C02a11b0');
+  const [createdPasscode, setCreatedPasscode] = useState<string>(() => {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('xah_custom_passcode') || '';
+    }
+    return '';
+  });
+  const [walletAddress, setWalletAddress] = useState<string>('');
   const [isMetaMaskConnected, setIsMetaMaskConnected] = useState<boolean>(false);
 
   const refreshUserData = async () => {
@@ -153,6 +158,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await ApiService.setupPasscode(passcode);
       if (res.success) {
         setCreatedPasscode(passcode);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('xah_custom_passcode', passcode);
+        }
         if (user) {
           setUser({ ...user, passcodeConfigured: true });
         }
@@ -168,14 +176,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyPasscode = async (pin: string) => {
     setIsLoading(true);
     try {
-      const res = await ApiService.verifyPasscode(pin);
-      if (res.success && res.data?.verified) {
+      const targetPass = createdPasscode || (typeof localStorage !== 'undefined' ? localStorage.getItem('xah_custom_passcode') : '');
+      if (targetPass && pin === targetPass) {
         setAuthStage('AUTHENTICATED');
-        setSecurityModalOpen(false); // Can open or keep clean for immediate dashboard entry
+        setSecurityModalOpen(false);
         await refreshUserData();
         return { success: true };
       }
-      return { success: false, message: res.error?.message || 'Incorrect passcode' };
+
+      const res = await ApiService.verifyPasscode(pin);
+      if (res.success && res.data?.verified) {
+        setAuthStage('AUTHENTICATED');
+        setSecurityModalOpen(false);
+        await refreshUserData();
+        return { success: true };
+      }
+      return { success: false, message: res.error?.message || 'Incorrect passcode. Please try again.' };
     } finally {
       setIsLoading(false);
     }

@@ -165,7 +165,7 @@ export const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0d14] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#0f1118] text-slate-100 flex flex-col font-sans">
       {/* Sidebar Navigation */}
       <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
 
@@ -175,7 +175,7 @@ export const MainLayout: React.FC = () => {
         <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
         {/* Page Content Container */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px]">
           {renderActivePage()}
         </main>
       </div>
