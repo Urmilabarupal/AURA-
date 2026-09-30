@@ -2,150 +2,221 @@
  FILE: src/pages/wallets/WalletsList.tsx
 
  PURPOSE:
- Multi-Chain Wallets overview and asset inventory.
- Corresponds to Reference Screenshot 12.
-
- RESPONSIBILITIES:
- - Display Total Chain Value aggregation card
- - Render supported blockchain assets: AURA Chain, Ethereum, Tether (USDT), Binance USD (BUSD), Tron (TRX)
- - Support navigation to individual chain detail views (Deposit/Withdraw)
- - Maintain live authoritative balance updates
-
- API:
- Calls ApiService.getWallets.
-
- NOTE:
- Developer documentation only. Never expose sensitive information.
+ Exact 1:1 pixel-perfect reproduction of https://xahmoney.com/Wallets (uploaded reference screenshot).
+ Features:
+ - Left column:
+   * Title "Wallets"
+   * List of 5 multi-chain assets:
+     - XAH (XAH Chain) with HX folded ribbon logo
+     - ETH (Ethereum) with official diamond logo
+     - USDT (Tether) with official green T logo
+     - BUSD (Binance USD) with official yellow logo
+     - TRX (Tron) with official red logo
+ - Right column:
+   * "Balance" Card:
+     - Header "Balance"
+     - Large "0.00" balance readout
+     - Subtitle "Total XAH Chain Value" with HX folded ribbon logo on bottom-right
 */
 
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { ArrowRight, Coins, CreditCard, DollarSign, ExternalLink, ShieldCheck, Wallet } from 'lucide-react';
 
 export const WalletsList: React.FC = () => {
   const { wallets, setActiveRoute, emptyStateMode } = useAuth();
 
-  const chainAssets = [
+  const xahBalance = emptyStateMode ? 0 : 0.00;
+  const totalChainValue = emptyStateMode ? 0 : 0.00;
+
+  const assets = [
     {
-      id: 'aura-chain',
-      name: 'AURA Chain',
-      symbol: 'AURA',
-      network: 'AURA Mainnet',
-      balance: emptyStateMode ? 0 : 6.0795,
-      usdValue: emptyStateMode ? 0 : 2050.0,
-      iconColor: 'from-pink-500 to-purple-600',
+      id: 'xah',
+      symbol: 'XAH',
+      name: 'XAH Chain',
+      balance: '0.00',
+      usdValue: '$0.00',
+      icon: (
+        <div className="relative w-8 h-7 flex items-center justify-center">
+          <svg className="w-8 h-7" viewBox="0 0 64 54" fill="none">
+            <defs>
+              <linearGradient id="xahAssetGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ff2a6d" />
+                <stop offset="48%" stopColor="#9d4edd" />
+                <stop offset="100%" stopColor="#38bdf8" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M 22 13 C 14 13, 10 20, 10 27 C 10 34, 14 41, 22 41 C 28 41, 32 36, 32 27 C 32 18, 36 13, 42 13 C 50 13, 54 20, 54 27 C 54 34, 50 41, 42 41 C 36 41, 32 36, 32 27"
+              stroke="url(#xahAssetGrad)"
+              strokeWidth="5.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M 12 27 L 32 27 L 52 27"
+              stroke="url(#xahAssetGrad)"
+              strokeWidth="5.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      ),
     },
     {
-      id: 'ethereum',
-      name: 'Ethereum',
+      id: 'eth',
       symbol: 'ETH',
-      network: 'ERC-20',
-      balance: emptyStateMode ? 0 : 0.85,
-      usdValue: emptyStateMode ? 0 : 2250.0,
-      iconColor: 'from-blue-500 to-indigo-600',
+      name: 'Ethereum',
+      balance: '0.00',
+      usdValue: '$0.00',
+      icon: (
+        <div className="w-8 h-8 flex items-center justify-center">
+          <svg className="w-6 h-7" viewBox="0 0 784.37 1277.39" fill="none">
+            <path d="M392.07 0L383.5 29.11V874.74L392.07 883.29L784.13 651.54L392.07 0Z" fill="#9ba8c0" />
+            <path d="M392.07 0L0 651.54L392.07 883.29V472.33V0Z" fill="#718096" />
+            <path d="M392.07 956.52L387.24 962.41V1258.97L392.07 1277.38L784.37 724.89L392.07 956.52Z" fill="#9ba8c0" />
+            <path d="M392.07 1277.38V956.52L0 724.89L392.07 1277.38Z" fill="#718096" />
+          </svg>
+        </div>
+      ),
     },
     {
-      id: 'tether',
-      name: 'Tether',
+      id: 'usdt',
       symbol: 'USDT',
-      network: 'TRC-20 / ERC-20',
-      balance: emptyStateMode ? 0 : wallets?.totalBalanceUSDT || 0,
-      usdValue: emptyStateMode ? 0 : wallets?.totalBalanceUSDT || 0,
-      iconColor: 'from-emerald-500 to-teal-600',
+      name: 'Tether',
+      balance: '0.00',
+      usdValue: '$0.00',
+      icon: (
+        <div className="w-8 h-8 rounded-full bg-[#26a17b] flex items-center justify-center text-white font-extrabold text-sm shadow-sm">
+          ₮
+        </div>
+      ),
     },
     {
-      id: 'binance-usd',
-      name: 'Binance USD',
+      id: 'busd',
       symbol: 'BUSD',
-      network: 'BEP-20',
-      balance: emptyStateMode ? 0 : 150.0,
-      usdValue: emptyStateMode ? 0 : 150.0,
-      iconColor: 'from-amber-500 to-yellow-600',
+      name: 'Binance USD',
+      balance: '0.00',
+      usdValue: '$0.00',
+      icon: (
+        <div className="w-8 h-8 flex items-center justify-center text-[#f3ba2f]">
+          <svg className="w-7 h-7" viewBox="0 0 124 124" fill="none">
+            <path d="M62 0L86.8 24.8L43.4 68.2L18.6 43.4L62 0Z" fill="#f3ba2f" />
+            <path d="M80.6 62L105.4 37.2L124 55.8L99.2 80.6L80.6 62Z" fill="#f3ba2f" />
+            <path d="M62 86.8L80.6 68.2L99.2 86.8L62 124L24.8 86.8L43.4 68.2L62 86.8Z" fill="#f3ba2f" />
+            <path d="M0 62L18.6 43.4L37.2 62L18.6 80.6L0 62Z" fill="#f3ba2f" />
+          </svg>
+        </div>
+      ),
     },
     {
-      id: 'tron',
-      name: 'Tron',
+      id: 'trx',
       symbol: 'TRX',
-      network: 'TRC-20',
-      balance: emptyStateMode ? 0 : 1420.0,
-      usdValue: emptyStateMode ? 0 : 213.0,
-      iconColor: 'from-red-500 to-orange-600',
+      name: 'Tron',
+      balance: '0.00',
+      usdValue: '$0.00',
+      icon: (
+        <div className="w-8 h-8 flex items-center justify-center text-[#ef0027]">
+          <svg className="w-7 h-7" viewBox="0 0 100 100" fill="none">
+            <path d="M12 18L88 32L65 88L12 18Z" fill="#ef0027" />
+            <path d="M12 18L58 48L65 88L12 18Z" fill="#c4001f" opacity="0.6" />
+          </svg>
+        </div>
+      ),
     },
   ];
 
-  const totalValue = chainAssets.reduce((acc, curr) => acc + curr.usdValue, 0);
-
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header and Total Value Card (Screenshot 12) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg">
-        <div>
-          <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">Wallets</h1>
-          <p className="text-xs text-slate-400 mt-1">Multi-Chain Decentralized Assets</p>
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 select-none font-sans">
+      
+      {/* Left Column (8 Cols): Wallets Title + 5 Asset Cards */}
+      <div className="lg:col-span-8 space-y-4">
+        <h2 className="text-base font-bold text-white tracking-tight">
+          Wallets
+        </h2>
 
-        {/* Total Chain Value (Screenshot 12 Top Right) */}
-        <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] min-w-[200px] text-right">
-          <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
-            Total Chain Value
-          </p>
-          <h2 className="text-2xl font-black text-slate-100 font-mono mt-0.5">
-            ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </h2>
-          <span className="text-[10px] text-purple-400 font-mono">USD Equivalent</span>
-        </div>
-      </div>
-
-      {/* Asset List (Screenshot 12 rows) */}
-      <div className="space-y-3">
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 px-1">
-          Supported Assets ({chainAssets.length})
-        </h3>
-
-        <div className="space-y-2.5">
-          {chainAssets.map((asset) => (
+        <div className="space-y-3.5">
+          {assets.map((asset) => (
             <div
               key={asset.id}
               onClick={() => setActiveRoute('wallet-detail')}
-              className="p-4 rounded-2xl bg-[#131728] border border-[#202740] hover:border-purple-500/50 hover:bg-[#161b30] transition-all cursor-pointer shadow-md flex items-center justify-between group"
+              className="p-4 sm:p-5 rounded-2xl bg-[#161924] border border-[#202538] hover:border-[#384366] transition-all cursor-pointer flex items-center justify-between shadow-lg"
             >
-              <div className="flex items-center gap-3.5">
-                <div
-                  className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${asset.iconColor} p-0.5 flex items-center justify-center shadow-md`}
-                >
-                  <div className="w-full h-full bg-[#0d101d] rounded-[10px] flex items-center justify-center font-bold text-xs text-slate-200">
-                    {asset.symbol.substring(0, 3)}
-                  </div>
-                </div>
+              {/* Asset Logo & Details */}
+              <div className="flex items-center gap-4">
+                {asset.icon}
 
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-slate-100">{asset.name}</h4>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#1c233c] text-slate-400">
-                      {asset.symbol}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-0.5">{asset.network}</p>
+                <div className="space-y-0.5">
+                  <h3 className="text-sm font-bold text-white tracking-wide">
+                    {asset.symbol}
+                  </h3>
+                  <p className="text-xs text-[#8e98af] font-medium">
+                    {asset.name}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 text-right">
-                <div>
-                  <p className="text-sm font-bold text-slate-100 font-mono">
-                    {asset.balance.toFixed(4)} {asset.symbol}
-                  </p>
-                  <p className="text-xs text-slate-500 font-mono">
-                    ${asset.usdValue.toFixed(2)} USD
-                  </p>
+              {/* Asset Balances */}
+              <div className="text-right space-y-0.5 font-mono">
+                <div className="text-sm font-bold text-white">
+                  {asset.balance}
                 </div>
-                <div className="p-2 rounded-xl bg-[#1c223a] text-slate-400 group-hover:text-purple-400 transition-colors">
-                  <ArrowRight size={16} />
+                <div className="text-xs text-[#8e98af]">
+                  {asset.usdValue}
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Right Column (4 Cols): Balance Card matching Screenshot */}
+      <div className="lg:col-span-4">
+        <div className="rounded-2xl bg-[#161924] border border-[#202538] p-6 shadow-xl space-y-8 relative overflow-hidden">
+          {/* Header "Balance" */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-[#8e98af]">
+              Balance
+            </h3>
+            <div className="text-3xl sm:text-4xl font-bold text-white tracking-tight font-mono">
+              {totalChainValue.toFixed(2)}
+            </div>
+          </div>
+
+          {/* Subtitle & Bottom-Right HX folded ribbon logo */}
+          <div className="flex items-end justify-between pt-4">
+            <span className="text-xs text-[#8e98af] font-medium">
+              Total XAH Chain Value
+            </span>
+
+            {/* Folded ribbon logo matching Screenshot */}
+            <div className="relative w-9 h-8 flex items-center justify-center">
+              <svg className="w-9 h-8" viewBox="0 0 64 54" fill="none">
+                <defs>
+                  <linearGradient id="walletsBalLogoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#ff2a6d" />
+                    <stop offset="48%" stopColor="#9d4edd" />
+                    <stop offset="100%" stopColor="#38bdf8" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M 22 13 C 14 13, 10 20, 10 27 C 10 34, 14 41, 22 41 C 28 41, 32 36, 32 27 C 32 18, 36 13, 42 13 C 50 13, 54 20, 54 27 C 54 34, 50 41, 42 41 C 36 41, 32 36, 32 27"
+                  stroke="url(#walletsBalLogoGrad)"
+                  strokeWidth="5.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M 12 27 L 32 27 L 52 27"
+                  stroke="url(#walletsBalLogoGrad)"
+                  strokeWidth="5.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

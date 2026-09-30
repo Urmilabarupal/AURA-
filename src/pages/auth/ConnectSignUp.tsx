@@ -600,26 +600,43 @@ export const ConnectSignUp: React.FC = () => {
               <X size={18} />
             </button>
 
-            {/* Brand Logo inside modal */}
-            <div className="text-center space-y-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#13151f] border border-[#242839] shadow-md mb-1">
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#ff3864] via-[#9d4edd] to-[#3a86ff] p-0.5 flex items-center justify-center">
-                  <div className="w-full h-full bg-[#13151f] rounded-[7px] flex items-center justify-center font-bold text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400">
-                    AX
-                  </div>
-                </div>
-                <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase">
-                  XAH <span className="text-purple-400">MONEY</span>
-                </span>
+            {/* Top-Left: Brand Header (HX Folded Ribbon + XAH Money) */}
+            <div className="flex items-center gap-2.5">
+              <div className="relative w-6 h-5 flex items-center justify-center">
+                <svg className="w-6 h-5" viewBox="0 0 64 54" fill="none">
+                  <defs>
+                    <linearGradient id="modalPasscodeLogoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ff2a6d" />
+                      <stop offset="48%" stopColor="#9d4edd" />
+                      <stop offset="100%" stopColor="#38bdf8" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M 22 13 C 14 13, 10 20, 10 27 C 10 34, 14 41, 22 41 C 28 41, 32 36, 32 27 C 32 18, 36 13, 42 13 C 50 13, 54 20, 54 27 C 54 34, 50 41, 42 41 C 36 41, 32 36, 32 27"
+                    stroke="url(#modalPasscodeLogoGrad)"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M 12 27 L 32 27 L 52 27"
+                    stroke="url(#modalPasscodeLogoGrad)"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </div>
+              <span className="font-extrabold text-[15px] tracking-wide text-white">
+                XAH Money
+              </span>
             </div>
 
-            {/* Modal Title & Subtitle */}
-            <div className="text-center space-y-1.5">
-              <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff]">
+            {/* Modal Title & Subtitle matching image.png */}
+            <div className="text-center space-y-2 pt-1">
+              <h3 className="text-[25px] font-black text-transparent bg-clip-text bg-gradient-to-r from-[#ff5a5f] via-[#c056f5] to-[#5b8bf5] tracking-tight">
                 Create Passcode
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed px-1">
+              <p className="text-xs text-[#c5cbdb] leading-relaxed max-w-[330px] mx-auto font-normal">
                 Create a new passcode, keep your passcode safe, as these passcodes are not recoverable
               </p>
             </div>
@@ -628,108 +645,76 @@ export const ConnectSignUp: React.FC = () => {
             {isRefreshingToLock ? (
               <div className="py-8 flex flex-col items-center justify-center space-y-3 text-center">
                 <RefreshCw size={32} className="animate-spin text-purple-400" />
-                <p className="text-xs font-semibold text-slate-200">
-                  Passcode Secured! Refreshing to Lock Screen...
-                </p>
-                <p className="text-[10px] text-slate-400 font-mono">
-                  Configured PIN: <strong className="text-purple-300">{passcode}</strong>
+                <p className="text-sm font-semibold text-slate-100">
+                  Passcode Secured! Opening Screen Lock...
                 </p>
               </div>
             ) : (
-              <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+              <form onSubmit={handlePasscodeSubmit} className="space-y-4 pt-1">
                 {passcodeError && (
                   <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/40 flex items-start gap-2.5 text-xs text-red-300">
-                    <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
+                    <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-400" />
                     <span>{passcodeError}</span>
                   </div>
                 )}
 
-                {/* Field: Passcode */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-300">New Passcode</label>
-                    <span className="text-[10px] text-slate-500 font-mono">{passcode.length}/6 digits</span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPasscodeText ? 'text' : 'password'}
-                      inputMode="numeric"
-                      autoComplete="new-password"
-                      maxLength={6}
-                      value={passcode}
-                      onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Enter 6-digit Passcode"
-                      className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPasscodeText(!showPasscodeText)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer"
-                    >
-                      {showPasscodeText ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
+                {/* Input 1: Passcode */}
+                <div className="relative">
+                  <input
+                    type={showPasscodeText ? 'text' : 'password'}
+                    inputMode="numeric"
+                    autoComplete="new-password"
+                    maxLength={6}
+                    value={passcode}
+                    onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Passcode"
+                    className="w-full h-[52px] pl-4 pr-11 rounded-[14px] bg-[#242735] border border-transparent focus:border-[#7c5cf6] text-sm text-white placeholder:text-[#71788f] focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasscodeText(!showPasscodeText)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71788f] hover:text-slate-200 cursor-pointer"
+                  >
+                    {showPasscodeText ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
 
-                {/* Field: Confirm Passcode */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-300">Confirm Passcode</label>
-                    {confirmPasscode.length > 0 && (
-                      <span className={`text-[10px] font-medium ${passcode === confirmPasscode ? 'text-emerald-400' : 'text-amber-400'}`}>
-                        {passcode === confirmPasscode ? 'Matches' : 'Does not match'}
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showConfirmText ? 'text' : 'password'}
-                      inputMode="numeric"
-                      autoComplete="new-password"
-                      maxLength={6}
-                      value={confirmPasscode}
-                      onChange={(e) => setConfirmPasscode(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Confirm 6-digit Passcode"
-                      className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmText(!showConfirmText)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer"
-                    >
-                      {showConfirmText ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
+                {/* Input 2: Confirm Passcode */}
+                <div className="relative">
+                  <input
+                    type={showConfirmText ? 'text' : 'password'}
+                    inputMode="numeric"
+                    autoComplete="new-password"
+                    maxLength={6}
+                    value={confirmPasscode}
+                    onChange={(e) => setConfirmPasscode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Confirm Passcode"
+                    className="w-full h-[52px] pl-4 pr-11 rounded-[14px] bg-[#242735] border border-transparent focus:border-[#7c5cf6] text-sm text-white placeholder:text-[#71788f] focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmText(!showConfirmText)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71788f] hover:text-slate-200 cursor-pointer"
+                  >
+                    {showConfirmText ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
 
-                {/* Live validation checklist */}
-                <div className="p-2.5 rounded-xl bg-[#0c0f1c]/90 border border-[#1b2137] grid grid-cols-2 gap-2 text-[11px]">
-                  <div className={`flex items-center gap-1.5 ${passcode.length >= 6 ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    <Check size={11} className={passcode.length >= 6 ? 'text-emerald-400' : 'opacity-30'} />
-                    <span>6 Digits Min</span>
-                  </div>
-                  <div className={`flex items-center gap-1.5 ${passcode.length > 0 && /^\d+$/.test(passcode) ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    <Check size={11} className={passcode.length > 0 && /^\d+$/.test(passcode) ? 'text-emerald-400' : 'opacity-30'} />
-                    <span>Digits Only</span>
-                  </div>
-                  <div className={`flex items-center gap-1.5 ${passcode.length >= 6 && passcode === confirmPasscode ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    <Check size={11} className={passcode.length >= 6 && passcode === confirmPasscode ? 'text-emerald-400' : 'opacity-30'} />
-                    <span>Matches</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-500">
-                    <span className="opacity-40">🔒</span>
-                    <span>Non-recoverable</span>
-                  </div>
+                {/* Footnotes matching image.png */}
+                <div className="space-y-1 text-[11px] text-[#7c849b] pt-1 leading-relaxed">
+                  <p>* Passcode is required now to use HX.Money's new features.</p>
+                  <p>* Passcode cannot be reset</p>
                 </div>
 
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={passcode.length < 6 || passcode !== confirmPasscode}
-                  className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff] hover:opacity-95 text-white font-semibold text-xs tracking-wide transition-all shadow-md shadow-purple-950/40 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  <span>Set Passcode & Continue</span>
-                </button>
+                {/* Submit Pill Button matching image.png */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    className="w-full h-[52px] rounded-full bg-gradient-to-r from-[#ff4d6d] via-[#d946ef] to-[#4361ee] text-white font-bold text-base hover:opacity-95 active:scale-[0.99] transition-all shadow-lg shadow-purple-950/40 cursor-pointer flex items-center justify-center"
+                  >
+                    <span>Submit</span>
+                  </button>
+                </div>
               </form>
             )}
           </div>

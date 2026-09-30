@@ -2,13 +2,20 @@
  FILE: src/pages/auth/CreatePasscode.tsx
 
  PURPOSE:
- Production-grade, human-crafted Passcode Setup and Confirmation interface.
- Avoids generic AI aesthetic through:
- - Poppins typography with crisp hierarchy
- - Interactive live PIN validation criteria (6+ digits, digits only, confirmation match)
- - Zero static pill junk or fake badges
- - No pre-filled or auto-filled dummy PINs (empty fields by default)
- - Direct transition to Screen Lock upon setup
+ Exact 1:1 pixel-perfect reproduction of the uploaded "Create Passcode" screen from xahmoney.com (image.png).
+ Features:
+ - Dark matte background (#121316)
+ - Rounded card (#1e2029) with 28px border radius
+ - Top-left XAH Money logo with folded ribbon
+ - Centered "Create Passcode" title in Coral -> Purple -> Blue gradient
+ - Subtitle: "Create a new passcode, keep your passcode safe, as these passcodes are not recoverable"
+ - Input 1: "Passcode" with Eye toggle inside #242735 background
+ - Input 2: "Confirm Passcode" with Eye toggle inside #242735 background
+ - Footnotes:
+   * Passcode is required now to use HX.Money's new features.
+   * Passcode cannot be reset
+ - Pill submit button: vibrant Coral -> Magenta -> Blue gradient with bold "Submit" text
+ - Direct navigation to Screen Lock upon setup
 
  SECURITY:
  Authoritative session verification & client-side input validation.
@@ -16,7 +23,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { AlertCircle, Check, Eye, EyeOff, Loader2, Lock, RefreshCw, Shield } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Loader2, RefreshCw } from 'lucide-react';
 
 export const CreatePasscode: React.FC = () => {
   const { setupPasscode, setAuthStage } = useAuth();
@@ -27,12 +34,6 @@ export const CreatePasscode: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-
-  // Live validation checks
-  const isMinLength = passcode.length >= 6;
-  const isDigitsOnly = passcode.length > 0 && /^\d+$/.test(passcode);
-  const isMatching = passcode.length >= 6 && passcode === confirmPasscode;
-  const isValidForm = isMinLength && isDigitsOnly && isMatching;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +61,7 @@ export const CreatePasscode: React.FC = () => {
         setIsRefreshing(true);
         setTimeout(() => {
           setAuthStage('LOCKED');
-        }, 700);
+        }, 600);
       } else {
         setErrorMsg(res.message || 'Failed to configure passcode.');
         setIsSubmitting(false);
@@ -72,162 +73,142 @@ export const CreatePasscode: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0b0d17] flex flex-col items-center justify-center p-4 py-8 relative selection:bg-purple-500/30">
-      {/* Subtle radial ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="w-full max-w-[420px] relative z-10">
-        <div className="rounded-3xl bg-[#121625] border border-[#1e253c] p-7 sm:p-8 shadow-2xl space-y-6">
+    <div className="min-h-screen w-full bg-[#121316] flex flex-col items-center justify-center p-4 py-8 select-none font-sans">
+      <div className="w-full max-w-[430px]">
+        {/* Card matching image.png exactly */}
+        <div className="rounded-[28px] bg-[#1e2029] border border-[#272b38] p-7 sm:p-9 shadow-2xl space-y-6">
           
-          {/* Header & Logo */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#181d30] border border-[#27304d] shadow-inner text-purple-400">
-              <Lock size={22} className="stroke-[2.2]" />
+          {/* Top-Left: Brand Header (HX Folded Ribbon + XAH Money) */}
+          <div className="flex items-center gap-2.5">
+            {/* HX Folded Ribbon Logo */}
+            <div className="relative w-6 h-5 flex items-center justify-center">
+              <svg className="w-6 h-5" viewBox="0 0 64 54" fill="none">
+                <defs>
+                  <linearGradient id="passcodeLogoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#ff2a6d" />
+                    <stop offset="48%" stopColor="#9d4edd" />
+                    <stop offset="100%" stopColor="#38bdf8" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M 22 13 C 14 13, 10 20, 10 27 C 10 34, 14 41, 22 41 C 28 41, 32 36, 32 27 C 32 18, 36 13, 42 13 C 50 13, 54 20, 54 27 C 54 34, 50 41, 42 41 C 36 41, 32 36, 32 27"
+                  stroke="url(#passcodeLogoGrad)"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M 12 27 L 32 27 L 52 27"
+                  stroke="url(#passcodeLogoGrad)"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                />
+              </svg>
             </div>
 
-            <div className="space-y-1">
-              <h2 className="text-2xl font-bold tracking-tight text-white">
-                Create Passcode
-              </h2>
-              <p className="text-xs text-slate-400 font-normal leading-relaxed max-w-[320px] mx-auto">
-                Set a 6-digit security PIN to protect your account and sign transactions.
-              </p>
-            </div>
+            {/* XAH Money text */}
+            <span className="font-extrabold text-[15px] tracking-wide text-white">
+              XAH Money
+            </span>
+          </div>
+
+          {/* Title & Subtitle matching image.png */}
+          <div className="text-center space-y-2 pt-1">
+            <h1 className="text-[25px] sm:text-[27px] font-black text-transparent bg-clip-text bg-gradient-to-r from-[#ff5a5f] via-[#c056f5] to-[#5b8bf5] tracking-tight">
+              Create Passcode
+            </h1>
+            <p className="text-xs text-[#c5cbdb] leading-relaxed max-w-[330px] mx-auto font-normal">
+              Create a new passcode, keep your passcode safe, as these passcodes are not recoverable
+            </p>
           </div>
 
           {isRefreshing ? (
-            <div className="py-10 flex flex-col items-center justify-center space-y-3 text-center">
+            <div className="py-8 flex flex-col items-center justify-center space-y-3 text-center">
               <RefreshCw size={32} className="animate-spin text-purple-400" />
               <p className="text-sm font-semibold text-slate-100">
-                Passcode Secured
-              </p>
-              <p className="text-xs text-slate-400">
-                Opening Screen Lock...
+                Passcode Created! Loading Screen Lock...
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-1">
               {errorMsg && (
-                <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/40 flex items-start gap-2.5 text-xs text-red-300 animate-shake">
+                <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/40 flex items-start gap-2.5 text-xs text-red-300">
                   <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-400" />
                   <span>{errorMsg}</span>
                 </div>
               )}
 
-              {/* Passcode input */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-300">
-                    New Passcode
-                  </label>
-                  <span className="text-[11px] text-slate-500 font-mono">
-                    {passcode.length}/6 digits
-                  </span>
-                </div>
-
-                <div className="relative">
-                  <input
-                    type={showPasscode ? 'text' : 'password'}
-                    inputMode="numeric"
-                    autoComplete="new-password"
-                    maxLength={6}
-                    value={passcode}
-                    onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter 6-digit Passcode"
-                    className="w-full h-12 pl-4 pr-11 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPasscode(!showPasscode)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                    aria-label={showPasscode ? 'Hide passcode' : 'Show passcode'}
-                  >
-                    {showPasscode ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
+              {/* Input 1: Passcode matching image.png */}
+              <div className="relative">
+                <input
+                  type={showPasscode ? 'text' : 'password'}
+                  inputMode="numeric"
+                  autoComplete="new-password"
+                  maxLength={6}
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Passcode"
+                  className="w-full h-[52px] pl-4 pr-11 rounded-[14px] bg-[#242735] border border-transparent focus:border-[#7c5cf6] text-sm text-white placeholder:text-[#71788f] focus:outline-none transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasscode(!showPasscode)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71788f] hover:text-slate-200 transition-colors cursor-pointer"
+                  aria-label={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                >
+                  {showPasscode ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
-              {/* Confirm Passcode input */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-300">
-                    Confirm Passcode
-                  </label>
-                  {confirmPasscode.length > 0 && (
-                    <span className={`text-[11px] font-medium ${isMatching ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {isMatching ? 'Matches' : 'Does not match'}
-                    </span>
-                  )}
-                </div>
-
-                <div className="relative">
-                  <input
-                    type={showConfirm ? 'text' : 'password'}
-                    inputMode="numeric"
-                    autoComplete="new-password"
-                    maxLength={6}
-                    value={confirmPasscode}
-                    onChange={(e) => setConfirmPasscode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Confirm 6-digit Passcode"
-                    className="w-full h-12 pl-4 pr-11 rounded-xl bg-[#0c0f1c] border border-[#20273f] text-sm text-slate-100 placeholder:text-slate-600 tracking-[0.25em] font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                    aria-label={showConfirm ? 'Hide confirmation' : 'Show confirmation'}
-                  >
-                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
+              {/* Input 2: Confirm Passcode matching image.png */}
+              <div className="relative">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  inputMode="numeric"
+                  autoComplete="new-password"
+                  maxLength={6}
+                  value={confirmPasscode}
+                  onChange={(e) => setConfirmPasscode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Confirm Passcode"
+                  className="w-full h-[52px] pl-4 pr-11 rounded-[14px] bg-[#242735] border border-transparent focus:border-[#7c5cf6] text-sm text-white placeholder:text-[#71788f] focus:outline-none transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71788f] hover:text-slate-200 transition-colors cursor-pointer"
+                  aria-label={showConfirm ? 'Hide confirmation' : 'Show confirmation'}
+                >
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
-              {/* Real-time Requirement Checks (Human-Crafted Micro UX) */}
-              <div className="p-3 rounded-xl bg-[#0c0f1c]/80 border border-[#1b2137] space-y-2">
-                <p className="text-[11px] font-medium text-slate-400">Security Requirements:</p>
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className={`flex items-center gap-1.5 ${isMinLength ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    <Check size={12} className={isMinLength ? 'text-emerald-400' : 'opacity-30'} />
-                    <span>6 Digits Minimum</span>
-                  </div>
-                  <div className={`flex items-center gap-1.5 ${isDigitsOnly ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    <Check size={12} className={isDigitsOnly ? 'text-emerald-400' : 'opacity-30'} />
-                    <span>Numbers Only</span>
-                  </div>
-                  <div className={`flex items-center gap-1.5 ${isMatching ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    <Check size={12} className={isMatching ? 'text-emerald-400' : 'opacity-30'} />
-                    <span>Passcodes Match</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-500">
-                    <Shield size={12} className="opacity-40" />
-                    <span>Non-recoverable</span>
-                  </div>
-                </div>
+              {/* Footnotes matching image.png */}
+              <div className="space-y-1 text-[11px] text-[#7c849b] pt-1 leading-relaxed">
+                <p>* Passcode is required now to use HX.Money's new features.</p>
+                <p>* Passcode cannot be reset</p>
               </div>
 
-              {/* Submit Button */}
-              <div className="pt-1">
+              {/* Submit Pill Button matching image.png */}
+              <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isSubmitting || !isValidForm}
-                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff] hover:opacity-95 text-white font-semibold text-sm transition-all shadow-lg shadow-purple-900/30 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full h-[52px] rounded-full bg-gradient-to-r from-[#ff4d6d] via-[#d946ef] to-[#4361ee] text-white font-bold text-base hover:opacity-95 active:scale-[0.99] disabled:opacity-50 transition-all shadow-lg shadow-purple-950/40 cursor-pointer flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>Saving Passcode...</span>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Setting up...</span>
                     </>
                   ) : (
-                    <span>Set Passcode & Continue</span>
+                    <span>Submit</span>
                   )}
                 </button>
               </div>
 
-              <p className="text-[11px] text-center text-slate-500">
-                You will use this PIN to access your account on this device.
-              </p>
             </form>
           )}
+
         </div>
       </div>
     </div>

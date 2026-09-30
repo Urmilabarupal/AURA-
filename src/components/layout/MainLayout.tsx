@@ -19,12 +19,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { SubpageHeader } from './SubpageHeader';
+import { MobileBottomNav } from './MobileBottomNav';
 import { SecurityModal } from '../common/SecurityModal';
 
 // Pages
 import { Dashboard } from '../../pages/Dashboard';
 import { TradeView } from '../../pages/trade/TradeView';
 import { WalletsList } from '../../pages/wallets/WalletsList';
+import { DepositPage } from '../../pages/wallets/DepositPage';
+import { WithdrawPage } from '../../pages/wallets/WithdrawPage';
 import { SingleWallet } from '../../pages/wallets/SingleWallet';
 import { ExtraWallet } from '../../pages/wallets/ExtraWallet';
 import { ProfileView } from '../../pages/profile/ProfileView';
@@ -77,6 +81,10 @@ export const MainLayout: React.FC = () => {
         return <TradeView />;
       case 'wallets':
         return <WalletsList />;
+      case 'deposit':
+        return <DepositPage />;
+      case 'withdraw':
+        return <WithdrawPage />;
       case 'wallet-detail':
         return <SingleWallet />;
       case 'extra-wallet':
@@ -175,10 +183,15 @@ export const MainLayout: React.FC = () => {
         <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
         {/* Page Content Container */}
-        <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px]">
+        <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px] pb-24 lg:pb-8">
+          {/* Subpage Header matching screenshot (rendered on all pages except Home) */}
+          {activeRoute !== 'home' && <SubpageHeader currentRoute={activeRoute} />}
           {renderActivePage()}
         </main>
       </div>
+
+      {/* Global Mobile Bottom Navigation Dock */}
+      <MobileBottomNav onOpenMenu={() => setMobileMenuOpen(true)} />
 
       {/* Security Notice Modal (Step 12 of Auth Flow from Screenshots 4 & 5) */}
       <SecurityModal
