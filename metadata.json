@@ -1,0 +1,6 @@
+{
+  "name": "AURA Financial & Wallet Platform",
+  "description": "Enterprise-grade digital asset wallet, multi-chain liquidity, staking, trading, and decentralized financial rewards platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
