@@ -47,6 +47,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
+import { CryptoPerformanceMiniCharts } from '../components/dashboard/CryptoPerformanceMiniCharts';
 import {
   AlertTriangle,
   ArrowDown,
@@ -403,6 +404,11 @@ export const Dashboard: React.FC = () => {
         </div>
 
       </div>
+
+      {/* ========================================================= */}
+      {/* 24-HOUR CRYPTO MARKET PERFORMANCE (Recharts Mini-Charts) */}
+      {/* ========================================================= */}
+      <CryptoPerformanceMiniCharts />
 
       {/* ========================================================= */}
       {/* 4. ROW 2: WALLETS OVERVIEW (Screenshot 1 & 4) */}

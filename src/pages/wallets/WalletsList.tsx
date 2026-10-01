@@ -21,6 +21,7 @@
 
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 export const WalletsList: React.FC = () => {
   const { wallets, setActiveRoute, emptyStateMode } = useAuth();
@@ -180,6 +181,27 @@ export const WalletsList: React.FC = () => {
             <div className="text-3xl sm:text-4xl font-bold text-white tracking-tight font-mono">
               {totalChainValue.toFixed(2)}
             </div>
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => setActiveRoute('withdraw')}
+              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#ff5376] to-[#6d57ff] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-pink-950/30"
+            >
+              <ArrowUp size={14} className="stroke-[2.5]" />
+              <span>Withdraw</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveRoute('deposit')}
+              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#ff5376] via-[#7d50ff] to-[#4568ff] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-purple-950/30"
+            >
+              <ArrowDown size={14} className="stroke-[2.5]" />
+              <span>Deposit</span>
+            </button>
           </div>
 
           {/* Subtitle & Bottom-Right HX folded ribbon logo */}

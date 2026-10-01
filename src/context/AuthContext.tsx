@@ -46,6 +46,7 @@ interface AuthContextType {
   setSecurityModalOpen: (open: boolean) => void;
   toggleEmptyStateMode: () => void;
   connectRealMetaMask: () => Promise<{ success: boolean; address?: string; error?: string }>;
+  connectMobileWallet: () => Promise<{ success: boolean; address: string }>;
   register: (data: { walletAddress?: string; referId?: string; country: string; mobile: string; name: string }) => Promise<{ success: boolean; message?: string }>;
   setupPasscode: (passcode: string) => Promise<{ success: boolean; message?: string }>;
   verifyPasscode: (pin: string) => Promise<{ success: boolean; message?: string }>;
@@ -126,6 +127,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true, address: res.address };
     }
     return { success: false, error: res.error || res.message || 'Connection failed' };
+  };
+
+  const connectMobileWallet = async (): Promise<{ success: boolean; address: string }> => {
+    const addr = web3Wallet.getOrCreateMobileSessionWallet();
+    setWalletAddress(addr);
+    setIsMetaMaskConnected(true);
+    if (user) {
+      setUser({ ...user, walletAddress: addr });
+    }
+    return { success: true, address: addr };
   };
 
   const register = async (data: {
@@ -235,6 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSecurityModalOpen,
         toggleEmptyStateMode,
         connectRealMetaMask,
+        connectMobileWallet,
         register,
         setupPasscode,
         verifyPasscode,

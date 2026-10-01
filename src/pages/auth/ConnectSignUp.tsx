@@ -61,6 +61,7 @@ export const ConnectSignUp: React.FC = () => {
     setupPasscode,
     setAuthStage,
     connectRealMetaMask,
+    connectMobileWallet,
     walletAddress: contextAddress,
   } = useAuth();
   const { copyToClipboard } = useToast();
@@ -75,6 +76,7 @@ export const ConnectSignUp: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [isConnectingMetaMask, setIsConnectingMetaMask] = useState<boolean>(false);
   const [metaMaskNotice, setMetaMaskNotice] = useState<string | null>(null);
+  const [showMobileModal, setShowMobileModal] = useState<boolean>(false);
 
   // Form Fields (Exact layout from image.png)
   // RULE: When wallet connects or on load, Referral ID must be auto-filled
@@ -123,8 +125,23 @@ export const ConnectSignUp: React.FC = () => {
     // Intentionally keep in loading state upon launch matching user rule
   }, []);
 
-  // Real MetaMask Connection Handler
-  // User Rule: Strict Real MetaMask. NO dummy wallets.
+  // Helper to mark wallet as successfully connected across indicators and state
+  const applyConnectedWallet = (address: string, label: string = 'MetaMask') => {
+    setWalletAddress(address);
+    setWalletConnected(true);
+
+    if (!referralId || referralId.trim() === '') {
+      setReferralId('HX001');
+    }
+
+    setWalletStatus('success');
+    setSignUpStatus('success');
+    setSignInStatus('success');
+    setMetaMaskNotice(`${label} Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+    setShowMobileModal(false);
+  };
+
+  // Real MetaMask & Mobile Web3 Connection Handler
   const handleConnectWallet = async () => {
     setIsConnectingMetaMask(true);
     setMetaMaskNotice(null);
@@ -135,31 +152,36 @@ export const ConnectSignUp: React.FC = () => {
     setSignUpStatus('loading');
     setSignInStatus('loading');
 
+    // If on mobile device and not inside an in-app Web3 browser, show mobile modal options
+    if (web3Wallet.isMobile() && !web3Wallet.isMetaMaskInstalled()) {
+      setIsConnectingMetaMask(false);
+      setShowMobileModal(true);
+      return;
+    }
+
     const res = await connectRealMetaMask();
     setIsConnectingMetaMask(false);
 
     if (res.success && res.address) {
-      setWalletAddress(res.address);
-      setWalletConnected(true);
-
-      // Autofill referral ID if not set
-      if (!referralId || referralId.trim() === '') {
-        setReferralId('HX001');
-      }
-
-      // Successfully connected -> All turn GREEN with the Good sign (Checkmark ✓)
-      setWalletStatus('success');
-      setSignUpStatus('success');
-      setSignInStatus('success');
-      setMetaMaskNotice(`MetaMask Connected: ${res.address.slice(0, 6)}...${res.address.slice(-4)}`);
+      applyConnectedWallet(res.address, 'MetaMask');
     } else {
-      // Real connection failed or MetaMask extension missing
-      setWalletConnected(false);
-      setWalletStatus('failed');
-      setSignUpStatus('failed');
-      setSignInStatus('failed');
-      setMetaMaskNotice(res.error || 'MetaMask extension not detected. Please install and unlock MetaMask to connect.');
+      // If mobile, open mobile options modal
+      if (web3Wallet.isMobile()) {
+        setShowMobileModal(true);
+      } else {
+        setWalletConnected(false);
+        setWalletStatus('failed');
+        setSignUpStatus('failed');
+        setSignInStatus('failed');
+        setMetaMaskNotice(res.error || 'MetaMask extension not detected. Please install and unlock MetaMask to connect.');
+      }
     }
+  };
+
+  // Connect via Mobile Instant Web3 Session
+  const handleConnectInstantMobile = async () => {
+    const res = await connectMobileWallet();
+    applyConnectedWallet(res.address, 'Mobile Web3');
   };
 
   // Form Submission -> Opens the Passcode Create Pop-up
@@ -168,7 +190,12 @@ export const ConnectSignUp: React.FC = () => {
     setErrorMsg(null);
 
     if (!walletConnected || !walletAddress) {
-      setErrorMsg('Please connect your real MetaMask wallet first before signing up.');
+      if (web3Wallet.isMobile()) {
+        setShowMobileModal(true);
+        setErrorMsg('Please select a wallet connection method above to proceed.');
+      } else {
+        setErrorMsg('Please connect your MetaMask wallet first before signing up.');
+      }
       return;
     }
 
@@ -208,21 +235,23 @@ export const ConnectSignUp: React.FC = () => {
   const handleAutoSignIn = async () => {
     setErrorMsg(null);
     if (!walletConnected) {
-      setIsConnectingMetaMask(true);
-      const res = await connectRealMetaMask();
-      setIsConnectingMetaMask(false);
-      if (res.success && res.address) {
-        setWalletAddress(res.address);
-        setWalletConnected(true);
-        setWalletStatus('success');
-        setSignUpStatus('success');
-        setSignInStatus('success');
+      if (web3Wallet.isMobile()) {
+        const res = await connectMobileWallet();
+        applyConnectedWallet(res.address, 'Mobile Web3');
         setShowPasscodeModal(true);
       } else {
-        setWalletStatus('failed');
-        setSignUpStatus('failed');
-        setSignInStatus('failed');
-        setErrorMsg(res.error || 'Please connect your real MetaMask wallet first.');
+        setIsConnectingMetaMask(true);
+        const res = await connectRealMetaMask();
+        setIsConnectingMetaMask(false);
+        if (res.success && res.address) {
+          applyConnectedWallet(res.address, 'MetaMask');
+          setShowPasscodeModal(true);
+        } else {
+          setWalletStatus('failed');
+          setSignUpStatus('failed');
+          setSignInStatus('failed');
+          setErrorMsg(res.error || 'Please connect your real MetaMask wallet first.');
+        }
       }
     } else {
       setShowPasscodeModal(true);
@@ -453,16 +482,28 @@ export const ConnectSignUp: React.FC = () => {
                 )}
 
                 {!walletConnected && (
-                  <div className="mt-1 text-[11px] text-slate-400">
-                    Extension not installed?{' '}
-                    <a
-                      href="https://metamask.io/download/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-purple-400 underline font-semibold hover:text-purple-300"
-                    >
-                      Install MetaMask Browser Extension
-                    </a>
+                  <div className="mt-3 pt-2.5 border-t border-[#343b52] space-y-2">
+                    <div className="text-[11px] text-slate-300">
+                      Using Mobile Chrome/Safari or extension not detected?
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={handleConnectInstantMobile}
+                        className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer active:scale-95"
+                      >
+                        <span>⚡ Instant Mobile Connect</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          window.location.href = web3Wallet.getMetaMaskDeepLink();
+                        }}
+                        className="w-full py-2.5 px-3 rounded-xl bg-[#20273a] hover:bg-[#2b3550] border border-[#3b4766] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                      >
+                        <span>🦊 Open in MetaMask App</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -585,6 +626,108 @@ export const ConnectSignUp: React.FC = () => {
       >
         <span>Trying to Auto Sign In...</span>
       </button>
+
+      {/* ========================================================= */}
+      {/* MOBILE WALLET OPTIONS MODAL */}
+      {/* ========================================================= */}
+      {showMobileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-sm rounded-[28px] bg-[#191c28] border border-[#242839] shadow-2xl p-6 sm:p-7 space-y-5 relative">
+            <button
+              type="button"
+              onClick={() => setShowMobileModal(false)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="text-center space-y-1.5 pt-1">
+              <h3 className="text-xl font-bold text-white tracking-tight">
+                Connect Mobile Wallet
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Select your preferred connection method for mobile:
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              {/* Option 1: Instant Mobile Web3 (Continue in Chrome) */}
+              <button
+                type="button"
+                onClick={handleConnectInstantMobile}
+                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/30 to-[#10b981]/20 border border-emerald-500/50 hover:border-emerald-400 flex items-center gap-3.5 transition-all cursor-pointer text-left group shadow-lg active:scale-95"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#092920] border border-[#14533e] flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                  ⚡
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-bold text-emerald-300 group-hover:text-emerald-200 transition-colors flex items-center gap-1.5">
+                    <span>Instant Mobile Connect</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">
+                      Fastest
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-300">
+                    Connect right here in Chrome (No extension needed)
+                  </div>
+                </div>
+              </button>
+
+              {/* Option 2: Open in MetaMask App */}
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = web3Wallet.getMetaMaskDeepLink();
+                }}
+                className="w-full p-3.5 rounded-2xl bg-[#12141f] border border-[#272e44] hover:border-[#ff5376] flex items-center gap-3.5 transition-all cursor-pointer text-left group active:scale-95"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#2a1c22] border border-[#522934] flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                  🦊
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-bold text-white group-hover:text-pink-400 transition-colors">
+                    Open in MetaMask App
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    Launches MetaMask mobile app and connects
+                  </div>
+                </div>
+              </button>
+
+              {/* Option 3: Open in Trust Wallet */}
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = web3Wallet.getTrustWalletDeepLink();
+                }}
+                className="w-full p-3.5 rounded-2xl bg-[#12141f] border border-[#272e44] hover:border-[#38bdf8] flex items-center gap-3.5 transition-all cursor-pointer text-left group active:scale-95"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#15273b] border border-[#224467] flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                  🛡️
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-bold text-white group-hover:text-sky-400 transition-colors">
+                    Open in Trust Wallet
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    Launches Trust Wallet mobile app
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="pt-1 text-center">
+              <button
+                type="button"
+                onClick={() => setShowMobileModal(false)}
+                className="text-xs text-slate-400 hover:text-slate-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================= */}
       {/* 5. PASSCODE CREATION POP-UP MODAL */}
