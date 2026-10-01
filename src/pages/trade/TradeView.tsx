@@ -28,6 +28,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
+import { BRAND } from '../../config/brand';
 import { EmptyState } from '../../components/common/EmptyState';
 import { MarketTrade, TradeOrder } from '../../types';
 import {
@@ -129,7 +130,7 @@ export const TradeView: React.FC = () => {
     if (side === 'SELL' && availableBalance < orderAmount) {
       setOrderFeedback({
         type: 'error',
-        msg: `Insufficient AURA in ${walletSource} wallet. Needed ${orderAmount} AURA.`,
+        msg: `Insufficient ${BRAND.tokenSymbol} in ${walletSource} wallet. Needed ${orderAmount} ${BRAND.tokenSymbol}.`,
       });
       return;
     }
@@ -146,7 +147,7 @@ export const TradeView: React.FC = () => {
       if (res.success && res.data) {
         setOrderFeedback({
           type: 'success',
-          msg: `Successfully executed ${side} order for ${orderAmount} AURA!`,
+          msg: `Successfully executed ${side} order for ${orderAmount} ${BRAND.tokenSymbol}!`,
         });
         await refreshUserData();
         loadMarketData();
@@ -175,13 +176,13 @@ export const TradeView: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-slate-100 font-mono tracking-tight">
-                  AURA/USDT
+                  {BRAND.tokenSymbol}/USDT
                 </h1>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
                   Spot
                 </span>
               </div>
-              <p className="text-xs text-slate-400">AURA Chain Native Pair</p>
+              <p className="text-xs text-slate-400">{BRAND.chainName} Native Pair</p>
             </div>
           </div>
 
@@ -205,7 +206,7 @@ export const TradeView: React.FC = () => {
             <p className="font-mono font-bold text-slate-200 mt-0.5">{low24h.toFixed(3)}</p>
           </div>
           <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
-            <p className="text-[10px] text-slate-500 font-medium">24h Volume (AURA)</p>
+            <p className="text-[10px] text-slate-500 font-medium">24h Volume ({BRAND.tokenSymbol})</p>
             <p className="font-mono font-bold text-slate-200 mt-0.5">{volNative}</p>
           </div>
           <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
@@ -377,7 +378,7 @@ export const TradeView: React.FC = () => {
                 <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
                   <tr>
                     <th className="py-2 px-2">Price (USDT)</th>
-                    <th className="py-2 px-2 text-right">Amount (AURA)</th>
+                    <th className="py-2 px-2 text-right">Amount ({BRAND.tokenSymbol})</th>
                     <th className="py-2 px-2 text-right">Time</th>
                   </tr>
                 </thead>
@@ -442,7 +443,7 @@ export const TradeView: React.FC = () => {
               <h4 className="text-base font-extrabold text-slate-100 font-mono">
                 {availableBalance.toFixed(side === 'BUY' ? 2 : 4)}{' '}
                 <span className="text-xs text-purple-400 font-bold">
-                  {side === 'BUY' ? 'USDT' : 'AURA'}
+                  {side === 'BUY' ? 'USDT' : BRAND.tokenSymbol}
                 </span>
               </h4>
             </div>
@@ -514,7 +515,7 @@ export const TradeView: React.FC = () => {
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] text-slate-400 font-medium">
                 <span>Amount</span>
-                <span>AURA</span>
+                <span>{BRAND.tokenSymbol}</span>
               </div>
               <input
                 type="number"
@@ -623,7 +624,7 @@ export const TradeView: React.FC = () => {
                     </td>
                     <td className="py-3 px-3 capitalize text-slate-400">{ord.walletSource}</td>
                     <td className="py-3 px-3 text-slate-200">{ord.price.toFixed(3)}</td>
-                    <td className="py-3 px-3 text-slate-200">{ord.amount.toFixed(4)} AURA</td>
+                    <td className="py-3 px-3 text-slate-200">{ord.amount.toFixed(4)} {BRAND.tokenSymbol}</td>
                     <td className="py-3 px-3 text-slate-200 font-bold">{ord.total.toFixed(2)} USDT</td>
                     <td className="py-3 px-3 text-right">
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950/40 text-blue-400 border border-blue-800/40">

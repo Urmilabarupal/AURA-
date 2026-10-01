@@ -11,6 +11,7 @@
 */
 
 import React, { useState } from 'react';
+import { BRAND } from '../../config/brand';
 import {
   Area,
   AreaChart,
@@ -42,8 +43,8 @@ interface AssetTrend {
 
 const CRYPTO_DATA: AssetTrend[] = [
   {
-    symbol: 'XAH',
-    name: 'XAH Chain Native',
+    symbol: BRAND.tokenSymbol,
+    name: `${BRAND.chainName} Native`,
     price: '$1.48',
     change24h: 8.74,
     high24h: '$1.52',

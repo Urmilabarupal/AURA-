@@ -28,6 +28,7 @@ import { useToast } from '../../components/common/Toast';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowDownLeft,
@@ -63,7 +64,7 @@ export const SingleWallet: React.FC = () => {
   // Withdraw Form
   const [withdrawAddr, setWithdrawAddr] = useState<string>('');
   const [withdrawAmount, setWithdrawAmount] = useState<number>(50);
-  const [withdrawChain, setWithdrawChain] = useState<string>('AURA Mainnet');
+  const [withdrawChain, setWithdrawChain] = useState<string>(BRAND.chainNetwork);
   const [withdrawWallet, setWithdrawWallet] = useState<'spot' | 'main' | 'funding'>('spot');
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
@@ -177,7 +178,7 @@ export const SingleWallet: React.FC = () => {
           </button>
           <div>
             <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
-              AURA Chain
+              {BRAND.chainName}
             </h1>
             <p className="text-xs text-slate-400">Decentralized Settlement Layer</p>
           </div>
@@ -257,7 +258,7 @@ export const SingleWallet: React.FC = () => {
               <span className="text-sm font-bold text-purple-400">USDT</span>
             </h2>
             <div className="flex items-center justify-between text-xs text-slate-400 pt-1 font-mono">
-              <span>AURA:</span>
+              <span>{BRAND.tokenSymbol}:</span>
               <span className="font-bold text-slate-200">
                 {emptyStateMode ? '0.00' : (wallets?.spotBalanceNative || 0).toFixed(4)}
               </span>
@@ -285,7 +286,7 @@ export const SingleWallet: React.FC = () => {
           {/* Quick Wallet Address Box */}
           <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
             <span className="text-[10px] text-slate-500 font-semibold uppercase">
-              Deposit Address (AURA-20)
+              Deposit Address ({BRAND.tokenSymbol}-20)
             </span>
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-slate-300 truncate max-w-[200px]">
@@ -308,7 +309,7 @@ export const SingleWallet: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
           <div className="w-full max-w-md rounded-2xl bg-[#141829] border border-[#202740] shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#1d243b] pb-3">
-              <h3 className="text-sm font-bold text-slate-100">Deposit AURA / USDT</h3>
+              <h3 className="text-sm font-bold text-slate-100">Deposit {BRAND.tokenSymbol} / USDT</h3>
               <button
                 onClick={() => setDepositModalOpen(false)}
                 className="text-slate-400 hover:text-white"
@@ -414,7 +415,7 @@ export const SingleWallet: React.FC = () => {
                   onChange={(e) => setWithdrawChain(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 focus:outline-none"
                 >
-                  <option value="AURA Mainnet">AURA Mainnet (Fee: 0.1 AURA)</option>
+                  <option value={BRAND.chainNetwork}>{BRAND.chainNetwork} (Fee: 0.1 {BRAND.tokenSymbol})</option>
                   <option value="TRC-20">TRON TRC-20 (Fee: 1.0 USDT)</option>
                   <option value="ERC-20">Ethereum ERC-20 (Fee: 4.5 USDT)</option>
                 </select>

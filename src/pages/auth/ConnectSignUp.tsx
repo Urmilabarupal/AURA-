@@ -23,10 +23,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import { web3Wallet } from '../../services/web3Wallet';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   Check,
   ChevronDown,
+  ChevronLeft,
   Copy,
   Eye,
   EyeOff,
@@ -88,7 +90,7 @@ export const ConnectSignUp: React.FC = () => {
       const stored = localStorage.getItem('xah_refer_id');
       if (stored) return stored;
     }
-    return 'HX001';
+    return BRAND.defaultReferId;
   });
   const [country, setCountry] = useState<string>('USA (+1)');
   const [mobileNumber, setMobileNumber] = useState<string>('');
@@ -131,7 +133,7 @@ export const ConnectSignUp: React.FC = () => {
     setWalletConnected(true);
 
     if (!referralId || referralId.trim() === '') {
-      setReferralId('HX001');
+      setReferralId(BRAND.defaultReferId);
     }
 
     setWalletStatus('success');
@@ -212,7 +214,7 @@ export const ConnectSignUp: React.FC = () => {
     try {
       const regRes = await register({
         walletAddress: walletAddress,
-        referId: referralId || 'HX001',
+        referId: referralId || BRAND.defaultReferId,
         country,
         mobile: mobileNumber,
         name,
@@ -300,6 +302,18 @@ export const ConnectSignUp: React.FC = () => {
       {/* Container */}
       <div className="w-full max-w-[460px] flex flex-col items-center space-y-6">
         
+        {/* Back to Landing Page link */}
+        <div className="w-full flex items-center justify-start">
+          <button
+            type="button"
+            onClick={() => setAuthStage('LANDING')}
+            className="px-3 py-1.5 rounded-xl bg-[#191d2c] hover:bg-[#23293e] border border-[#252d42] text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+          >
+            <ChevronLeft size={16} />
+            <span>Back to Ecosystem Overview</span>
+          </button>
+        </div>
+
         {/* ========================================================= */}
         {/* 1. TOP LOGO & HEADER matching image.png */}
         {/* ========================================================= */}
@@ -330,10 +344,10 @@ export const ConnectSignUp: React.FC = () => {
             </svg>
           </div>
 
-          {/* XAH MONEY Title */}
+          {/* Dynamic Brand Title */}
           <h1 className="text-[25px] font-black tracking-wider leading-none">
             <span className="bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff] bg-clip-text text-transparent">
-              XAH MONEY
+              {BRAND.name}
             </span>
           </h1>
         </div>
@@ -770,7 +784,7 @@ export const ConnectSignUp: React.FC = () => {
                 </svg>
               </div>
               <span className="font-extrabold text-[15px] tracking-wide text-white">
-                XAH Money
+                {BRAND.name}
               </span>
             </div>
 
@@ -845,7 +859,7 @@ export const ConnectSignUp: React.FC = () => {
 
                 {/* Footnotes matching image.png */}
                 <div className="space-y-1 text-[11px] text-[#7c849b] pt-1 leading-relaxed">
-                  <p>* Passcode is required now to use HX.Money's new features.</p>
+                  <p>* Passcode is required now to use {BRAND.name}'s new features.</p>
                   <p>* Passcode cannot be reset</p>
                 </div>
 

@@ -14,6 +14,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../common/Toast';
+import { BRAND } from '../../config/brand';
 import { ChevronLeft, Home, Lock, MoreVertical, RefreshCw, Share2 } from 'lucide-react';
 
 interface SubpageHeaderProps {
@@ -32,7 +33,7 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
     wallets: 'Wallets',
     deposit: 'Deposit',
     withdraw: 'Withdraw',
-    'aura-chain': 'XAH Chain',
+    'aura-chain': BRAND.chainName,
     ethereum: 'Ethereum',
     tether: 'Tether',
     'binance-usd': 'Binance USD',
@@ -52,7 +53,8 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
     'my-staking': 'My Staking',
     'stake-wallet': 'Stake Wallet',
     convert: 'Convert',
-    'hxc-convert': 'HXC Convert',
+    'hxc-convert': `${BRAND.name} Convert`,
+    'xah-convert': `${BRAND.tokenSymbol} Swap`,
     redeem: 'Redeem',
     tickets: 'Tickets',
     community: 'Community',

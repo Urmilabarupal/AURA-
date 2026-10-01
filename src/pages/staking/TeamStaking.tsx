@@ -23,6 +23,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import { Coins, DollarSign, Layers, TrendingUp, Users, Wallet } from 'lucide-react';
 
 export const TeamStaking: React.FC = () => {
@@ -132,7 +133,7 @@ export const TeamStaking: React.FC = () => {
             <div>
               <p className="text-xs text-slate-400 font-semibold">Total Team Stake</p>
               <h4 className="text-xl font-black text-slate-100 font-mono mt-1">
-                {totalTeamStake.toFixed(2)} AURA
+                {totalTeamStake.toFixed(2)} {BRAND.tokenSymbol}
               </h4>
             </div>
             <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400">

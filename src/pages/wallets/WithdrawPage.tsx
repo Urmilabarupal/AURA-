@@ -17,6 +17,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowUp,
@@ -50,15 +51,15 @@ export const WithdrawPage: React.FC = () => {
       balance: wallets?.fundingBalanceUSDT || 0,
       fee: 1.0,
       minWithdraw: 10,
-      networks: ['XAH Chain', 'TRC-20', 'BEP-20', 'ERC-20'],
+      networks: [BRAND.chainName, 'TRC-20', 'BEP-20', 'ERC-20'],
     },
     {
-      symbol: 'XAH',
-      name: 'XAH Chain Native',
+      symbol: BRAND.tokenSymbol,
+      name: `${BRAND.chainName} Native`,
       balance: wallets?.spotBalanceNative || 0,
       fee: 0.1,
       minWithdraw: 1,
-      networks: ['XAH Mainnet'],
+      networks: [BRAND.chainNetwork],
     },
     {
       symbol: 'ETH',

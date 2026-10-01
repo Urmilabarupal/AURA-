@@ -27,6 +27,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LotteryTicket } from '../../types';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   Calendar,
@@ -249,7 +250,7 @@ export const TicketsView: React.FC = () => {
               <span className="text-xs text-purple-300 font-bold">USDT</span>
             </div>
             <p className="text-[10px] text-slate-400 leading-tight">
-              One lottery ticket is equivalent to 10 USDT in AURA.
+              One lottery ticket is equivalent to 10 USDT in {BRAND.tokenSymbol}.
             </p>
           </div>
 

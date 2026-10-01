@@ -23,6 +23,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { FarmingPlan, Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import { ArrowRight, Coins, Flame, Layers, Lock, Sparkles, TrendingUp, Zap } from 'lucide-react';
 
 export const FarmingView: React.FC = () => {
@@ -191,7 +192,7 @@ export const FarmingView: React.FC = () => {
                   <tr key={tx.id} className="hover:bg-[#151a2d]">
                     <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
                     <td className="py-3 px-3 text-purple-400">{tx.referenceId}</td>
-                    <td className="py-3 px-3 text-slate-300">AURA/USDT LP</td>
+                    <td className="py-3 px-3 text-slate-300">{BRAND.tokenSymbol}/USDT LP</td>
                     <td className="py-3 px-3 text-right font-bold text-emerald-400">
                       +${tx.amountUSD.toFixed(2)} USDT
                     </td>

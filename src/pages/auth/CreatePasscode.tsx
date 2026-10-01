@@ -24,6 +24,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { AlertCircle, Eye, EyeOff, Loader2, RefreshCw } from 'lucide-react';
+import { BRAND } from '../../config/brand';
 
 export const CreatePasscode: React.FC = () => {
   const { setupPasscode, setAuthStage } = useAuth();
@@ -106,9 +107,9 @@ export const CreatePasscode: React.FC = () => {
               </svg>
             </div>
 
-            {/* XAH Money text */}
+            {/* Dynamic Brand text */}
             <span className="font-extrabold text-[15px] tracking-wide text-white">
-              XAH Money
+              {BRAND.name}
             </span>
           </div>
 
@@ -184,7 +185,7 @@ export const CreatePasscode: React.FC = () => {
 
               {/* Footnotes matching image.png */}
               <div className="space-y-1 text-[11px] text-[#7c849b] pt-1 leading-relaxed">
-                <p>* Passcode is required now to use HX.Money's new features.</p>
+                <p>* Passcode is required now to use {BRAND.name}'s new features.</p>
                 <p>* Passcode cannot be reset</p>
               </div>
 

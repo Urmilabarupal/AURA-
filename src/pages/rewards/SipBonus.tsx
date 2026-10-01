@@ -23,6 +23,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { SipBonusTier } from '../../types';
+import { BRAND } from '../../config/brand';
 import { AlertCircle, Award, CheckCircle2, ChevronRight, Gift, Sparkles, TrendingUp, Users } from 'lucide-react';
 
 export const SipBonus: React.FC = () => {
@@ -59,7 +60,7 @@ export const SipBonus: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
-            AURA SIP Bonus
+            {BRAND.name} SIP Bonus
           </h1>
           <p className="text-xs text-slate-400">Monthly Recurring Leadership Salary</p>
         </div>

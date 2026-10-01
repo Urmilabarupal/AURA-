@@ -26,6 +26,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowRight,
@@ -81,7 +82,7 @@ export const XahConvert: React.FC = () => {
     if (available < amountXAH) {
       setFeedback({
         type: 'error',
-        msg: `Insufficient AURA in Spot Wallet. Available: ${available.toFixed(4)} AURA`,
+        msg: `Insufficient ${BRAND.tokenSymbol} in Spot Wallet. Available: ${available.toFixed(4)} ${BRAND.tokenSymbol}`,
       });
       return;
     }
@@ -92,7 +93,7 @@ export const XahConvert: React.FC = () => {
       if (res.success && res.data) {
         setFeedback({
           type: 'success',
-          msg: `Converted ${amountXAH} AURA to ${res.data.receivedUSDT} USDT!`,
+          msg: `Converted ${amountXAH} ${BRAND.tokenSymbol} to ${res.data.receivedUSDT} USDT!`,
         });
         await refreshUserData();
         loadTransactions();
@@ -111,7 +112,7 @@ export const XahConvert: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
-            AURA Convert
+            {BRAND.name} Convert
           </h1>
           <p className="text-xs text-slate-400">Native Asset Liquidity Settlement</p>
         </div>
@@ -154,7 +155,7 @@ export const XahConvert: React.FC = () => {
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
-                    <th className="py-2.5 px-3 text-right">AURA Converted</th>
+                    <th className="py-2.5 px-3 text-right">{BRAND.tokenSymbol} Converted</th>
                     <th className="py-2.5 px-3 text-right">USDT Received</th>
                     <th className="py-2.5 px-3 text-right">Date</th>
                   </tr>
@@ -165,7 +166,7 @@ export const XahConvert: React.FC = () => {
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
                       <td className="py-3 px-3 font-mono text-purple-400">{tx.referenceId}</td>
                       <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">
-                        {tx.amount} AURA
+                        {tx.amount} {BRAND.tokenSymbol}
                       </td>
                       <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
                         +${tx.amountUSD.toFixed(2)} USDT
@@ -203,7 +204,7 @@ export const XahConvert: React.FC = () => {
               <span className="text-xs text-purple-400">USDT</span>
             </h4>
             <p className="text-xs text-slate-500 font-mono">
-              Available: {emptyStateMode ? '0.0000' : (wallets?.spotBalanceNative || 0).toFixed(4)} AURA
+              Available: {emptyStateMode ? '0.0000' : (wallets?.spotBalanceNative || 0).toFixed(4)} {BRAND.tokenSymbol}
             </p>
           </div>
 
@@ -226,7 +227,7 @@ export const XahConvert: React.FC = () => {
             )}
 
             <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300">Amount (AURA)</label>
+              <label className="text-[11px] font-semibold text-slate-300">Amount ({BRAND.tokenSymbol})</label>
               <input
                 type="number"
                 step="0.01"
@@ -253,7 +254,7 @@ export const XahConvert: React.FC = () => {
               {isConverting ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
-                  <span>Converting AURA...</span>
+                  <span>Converting {BRAND.tokenSymbol}...</span>
                 </>
               ) : (
                 <span>Convert</span>

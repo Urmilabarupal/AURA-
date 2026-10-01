@@ -24,6 +24,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import { ArrowRight, CheckCircle2, Coins, Layers, Lock, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 
 export const StakingView: React.FC = () => {
@@ -141,7 +142,7 @@ export const StakingView: React.FC = () => {
             </span>
             <h3 className="text-2xl font-black text-slate-100 font-mono">
               {totalStakedAURA.toFixed(2)}{' '}
-              <span className="text-xs font-bold text-purple-400">AURA</span>
+              <span className="text-xs font-bold text-purple-400">{BRAND.tokenSymbol}</span>
             </h3>
             <p className="text-xs text-slate-500 font-mono">${totalStakedUSD.toFixed(2)} USDT</p>
           </div>

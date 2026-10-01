@@ -22,6 +22,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowRightLeft,
@@ -36,8 +37,8 @@ import {
 export const DirectConvert: React.FC = () => {
   const { wallets, refreshUserData, emptyStateMode } = useAuth();
 
-  const [fromCurrency, setFromCurrency] = useState<'USDT' | 'AURA'>('USDT');
-  const [toCurrency, setToCurrency] = useState<'USDT' | 'AURA'>('AURA');
+  const [fromCurrency, setFromCurrency] = useState<string>('USDT');
+  const [toCurrency, setToCurrency] = useState<string>(BRAND.tokenSymbol);
   const [amount, setAmount] = useState<number>(1);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isConverting, setIsConverting] = useState<boolean>(false);

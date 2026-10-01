@@ -20,6 +20,7 @@
 import React from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/common/Toast';
+import { LandingPage } from './pages/landing/LandingPage';
 import { ConnectSignUp } from './pages/auth/ConnectSignUp';
 import { CreatePasscode } from './pages/auth/CreatePasscode';
 import { EnterPasscode } from './pages/auth/EnterPasscode';
@@ -41,6 +42,8 @@ const AppContent: React.FC = () => {
   }
 
   switch (authStage) {
+    case 'LANDING':
+      return <LandingPage />;
     case 'UNAUTHENTICATED':
       return <ConnectSignUp />;
     case 'SETUP_PASSCODE':

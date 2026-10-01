@@ -21,6 +21,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { EmptyState } from '../../components/common/EmptyState';
+import { BRAND } from '../../config/brand';
 import {
   CheckCircle2,
   Copy,
@@ -38,14 +39,14 @@ export const CommunityOverview: React.FC = () => {
   const { user, setActiveRoute, emptyStateMode } = useAuth();
   const [copied, setCopied] = useState<boolean>(false);
 
-  const referralUrl = `https://auramoney.com/?r=${user?.referId || 'HX001'}`;
+  const referralUrl = `https://${BRAND.domain}/?r=${user?.referId || BRAND.defaultReferId}`;
   const totalReferred = emptyStateMode ? 0 : 4;
 
   const sampleUsers = [
-    { id: 'HX99281', name: 'Elena Rostova', date: '2026-09-20', deposit: 1200.0, status: 'ACTIVE' },
-    { id: 'HX88102', name: 'Marcus Chen', date: '2026-09-15', deposit: 500.0, status: 'ACTIVE' },
-    { id: 'HX77194', name: 'Sarah Jenkins', date: '2026-09-10', deposit: 400.0, status: 'ACTIVE' },
-    { id: 'HX66120', name: 'David Kim', date: '2026-09-02', deposit: 300.0, status: 'ACTIVE' },
+    { id: `${BRAND.name.slice(0, 2).toUpperCase()}99281`, name: 'Elena Rostova', date: '2026-09-20', deposit: 1200.0, status: 'ACTIVE' },
+    { id: `${BRAND.name.slice(0, 2).toUpperCase()}88102`, name: 'Marcus Chen', date: '2026-09-15', deposit: 500.0, status: 'ACTIVE' },
+    { id: `${BRAND.name.slice(0, 2).toUpperCase()}77194`, name: 'Sarah Jenkins', date: '2026-09-10', deposit: 400.0, status: 'ACTIVE' },
+    { id: `${BRAND.name.slice(0, 2).toUpperCase()}66120`, name: 'David Kim', date: '2026-09-02', deposit: 300.0, status: 'ACTIVE' },
   ];
 
   const copyLink = () => {

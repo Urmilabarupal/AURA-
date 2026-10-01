@@ -22,6 +22,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { StakingPlan } from '../../types';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   Calendar,
@@ -73,7 +74,7 @@ export const StakingPlanView: React.FC = () => {
     if (available < stakeAmount) {
       setFeedback({
         type: 'error',
-        msg: `Insufficient AURA in Main Wallet. Available: ${available.toFixed(4)} AURA`,
+        msg: `Insufficient ${BRAND.tokenSymbol} in Main Wallet. Available: ${available.toFixed(4)} ${BRAND.tokenSymbol}`,
       });
       return;
     }
@@ -81,7 +82,7 @@ export const StakingPlanView: React.FC = () => {
     if (stakeAmount < selectedPlan.minAmount) {
       setFeedback({
         type: 'error',
-        msg: `Minimum stake for this plan is ${selectedPlan.minAmount} AURA.`,
+        msg: `Minimum stake for this plan is ${selectedPlan.minAmount} ${BRAND.tokenSymbol}.`,
       });
       return;
     }
@@ -96,7 +97,7 @@ export const StakingPlanView: React.FC = () => {
       if (res.success) {
         setFeedback({
           type: 'success',
-          msg: `Successfully locked ${stakeAmount} AURA in ${selectedPlan.name}!`,
+          msg: `Successfully locked ${stakeAmount} ${BRAND.tokenSymbol} in ${selectedPlan.name}!`,
         });
         await refreshUserData();
         setTimeout(() => {
@@ -223,13 +224,13 @@ export const StakingPlanView: React.FC = () => {
               <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between text-xs">
                 <span className="text-slate-400">Available in Main Wallet:</span>
                 <span className="font-mono font-bold text-slate-100">
-                  {wallets?.mainBalanceNative.toFixed(4) || '0.0000'} AURA
+                  {wallets?.mainBalanceNative.toFixed(4) || '0.0000'} {BRAND.tokenSymbol}
                 </span>
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] text-slate-300">
-                  <span>Stake Amount (AURA)</span>
+                  <span>Stake Amount ({BRAND.tokenSymbol})</span>
                   <button
                     type="button"
                     onClick={() => setStakeAmount(wallets?.mainBalanceNative || 0)}
@@ -252,12 +253,12 @@ export const StakingPlanView: React.FC = () => {
               <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1.5 text-xs font-mono">
                 <div className="flex justify-between text-slate-400">
                   <span>Estimated Daily Yield:</span>
-                  <span className="font-bold text-emerald-400">+{dailyReturnEst} AURA/day</span>
+                  <span className="font-bold text-emerald-400">+{dailyReturnEst} {BRAND.tokenSymbol}/day</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>Total Lock Period Yield:</span>
                   <span className="font-bold text-slate-100">
-                    +{(dailyReturnEst * selectedPlan.durationDays).toFixed(2)} AURA
+                    +{(dailyReturnEst * selectedPlan.durationDays).toFixed(2)} {BRAND.tokenSymbol}
                   </span>
                 </div>
               </div>

@@ -27,6 +27,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -117,8 +118,8 @@ export const TransactionsView: React.FC = () => {
                 <option value="TRADE_SELL">Spot Sell</option>
                 <option value="TICKET_PURCHASE">Lottery Ticket</option>
                 <option value="REDEEM">Redeem Payout</option>
-                <option value="CONVERT_XAH">AURA Convert</option>
-                <option value="CONVERT_HXC">HXC Convert</option>
+                <option value="CONVERT_XAH">{BRAND.tokenSymbol} Swap</option>
+                <option value="CONVERT_HXC">{BRAND.name} Convert</option>
               </select>
               <ChevronDown
                 size={14}

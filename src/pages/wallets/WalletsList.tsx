@@ -21,6 +21,7 @@
 
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { BRAND } from '../../config/brand';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
 export const WalletsList: React.FC = () => {
@@ -32,8 +33,8 @@ export const WalletsList: React.FC = () => {
   const assets = [
     {
       id: 'xah',
-      symbol: 'XAH',
-      name: 'XAH Chain',
+      symbol: BRAND.tokenSymbol,
+      name: BRAND.chainName,
       balance: '0.00',
       usdValue: '$0.00',
       icon: (
@@ -207,7 +208,7 @@ export const WalletsList: React.FC = () => {
           {/* Subtitle & Bottom-Right HX folded ribbon logo */}
           <div className="flex items-end justify-between pt-4">
             <span className="text-xs text-[#8e98af] font-medium">
-              Total XAH Chain Value
+              Total {BRAND.chainName} Value
             </span>
 
             {/* Folded ribbon logo matching Screenshot */}

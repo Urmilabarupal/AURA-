@@ -21,6 +21,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowDown,
@@ -119,8 +120,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
   // 3. Convert & Swap
   const convertNavItems = [
     { id: 'convert', label: 'Direct Convert', icon: Repeat },
-    { id: 'hxc-convert', label: 'HXC Convert', icon: Briefcase },
-    { id: 'xah-convert', label: 'XAH Convert', icon: Repeat },
+    { id: 'hxc-convert', label: `${BRAND.name} Convert`, icon: Briefcase },
+    { id: 'xah-convert', label: `${BRAND.tokenSymbol} Swap`, icon: Repeat },
     { id: 'redeem', label: 'Redeem Voucher', icon: Gift },
   ];
 
@@ -254,13 +255,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                 </svg>
               </div>
 
-              {/* XAH MONEY Text matching Screenshot 1 */}
+              {/* Dynamic Brand Text */}
               <div className="leading-tight">
-                <div className="text-sm font-extrabold tracking-[0.25em] text-white">
-                  XAH
+                <div className="text-sm font-extrabold tracking-[0.2em] text-white">
+                  {BRAND.name.split(' ')[0] || BRAND.name}
                 </div>
-                <div className="text-[11px] font-extrabold tracking-[0.25em] text-slate-300">
-                  MONEY
+                <div className="text-[11px] font-extrabold tracking-[0.2em] text-slate-300">
+                  {BRAND.name.split(' ').slice(1).join(' ') || ''}
                 </div>
               </div>
             </div>
@@ -351,7 +352,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-white truncate font-mono">
-                {user?.id || 'HX633547863'}
+                {user?.id || BRAND.defaultUserId}
               </p>
             </div>
           </div>

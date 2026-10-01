@@ -7,32 +7,51 @@
 
 @layer base {
   :root {
-    --bg-dark: #0b0d14;
-    --card-dark: #141724;
-    --card-border: #1e2438;
+    --bg-dark: #080a10;
+    --card-dark: #101422;
+    --card-border: #1e2538;
     --accent-gradient: linear-gradient(135deg, #ff3864 0%, #9d4edd 50%, #3a86ff 100%);
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   *, *::before, *::after {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   html, body, #root {
-    background-color: #0b0d14;
+    background-color: #080a10;
     color: #f1f5f9;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4, h5, h6, button, input, select, textarea, label {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  h1, h2, h3, h4, h5, h6, button, input, select, textarea, p, span, a, label {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
   }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 32s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Custom scrollbars */

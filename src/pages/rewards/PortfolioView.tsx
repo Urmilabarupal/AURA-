@@ -23,6 +23,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
+import { BRAND } from '../../config/brand';
 import { ArrowLeft, ArrowUpRight, DollarSign, PieChart, Sparkles, TrendingUp, Zap } from 'lucide-react';
 
 export const PortfolioView: React.FC = () => {
@@ -74,7 +75,7 @@ export const PortfolioView: React.FC = () => {
               </div>
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-100">AURA Share</h3>
+              <h3 className="text-base font-bold text-slate-100">{BRAND.name} Share</h3>
               <p className="text-xs text-purple-400 font-medium">Equity · Technology · Direct growth</p>
             </div>
           </div>

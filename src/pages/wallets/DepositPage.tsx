@@ -10,6 +10,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowDown,
@@ -32,8 +33,8 @@ interface CryptoAsset {
 }
 
 const SUPPORTED_ASSETS: CryptoAsset[] = [
-  { symbol: 'USDT', name: 'Tether USD', networks: ['XAH Chain', 'TRC-20', 'BEP-20', 'ERC-20'], minDeposit: '10 USDT', confirmations: 12 },
-  { symbol: 'XAH', name: 'XAH Chain Native', networks: ['XAH Mainnet'], minDeposit: '1 XAH', confirmations: 6 },
+  { symbol: 'USDT', name: 'Tether USD', networks: [BRAND.chainName, 'TRC-20', 'BEP-20', 'ERC-20'], minDeposit: '10 USDT', confirmations: 12 },
+  { symbol: BRAND.tokenSymbol, name: `${BRAND.chainName} Native`, networks: [BRAND.chainNetwork], minDeposit: `1 ${BRAND.tokenSymbol}`, confirmations: 6 },
   { symbol: 'ETH', name: 'Ethereum', networks: ['ERC-20', 'Arbitrum'], minDeposit: '0.005 ETH', confirmations: 12 },
   { symbol: 'BUSD', name: 'Binance USD', networks: ['BEP-20'], minDeposit: '10 BUSD', confirmations: 15 },
   { symbol: 'TRX', name: 'TRON Native', networks: ['TRC-20'], minDeposit: '20 TRX', confirmations: 19 },

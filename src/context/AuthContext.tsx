@@ -28,7 +28,7 @@ import { ApiService } from '../services/api';
 import { web3Wallet } from '../services/web3Wallet';
 import { UserProfile, UserWallets } from '../types';
 
-export type AuthStage = 'UNAUTHENTICATED' | 'SETUP_PASSCODE' | 'LOCKED' | 'AUTHENTICATED';
+export type AuthStage = 'LANDING' | 'UNAUTHENTICATED' | 'SETUP_PASSCODE' | 'LOCKED' | 'AUTHENTICATED';
 
 interface AuthContextType {
   authStage: AuthStage;
@@ -58,8 +58,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Start at UNAUTHENTICATED so Wallet Connect is the initial view, matching Step 1-2 of Prompt Rule 8
-  const [authStage, setAuthStage] = useState<AuthStage>('UNAUTHENTICATED');
+  // Start at LANDING so prospective users can explore ecosystem features and data
+  const [authStage, setAuthStage] = useState<AuthStage>('LANDING');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [wallets, setWallets] = useState<UserWallets | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -209,7 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    setAuthStage('UNAUTHENTICATED');
+    setAuthStage('LANDING');
     setActiveRoute('home');
   };
 

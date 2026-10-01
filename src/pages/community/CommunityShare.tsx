@@ -17,6 +17,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { BRAND } from '../../config/brand';
 import { Check, Copy, Globe, Mail, MessageCircle, QrCode, Send, Share2, Users } from 'lucide-react';
 
 export const CommunityShare: React.FC = () => {
@@ -24,8 +25,8 @@ export const CommunityShare: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
 
-  const referId = user?.referId || 'HX001';
-  const referralUrl = `https://auramoney.com/?r=${referId}`;
+  const referId = user?.referId || BRAND.defaultReferId;
+  const referralUrl = `https://${BRAND.domain}/?r=${referId}`;
 
   const copyUrl = () => {
     navigator.clipboard.writeText(referralUrl);

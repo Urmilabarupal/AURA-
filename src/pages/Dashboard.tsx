@@ -48,6 +48,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { CryptoPerformanceMiniCharts } from '../components/dashboard/CryptoPerformanceMiniCharts';
+import { BRAND } from '../config/brand';
 import {
   AlertTriangle,
   ArrowDown,
@@ -89,11 +90,11 @@ export const Dashboard: React.FC = () => {
   const [showLuckySpin, setShowLuckySpin] = useState<boolean>(true);
 
   // Authoritative user variables matching screenshots
-  const userId = user?.id || 'HX633547863';
-  const referBy = user?.referBy || 'HX001';
+  const userId = user?.id || BRAND.defaultUserId;
+  const referBy = user?.referBy || BRAND.defaultReferId;
   const address = user?.walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
   const shortAddress = `${address.slice(0, 5)}....${address.slice(-5)}`;
-  const referralLink = `https://xahmoney.com/?r=${user?.referId || 'HX001'}`;
+  const referralLink = `https://${BRAND.domain}/?r=${user?.referId || BRAND.defaultReferId}`;
 
   const copyRefLink = () => {
     copyToClipboard(referralLink, 'Referral link copied to clipboard!');
@@ -107,8 +108,8 @@ export const Dashboard: React.FC = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join XAH Money',
-          text: 'Trade, Stake, and Earn on XAH Money decentralized ecosystem.',
+          title: `Join ${BRAND.name}`,
+          text: `Trade, Stake, and Earn on ${BRAND.name} decentralized ecosystem.`,
           url: referralLink,
         });
       } catch (err) {
@@ -160,7 +161,7 @@ export const Dashboard: React.FC = () => {
             <span className="text-xs font-semibold text-[#00e699]">0.00%</span>
           </div>
           <div className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5 font-mono">
-            0.00 <span className="text-base text-slate-300 font-sans font-normal">XAH</span>
+            0.00 <span className="text-base text-slate-300 font-sans font-normal">{BRAND.tokenSymbol}</span>
           </div>
         </div>
 
@@ -223,7 +224,7 @@ export const Dashboard: React.FC = () => {
           <span className="text-[11px] text-slate-300 font-medium">Trade</span>
         </button>
 
-        {/* HXC Convert */}
+        {/* Convert Action */}
         <button
           onClick={() => setActiveRoute('hxc-convert')}
           className="p-3 rounded-2xl bg-[#161924] border border-[#202538] flex flex-col items-center justify-center gap-1.5 hover:bg-[#1a1e2d] transition-colors cursor-pointer"
@@ -231,7 +232,7 @@ export const Dashboard: React.FC = () => {
           <div className="w-10 h-10 rounded-xl bg-[#10131e] flex items-center justify-center text-slate-200">
             <Briefcase size={18} />
           </div>
-          <span className="text-[11px] text-slate-300 font-medium truncate max-w-full">HXC Convert</span>
+          <span className="text-[11px] text-slate-300 font-medium truncate max-w-full">{BRAND.name} Convert</span>
         </button>
       </div>
 
@@ -307,11 +308,11 @@ export const Dashboard: React.FC = () => {
 
             {/* Legend Items matching Screenshot 1 */}
             <div className="md:col-span-6 space-y-3.5 pl-0 md:pl-2">
-              {/* HXC Convert Income */}
+              {/* Convert Income */}
               <div className="flex items-start gap-2.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#ff6b6b] mt-1 shrink-0" />
                 <div className="text-xs">
-                  <p className="font-bold text-slate-200">HXC CONVERT INCOME</p>
+                  <p className="font-bold text-slate-200">{BRAND.name.toUpperCase()} CONVERT INCOME</p>
                   <p className="text-[#8e98af] font-mono text-[11px]">00.00% (0.0K)</p>
                 </div>
               </div>
@@ -448,7 +449,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-[#8e98af]">Balance</span>
               <span className="text-white font-semibold">
-                {wallets?.spotBalanceNative.toFixed(4) || '0.0000'} XAH
+                {wallets?.spotBalanceNative.toFixed(4) || '0.0000'} {BRAND.tokenSymbol}
               </span>
             </div>
           </div>
@@ -480,7 +481,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-[#8e98af]">Balance</span>
               <span className="text-white font-semibold">
-                {wallets?.mainBalanceNative.toFixed(4) || '0.0000'} XAH
+                {wallets?.mainBalanceNative.toFixed(4) || '0.0000'} {BRAND.tokenSymbol}
               </span>
             </div>
           </div>
@@ -512,7 +513,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-[#8e98af]">Balance</span>
               <span className="text-white font-semibold">
-                {wallets?.fundingBalanceNative.toFixed(4) || '0.0000'} XAH
+                {wallets?.fundingBalanceNative.toFixed(4) || '0.0000'} {BRAND.tokenSymbol}
               </span>
             </div>
           </div>
@@ -549,7 +550,7 @@ export const Dashboard: React.FC = () => {
                 <div className="rounded-xl bg-[#0e111a] border border-[#1b2030] p-3 text-center">
                   <span className="text-sm font-bold text-white font-mono">0.00 USDT</span>
                 </div>
-                <p className="text-[11px] text-[#8e98af] font-mono">0.00 XAH</p>
+                <p className="text-[11px] text-[#8e98af] font-mono">0.00 {BRAND.tokenSymbol}</p>
               </div>
 
               {/* Total Deposit */}
@@ -563,7 +564,7 @@ export const Dashboard: React.FC = () => {
                 <div className="rounded-xl bg-[#0e111a] border border-[#1b2030] p-3 text-center">
                   <span className="text-sm font-bold text-white font-mono">0.00 USDT</span>
                 </div>
-                <p className="text-[11px] text-[#8e98af] font-mono">0.00 XAH</p>
+                <p className="text-[11px] text-[#8e98af] font-mono">0.00 {BRAND.tokenSymbol}</p>
               </div>
             </div>
 
@@ -578,7 +579,7 @@ export const Dashboard: React.FC = () => {
               <div className="rounded-xl bg-[#0e111a] border border-[#1b2030] p-3 text-center">
                 <span className="text-sm font-bold text-white font-mono">0.00 USDT</span>
               </div>
-              <p className="text-[11px] text-[#8e98af] font-mono">0.00 XAH</p>
+              <p className="text-[11px] text-[#8e98af] font-mono">0.00 {BRAND.tokenSymbol}</p>
             </div>
           </div>
 
@@ -669,7 +670,7 @@ export const Dashboard: React.FC = () => {
                   <div className="text-base sm:text-lg font-bold text-white font-mono leading-tight">
                     0.00
                   </div>
-                  <div className="text-[11px] text-[#8e98af] font-mono">XAH</div>
+                  <div className="text-[11px] text-[#8e98af] font-mono">{BRAND.tokenSymbol}</div>
                 </div>
 
                 <div className="text-right">
@@ -743,7 +744,7 @@ export const Dashboard: React.FC = () => {
 
                 <div className="space-y-0.5 pt-1">
                   <div className="text-lg sm:text-xl font-bold text-white font-mono">
-                    0.00 XAH
+                    0.00 {BRAND.tokenSymbol}
                   </div>
                   <p className="text-[11px] text-[#8e98af]">Current Balance</p>
                 </div>
@@ -760,7 +761,7 @@ export const Dashboard: React.FC = () => {
 
                 <div className="space-y-0.5 pt-1">
                   <div className="text-lg sm:text-xl font-bold text-white font-mono">
-                    0.00 XAH
+                    0.00 {BRAND.tokenSymbol}
                   </div>
                   <p className="text-[11px] text-[#8e98af]">Current Balance</p>
                 </div>
@@ -1025,7 +1026,7 @@ export const Dashboard: React.FC = () => {
 
       {/* WhatsApp Green Floating Chat Button */}
       <button
-        onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('Hello XAH Support')}`, '_blank')}
+        onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(BRAND.supportText)}`, '_blank')}
         className="fixed bottom-7 right-4 z-40 w-13 h-13 rounded-full bg-[#25d366] text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
         aria-label="WhatsApp Support"
       >

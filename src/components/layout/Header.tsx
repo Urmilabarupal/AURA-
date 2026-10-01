@@ -11,6 +11,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../common/Toast';
+import { BRAND } from '../../config/brand';
 import {
   Bell,
   Copy,
@@ -88,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
             </div>
 
             <span className="font-extrabold text-sm tracking-wider text-white">
-              XAH CHAIN
+              {BRAND.chainName.toUpperCase()}
             </span>
           </div>
 
@@ -129,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-xs">
             <span className="text-[#8e98af] hover:text-white transition-colors cursor-pointer" onClick={() => setActiveRoute('home')}>
-              XAH Platform
+              {BRAND.name} Platform
             </span>
             <span className="text-slate-600">/</span>
             <span className="font-semibold text-white tracking-wide">
@@ -143,7 +144,7 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            <span className="font-mono">XAH Mainnet</span>
+            <span className="font-mono">{BRAND.chainNetwork}</span>
           </div>
         </div>
 
@@ -192,7 +193,7 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
               <span>👦</span>
             </div>
             <span className="text-xs font-medium text-slate-200 font-mono">
-              {user?.id ? user.id.replace(/\D/g, '').slice(0, 6) : 'HX001'}
+              {user?.id ? user.id.replace(/\D/g, '').slice(0, 6) : BRAND.defaultReferId}
             </span>
           </button>
 
