@@ -7,10 +7,26 @@
 
 @layer base {
   :root {
-    --bg-dark: #080a10;
-    --card-dark: #101422;
-    --card-border: #1e2538;
-    --accent-gradient: linear-gradient(135deg, #ff3864 0%, #9d4edd 50%, #3a86ff 100%);
+    --app-bg: #031b12;
+    --app-surface: #071f17;
+    --app-card: #06120d;
+    --app-border: rgba(93, 255, 156, 0.2);
+    --app-text: #f3fff7;
+    --app-muted: #9cc6ac;
+    --app-accent: #31e66b;
+    --app-accent-strong: #0bbf4b;
+    --accent-gradient: linear-gradient(135deg, #0bbf4b 0%, #31e66b 52%, #08a88a 100%);
+  }
+
+  :root.theme-light {
+    --app-bg: #eef8f1;
+    --app-surface: #ffffff;
+    --app-card: #f7fcf8;
+    --app-border: rgba(6, 105, 55, 0.16);
+    --app-text: #092518;
+    --app-muted: #557466;
+    --app-accent: #079447;
+    --app-accent-strong: #05743a;
   }
 
   html {
@@ -22,8 +38,8 @@
   }
 
   html, body, #root {
-    background-color: #080a10;
-    color: #f1f5f9;
+    background-color: var(--app-bg);
+    color: var(--app-text);
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -74,8 +90,8 @@
 }
 
 /* Luxury Glass Panel & Card styling */
-.glass-panel {
-  background: rgba(20, 23, 36, 0.85);
+  .glass-panel {
+  background: color-mix(in srgb, var(--app-surface) 88%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -117,6 +133,34 @@
   50% { opacity: 0.8; transform: scale(1.03); }
 }
 
-.animate-pulse-subtle {
+  .animate-pulse-subtle {
   animation: pulseSubtle 3s infinite ease-in-out;
+}
+
+/* The existing screens use a shared utility palette; remap it in light mode
+   so every route follows the same emerald/teal visual system. */
+.theme-light [class*="bg-[#0f1118]"],
+.theme-light [class*="bg-[#080a10]"],
+.theme-light [class*="bg-[#141722]"] { background-color: var(--app-bg) !important; }
+.theme-light [class*="bg-[#161924]"],
+.theme-light [class*="bg-[#131728]"],
+.theme-light [class*="bg-[#12141f]"],
+.theme-light [class*="bg-[#171a27]"] { background-color: var(--app-surface) !important; }
+.theme-light [class*="bg-[#10131e]"],
+.theme-light [class*="bg-[#0c0f18]"],
+.theme-light [class*="bg-[#0f121d]"] { background-color: var(--app-card) !important; }
+.theme-light [class*="border-[#202538]"],
+.theme-light [class*="border-[#202740]"],
+.theme-light [class*="border-[#1f2538]"],
+.theme-light [class*="border-[#242b40]"] { border-color: var(--app-border) !important; }
+.theme-light .text-white { color: var(--app-text) !important; }
+.theme-light .text-slate-100,
+.theme-light .text-slate-200,
+.theme-light .text-slate-300 { color: var(--app-text) !important; }
+.theme-light .text-slate-400,
+.theme-light .text-slate-500 { color: var(--app-muted) !important; }
+
+.app-shell {
+  background: radial-gradient(circle at 15% 0%, rgba(49, 230, 107, 0.16), transparent 32%),
+    radial-gradient(circle at 90% 10%, rgba(8, 168, 138, 0.14), transparent 30%), var(--app-bg);
 }

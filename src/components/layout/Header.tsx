@@ -8,7 +8,7 @@
    connected wallet snippet, lock screen shortcut, and user avatar.
 */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../common/Toast';
 import { BRAND } from '../../config/brand';
@@ -31,6 +31,11 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const { user, walletAddress, activeRoute, setActiveRoute, lockApp } = useAuth();
   const { copyToClipboard } = useToast();
+  const [isLight, setIsLight] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-light', isLight);
+  }, [isLight]);
 
   const shortAddress = walletAddress
     ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
@@ -95,6 +100,16 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
 
           {/* Right: Quick Icons */}
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsLight((value) => !value)}
+              className="text-slate-400 hover:text-[#31e66b] p-1.5 rounded-lg hover:bg-[#1a2034] transition-colors cursor-pointer"
+              title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+              aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+            >
+              <Moon size={16} />
+            </button>
+
             <button
               type="button"
               onClick={lockApp}
