@@ -121,7 +121,7 @@ export const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-24 select-none font-sans text-slate-100">
+    <div className="dashboard-shell space-y-6 pb-24 select-none font-sans text-[var(--app-text)]">
       
       {/* ========================================================= */}
       {/* 1. TOP IDENTITY & PORTFOLIO BAR (Screenshots 1 & 3) */}

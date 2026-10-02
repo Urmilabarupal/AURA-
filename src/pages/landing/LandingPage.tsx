@@ -274,7 +274,7 @@ export const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#f1f5f9] font-['Poppins'] antialiased selection:bg-purple-600 selection:text-white relative overflow-x-hidden">
+    <div className="landing-shell min-h-screen text-[var(--app-text)] font-['Poppins'] antialiased selection:bg-[#31e66b] selection:text-[#031b12] relative overflow-x-hidden">
       
       {/* ========================================================= */}
       {/* SCROLL EFFECT 1: NEON TOP SCROLL PROGRESS BAR */}

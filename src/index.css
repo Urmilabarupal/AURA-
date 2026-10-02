@@ -18,6 +18,20 @@
     --accent-gradient: linear-gradient(135deg, #0bbf4b 0%, #31e66b 52%, #08a88a 100%);
   }
 
+  @media (prefers-color-scheme: light) {
+    :root:not(.theme-dark) {
+      --app-bg: #eef8f1;
+      --app-surface: #ffffff;
+      --app-card: #f7fcf8;
+      --app-border: rgba(6, 105, 55, 0.16);
+      --app-text: #092518;
+      --app-muted: #557466;
+      --app-accent: #079447;
+      --app-accent-strong: #05743a;
+      --accent-gradient: linear-gradient(135deg, #05743a 0%, #079447 52%, #087f70 100%);
+    }
+  }
+
   :root.theme-light {
     --app-bg: #eef8f1;
     --app-surface: #ffffff;
@@ -104,8 +118,8 @@
 
 .card-glow-hover:hover {
   transform: translateY(-2px);
-  border-color: rgba(157, 78, 221, 0.35);
-  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5), 0 0 20px -4px rgba(157, 78, 221, 0.15);
+  border-color: rgba(49, 230, 107, 0.45);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5), 0 0 20px -4px rgba(49, 230, 107, 0.18);
 }
 
 /* Custom micro-animations */
@@ -160,7 +174,61 @@
 .theme-light .text-slate-400,
 .theme-light .text-slate-500 { color: var(--app-muted) !important; }
 
-.app-shell {
+.app-shell,
+.landing-shell,
+.dashboard-shell {
   background: radial-gradient(circle at 15% 0%, rgba(49, 230, 107, 0.16), transparent 32%),
     radial-gradient(circle at 90% 10%, rgba(8, 168, 138, 0.14), transparent 30%), var(--app-bg);
+}
+
+/* Route-level remapping for legacy hardcoded utility colors. */
+.landing-shell [class*="bg-[#07090e]"],
+.landing-shell [class*="bg-[#080b12]"],
+.landing-shell [class*="bg-[#0f1320]"],
+.landing-shell [class*="bg-[#0e121d]"],
+.dashboard-shell [class*="bg-[#161924]"],
+.dashboard-shell [class*="bg-[#141724]"],
+.dashboard-shell [class*="bg-[#0e111a]"] { background-color: var(--app-surface) !important; }
+
+.landing-shell [class*="bg-[#070910]"],
+.landing-shell [class*="bg-[#0c0f18]"],
+.dashboard-shell [class*="bg-[#10131e]"],
+.dashboard-shell [class*="bg-[#111420]"],
+.dashboard-shell [class*="bg-[#0f121d]"] { background-color: var(--app-card) !important; }
+
+.landing-shell [class*="border-[#"],
+.dashboard-shell [class*="border-[#"] { border-color: var(--app-border) !important; }
+
+.landing-shell .text-slate-300,
+.landing-shell .text-slate-400,
+.dashboard-shell .text-slate-300,
+.dashboard-shell .text-slate-400,
+.dashboard-shell [class*="text-[#8e98af]"] { color: var(--app-muted) !important; }
+
+.landing-shell [class*="from-[#ff3864]"],
+.landing-shell [class*="from-[#ff2a6d]"],
+.dashboard-shell [class*="from-[#ff5376]"] {
+  --tw-gradient-from: var(--app-accent-strong) var(--tw-gradient-from-position);
+  --tw-gradient-to: color-mix(in srgb, var(--app-accent) 20%, transparent) var(--tw-gradient-to-position);
+}
+
+.landing-shell [class*="via-[#9d4edd]"],
+.landing-shell [class*="via-[#c084fc]"],
+.dashboard-shell [class*="via-[#7d50ff]"] { --tw-gradient-via: var(--app-accent); }
+
+.landing-shell [class*="to-[#3a86ff]"],
+.landing-shell [class*="to-[#00f0ff]"],
+.dashboard-shell [class*="to-[#6d57ff]"],
+.dashboard-shell [class*="to-[#4568ff]"] { --tw-gradient-to: var(--app-accent) var(--tw-gradient-to-position); }
+
+.theme-light .landing-shell,
+.theme-light .dashboard-shell { color: var(--app-text); }
+.theme-light .landing-shell .text-white,
+.theme-light .dashboard-shell .text-white { color: var(--app-text) !important; }
+
+@media (prefers-color-scheme: light) {
+  .landing-shell .text-white,
+  .dashboard-shell .text-white,
+  .landing-shell .text-slate-100,
+  .dashboard-shell .text-slate-100 { color: var(--app-text) !important; }
 }
