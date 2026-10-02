@@ -281,7 +281,7 @@ export const LandingPage: React.FC = () => {
       {/* ========================================================= */}
       <div className="fixed top-0 left-0 right-0 h-[3.5px] z-[60] bg-transparent pointer-events-none">
         <div
-          className="h-full bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#00f0ff] shadow-[0_0_12px_rgba(255,56,100,0.9)] transition-all duration-75"
+          className="h-full bg-gradient-to-r from-[#31e66b] via-[#0bbf4b] to-[#31e66b] shadow-[0_0_12px_rgba(49,230,107,0.9)] transition-all duration-75"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
@@ -312,9 +312,9 @@ export const LandingPage: React.FC = () => {
               <svg className="w-9 h-8 drop-shadow-[0_0_14px_rgba(255,56,100,0.7)]" viewBox="0 0 64 54" fill="none">
                 <defs>
                   <linearGradient id="poppinsNavRibbon" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#ff2a6d" />
-                    <stop offset="50%" stopColor="#9d4edd" />
-                    <stop offset="100%" stopColor="#00f0ff" />
+                    <stop offset="0%" stopColor="#0bbf4b" />
+                    <stop offset="50%" stopColor="#31e66b" />
+                    <stop offset="100%" stopColor="#08a88a" />
                   </linearGradient>
                 </defs>
                 <path
@@ -456,8 +456,8 @@ export const LandingPage: React.FC = () => {
 
             <div className="space-y-3">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.08]">
-                Institutional Wealth & Staking on{' '}
-                <span className="bg-gradient-to-r from-[#ff3864] via-[#c084fc] to-[#38bdf8] bg-clip-text text-transparent drop-shadow-sm">
+                Build confidence with every single trade{' '}
+                <span className="bg-gradient-to-r from-[#31e66b] via-[#0bbf4b] to-[#31e66b] bg-clip-text text-transparent drop-shadow-sm">
                   {BRAND.chainName}
                 </span>
               </h1>
@@ -473,7 +473,7 @@ export const LandingPage: React.FC = () => {
                 className="py-3.5 px-7 rounded-2xl bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff] hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xl shadow-purple-950/60 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
               >
                 <Zap size={16} className="fill-current text-yellow-300" />
-                <span>Launch App & Connect Wallet</span>
+                <span>Start trading</span>
                 <ArrowRight size={15} />
               </button>
 
@@ -513,7 +513,7 @@ export const LandingPage: React.FC = () => {
               <img
                 src={heroVaultImg}
                 alt={`${BRAND.name} Crypto Asset Vault 3D`}
-                className="w-full h-48 sm:h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#090c14] via-[#090c14]/40 to-transparent flex items-end p-4 justify-between">
                 <div>

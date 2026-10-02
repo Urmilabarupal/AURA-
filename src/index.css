@@ -231,3 +231,32 @@
   .landing-shell .text-slate-100,
   .dashboard-shell .text-slate-100 { color: var(--app-text) !important; }
 }
+
+/* Olymptrade-inspired landing treatment: black canvas, restrained chrome,
+   high-contrast type, and green reserved for actions and active states. */
+.landing-shell { background: #000; }
+.landing-shell header { background: rgba(0, 0, 0, 0.92) !important; border-color: rgba(255,255,255,0.08) !important; }
+.landing-shell section#hero { min-height: min(760px, calc(100vh - 72px)); border-color: rgba(255,255,255,0.08); }
+.landing-shell section#hero h1 { letter-spacing: -0.04em; }
+.landing-shell section#hero button:first-child,
+.landing-shell header button:last-child { background: #31e66b !important; color: #041107 !important; box-shadow: 0 8px 24px rgba(49,230,107,.18) !important; }
+.landing-shell section#hero button:first-child:hover,
+.landing-shell header button:last-child:hover { background: #66f293 !important; }
+
+@media (max-width: 1023px) {
+  .landing-shell section#hero > div { display: flex; flex-direction: column; gap: 2rem; }
+  .landing-shell section#hero > div > div:first-child { order: 2; text-align: center; }
+  .landing-shell section#hero > div > div:first-child > div { margin-inline: auto; }
+  .landing-shell section#hero > div > div:last-child { order: 1; width: min(100%, 440px); margin-inline: auto; }
+  .landing-shell section#hero h1 { font-size: clamp(2.35rem, 10vw, 4rem); line-height: 1.02; }
+  .landing-shell section#hero p { margin-inline: auto; }
+  .landing-shell section#hero .grid { text-align: center; }
+  .landing-shell section#hero .grid > div { text-align: center; }
+}
+
+@media (max-width: 640px) {
+  .landing-shell section#hero { padding-top: 2rem; padding-bottom: 3rem; }
+  .landing-shell section#hero .grid.grid-cols-3 { display: none; }
+  .landing-shell section#hero > div > div:last-child > div:nth-child(2) { display: none; }
+  .landing-shell section#hero > div > div:last-child > div:first-child { border-radius: 1.75rem; }
+}
