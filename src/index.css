@@ -276,7 +276,52 @@
   .landing-shell section#hero .grid > div { text-align: center; }
 }
 
+/* Reference feature-grid geometry: near-black cards, thin gray outline, generous inset spacing. */
+.landing-shell section#features { padding-top: 5.5rem; padding-bottom: 5.5rem; }
+.landing-shell section#features > div:first-child { margin-bottom: 2.5rem; }
+.landing-shell section#features > div:nth-child(2) { gap: 1.25rem; }
+.landing-shell section#features > div:nth-child(2) > div {
+  border-radius: 2.75rem !important;
+  background: #151515 !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.22) !important;
+}
+.landing-shell section#features > div:nth-child(2) > div > div:first-child { padding: 2.75rem; }
+.landing-shell section#features > div:nth-child(2) h3 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1.5rem, 2.3vw, 2.05rem);
+  line-height: 1.05;
+  letter-spacing: -.045em;
+}
+.landing-shell section#features > div:nth-child(2) p { color: #9b9b9b !important; line-height: 1.14; }
+.landing-shell section#features > div:nth-child(2) button {
+  border-radius: .85rem !important;
+  background: #7dff32 !important;
+  background-image: none !important;
+  color: #071006 !important;
+  box-shadow: none !important;
+  padding: .8rem 1.35rem !important;
+}
+.landing-shell section#features > div:nth-child(2) > div > div:last-child {
+  border-top-color: rgba(255,255,255,.1) !important;
+}
+.landing-shell section#features > div:nth-child(3) { gap: 1.25rem; }
+.landing-shell section#features > div:nth-child(3) > div {
+  border-radius: 2.2rem !important;
+  background: #151515 !important;
+  border-color: rgba(255,255,255,.14) !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.2) !important;
+  padding: 2.25rem !important;
+}
+.landing-shell section#features > div:nth-child(3) > div > div:first-child {
+  border-radius: 1rem;
+  background: #202020 !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 640px) {
+  .landing-shell section#features > div:nth-child(2) > div > div:first-child { padding: 2rem; }
+  .landing-shell section#features > div:nth-child(3) > div { padding: 1.5rem !important; }
   .landing-shell section#hero { padding-top: 2rem; padding-bottom: 3rem; }
   .landing-shell section#hero .grid.grid-cols-3 { display: none; }
   .landing-shell section#hero > div > div:last-child > div:nth-child(2) { display: none; }
