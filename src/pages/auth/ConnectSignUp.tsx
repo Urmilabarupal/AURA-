@@ -298,7 +298,7 @@ export const ConnectSignUp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#141722] flex flex-col items-center justify-center p-4 py-10 relative">
+    <div className="wallet-shell min-h-screen w-full flex flex-col items-center justify-center p-4 py-10 relative">
       {/* Container */}
       <div className="w-full max-w-[460px] flex flex-col items-center space-y-6">
         
