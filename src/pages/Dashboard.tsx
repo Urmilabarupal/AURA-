@@ -170,7 +170,7 @@ export const Dashboard: React.FC = () => {
           {/* Withdraw Button (Coral to Purple Gradient) */}
           <button
             onClick={() => setActiveRoute('withdraw')}
-            className="flex-1 sm:flex-initial py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#ff5376] to-[#6d57ff] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-pink-950/30"
+            className="flex-1 sm:flex-initial py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#52d916] to-[#7dff32] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-pink-950/30"
           >
             <ArrowUp size={15} className="stroke-[2.5]" />
             <span>Withdraw</span>
@@ -179,7 +179,7 @@ export const Dashboard: React.FC = () => {
           {/* Deposit Button (Coral to Blue Gradient) */}
           <button
             onClick={() => setActiveRoute('deposit')}
-            className="flex-1 sm:flex-initial py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#ff5376] via-[#7d50ff] to-[#4568ff] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-purple-950/30"
+            className="flex-1 sm:flex-initial py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#52d916] via-[#7dff32] to-[#b7ff8b] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-purple-950/30"
           >
             <ArrowDown size={15} className="stroke-[2.5]" />
             <span>Deposit</span>
@@ -958,7 +958,7 @@ export const Dashboard: React.FC = () => {
           {/* User Profile Banner Card matching Screenshot 2 & 5 */}
           <div className="rounded-2xl bg-[#161924] border border-[#202538] overflow-hidden shadow-xl">
             {/* Top Gradient Banner Bar (Coral/Pink to Purple to Blue) */}
-            <div className="h-16 w-full bg-gradient-to-r from-[#ff5376] via-[#8c46f6] to-[#3a86ff] relative" />
+            <div className="h-16 w-full bg-gradient-to-r from-[#52d916] via-[#7dff32] to-[#b7ff8b] relative" />
 
             <div className="px-5 pb-5 pt-0 relative space-y-3">
               {/* Overlapping Avatar */}

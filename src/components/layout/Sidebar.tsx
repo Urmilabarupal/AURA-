@@ -197,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                   )}
                   <Icon
                     size={15}
-                    className={isActive ? 'text-[#3a86ff]' : 'text-[#8e98af]'}
+                    className={isActive ? 'text-[#7dff32]' : 'text-[#8e98af]'}
                   />
                   <span className="truncate">{item.label}</span>
                 </button>
@@ -234,9 +234,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                 <svg className="w-8 h-7" viewBox="0 0 64 54" fill="none">
                   <defs>
                     <linearGradient id="sideRibbonGradAll" x1="0%" y1="100%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#ff2a6d" />
-                      <stop offset="48%" stopColor="#9d4edd" />
-                      <stop offset="100%" stopColor="#38bdf8" />
+                      <stop offset="0%" stopColor="#52d916" />
+                      <stop offset="48%" stopColor="#7dff32" />
+                      <stop offset="100%" stopColor="#b7ff8b" />
                     </linearGradient>
                   </defs>
                   <path
@@ -305,7 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
 
                     <Icon
                       size={16}
-                      className={isActive ? 'text-[#3a86ff]' : 'text-[#8e98af]'}
+                      className={isActive ? 'text-[#7dff32]' : 'text-[#8e98af]'}
                     />
                     <span>{item.label}</span>
                   </button>

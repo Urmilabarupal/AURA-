@@ -323,9 +323,9 @@ export const ConnectSignUp: React.FC = () => {
             <svg className="w-9 h-9" viewBox="0 0 38 38" fill="none">
               <defs>
                 <linearGradient id="xahRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ff3864" />
-                  <stop offset="45%" stopColor="#9d4edd" />
-                  <stop offset="100%" stopColor="#3a86ff" />
+                  <stop offset="0%" stopColor="#52d916" />
+                  <stop offset="45%" stopColor="#7dff32" />
+                  <stop offset="100%" stopColor="#b7ff8b" />
                 </linearGradient>
               </defs>
               <path
@@ -346,7 +346,7 @@ export const ConnectSignUp: React.FC = () => {
 
           {/* Dynamic Brand Title */}
           <h1 className="text-[25px] font-black tracking-wider leading-none">
-            <span className="bg-gradient-to-r from-[#ff3864] via-[#9d4edd] to-[#3a86ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#52d916] via-[#7dff32] to-[#b7ff8b] bg-clip-text text-transparent">
               {BRAND.name}
             </span>
           </h1>
@@ -449,7 +449,7 @@ export const ConnectSignUp: React.FC = () => {
               type="button"
               onClick={handleConnectWallet}
               disabled={isConnectingMetaMask}
-              className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#ff477e] via-[#9d4edd] to-[#3a86ff] text-white font-semibold text-[15px] hover:opacity-95 active:scale-[0.99] transition-all shadow-md shadow-purple-950/40 cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#52d916] via-[#7dff32] to-[#b7ff8b] text-white font-semibold text-[15px] hover:opacity-95 active:scale-[0.99] transition-all shadow-md shadow-purple-950/40 cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {isConnectingMetaMask ? (
                 <>
@@ -614,7 +614,7 @@ export const ConnectSignUp: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#ff477e] via-[#9d4edd] to-[#3a86ff] text-white font-semibold text-[15px] hover:opacity-95 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md shadow-purple-950/40 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#52d916] via-[#7dff32] to-[#b7ff8b] text-white font-semibold text-[15px] hover:opacity-95 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md shadow-purple-950/40 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -693,7 +693,7 @@ export const ConnectSignUp: React.FC = () => {
                 onClick={() => {
                   window.location.href = web3Wallet.getMetaMaskDeepLink();
                 }}
-                className="w-full p-3.5 rounded-2xl bg-[#12141f] border border-[#272e44] hover:border-[#ff5376] flex items-center gap-3.5 transition-all cursor-pointer text-left group active:scale-95"
+                className="w-full p-3.5 rounded-2xl bg-[#12141f] border border-[#272e44] hover:border-[#52d916] flex items-center gap-3.5 transition-all cursor-pointer text-left group active:scale-95"
               >
                 <div className="w-10 h-10 rounded-xl bg-[#2a1c22] border border-[#522934] flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
                   🦊
@@ -714,7 +714,7 @@ export const ConnectSignUp: React.FC = () => {
                 onClick={() => {
                   window.location.href = web3Wallet.getTrustWalletDeepLink();
                 }}
-                className="w-full p-3.5 rounded-2xl bg-[#12141f] border border-[#272e44] hover:border-[#38bdf8] flex items-center gap-3.5 transition-all cursor-pointer text-left group active:scale-95"
+                className="w-full p-3.5 rounded-2xl bg-[#12141f] border border-[#272e44] hover:border-[#b7ff8b] flex items-center gap-3.5 transition-all cursor-pointer text-left group active:scale-95"
               >
                 <div className="w-10 h-10 rounded-xl bg-[#15273b] border border-[#224467] flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
                   🛡️
@@ -764,8 +764,8 @@ export const ConnectSignUp: React.FC = () => {
                   <defs>
                     <linearGradient id="modalPasscodeLogoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="#ff2a6d" />
-                      <stop offset="48%" stopColor="#9d4edd" />
-                      <stop offset="100%" stopColor="#38bdf8" />
+                      <stop offset="48%" stopColor="#7dff32" />
+                      <stop offset="100%" stopColor="#b7ff8b" />
                     </linearGradient>
                   </defs>
                   <path

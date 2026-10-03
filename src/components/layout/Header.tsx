@@ -72,9 +72,9 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
               <svg className="w-7 h-6" viewBox="0 0 64 54" fill="none">
                 <defs>
                   <linearGradient id="hdrRibbonMobile" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#ff2a6d" />
-                    <stop offset="48%" stopColor="#9d4edd" />
-                    <stop offset="100%" stopColor="#38bdf8" />
+                    <stop offset="0%" stopColor="#52d916" />
+                    <stop offset="48%" stopColor="#7dff32" />
+                    <stop offset="100%" stopColor="#b7ff8b" />
                   </linearGradient>
                 </defs>
                 <path

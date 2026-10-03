@@ -172,7 +172,7 @@ export const WithdrawPage: React.FC = () => {
       {/* Header Notice */}
       <div className="rounded-2xl bg-[#161924] border border-[#202538] p-5 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#ff5376] to-[#6d57ff] flex items-center justify-center text-white shadow-lg shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#52d916] to-[#7dff32] flex items-center justify-center text-white shadow-lg shrink-0">
             <ArrowUp size={22} className="stroke-[2.5]" />
           </div>
           <div>
@@ -350,7 +350,7 @@ export const WithdrawPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#ff5376] to-[#6d57ff] hover:opacity-95 active:scale-[0.99] text-white font-semibold text-xs tracking-wide transition-all shadow-lg shadow-pink-950/40 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#52d916] to-[#7dff32] hover:opacity-95 active:scale-[0.99] text-white font-semibold text-xs tracking-wide transition-all shadow-lg shadow-pink-950/40 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>

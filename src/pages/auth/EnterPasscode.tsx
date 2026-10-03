@@ -83,7 +83,7 @@ export const EnterPasscode: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#14151a] text-slate-100 flex flex-col items-center justify-between p-4 py-8 select-none font-sans">
+    <div className="auth-theme min-h-screen w-full text-slate-100 flex flex-col items-center justify-between p-4 py-8 select-none font-sans">
       
       {/* Centered Main Lock Card matching image.png */}
       <div className="w-full max-w-[370px] flex flex-col items-center text-center my-auto space-y-7">
@@ -93,9 +93,9 @@ export const EnterPasscode: React.FC = () => {
           <svg className="w-16 h-14" viewBox="0 0 64 54" fill="none">
             <defs>
               <linearGradient id="xahRibbonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ff2a6d" />
-                <stop offset="48%" stopColor="#9d4edd" />
-                <stop offset="100%" stopColor="#38bdf8" />
+                <stop offset="0%" stopColor="#52d916" />
+                <stop offset="48%" stopColor="#7dff32" />
+                <stop offset="100%" stopColor="#b7ff8b" />
               </linearGradient>
             </defs>
             {/* Smooth continuous ribbon loop creating H and X */}
@@ -144,7 +144,7 @@ export const EnterPasscode: React.FC = () => {
                   key={idx}
                   className={`w-2.5 h-2.5 rounded-full transition-all duration-150 ${
                     pin.length > idx
-                      ? 'bg-gradient-to-r from-[#ff2a6d] to-[#38bdf8] scale-110'
+                      ? 'bg-gradient-to-r from-[#52d916] to-[#7dff32] scale-110'
                       : 'bg-[#232733]'
                   }`}
                 />

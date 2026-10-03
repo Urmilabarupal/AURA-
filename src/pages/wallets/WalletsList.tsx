@@ -42,9 +42,9 @@ export const WalletsList: React.FC = () => {
           <svg className="w-8 h-7" viewBox="0 0 64 54" fill="none">
             <defs>
               <linearGradient id="xahAssetGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ff2a6d" />
-                <stop offset="48%" stopColor="#9d4edd" />
-                <stop offset="100%" stopColor="#38bdf8" />
+                <stop offset="0%" stopColor="#52d916" />
+                <stop offset="48%" stopColor="#7dff32" />
+                <stop offset="100%" stopColor="#b7ff8b" />
               </linearGradient>
             </defs>
             <path
@@ -189,7 +189,7 @@ export const WalletsList: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveRoute('withdraw')}
-              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#ff5376] to-[#6d57ff] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-pink-950/30"
+              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#52d916] to-[#7dff32] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-pink-950/30"
             >
               <ArrowUp size={14} className="stroke-[2.5]" />
               <span>Withdraw</span>
@@ -198,7 +198,7 @@ export const WalletsList: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveRoute('deposit')}
-              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#ff5376] via-[#7d50ff] to-[#4568ff] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-purple-950/30"
+              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#52d916] via-[#7dff32] to-[#b7ff8b] text-white font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-purple-950/30"
             >
               <ArrowDown size={14} className="stroke-[2.5]" />
               <span>Deposit</span>
@@ -216,9 +216,9 @@ export const WalletsList: React.FC = () => {
               <svg className="w-9 h-8" viewBox="0 0 64 54" fill="none">
                 <defs>
                   <linearGradient id="walletsBalLogoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#ff2a6d" />
-                    <stop offset="48%" stopColor="#9d4edd" />
-                    <stop offset="100%" stopColor="#38bdf8" />
+                    <stop offset="0%" stopColor="#52d916" />
+                    <stop offset="48%" stopColor="#7dff32" />
+                    <stop offset="100%" stopColor="#b7ff8b" />
                   </linearGradient>
                 </defs>
                 <path

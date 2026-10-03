@@ -181,7 +181,25 @@
   background: var(--app-bg);
 }
 
-/* Route-level remapping for legacy hardcoded utility colors. */
+/* Global route-level remapping for legacy hardcoded utility colors. */
+.app-shell { background: #000; color: #fff; }
+.app-shell aside, .app-shell header { background-color: #11131a !important; border-color: rgba(255,255,255,.1) !important; }
+.app-shell main { background: #000; }
+.app-shell [class*="bg-[#141722]"], .app-shell [class*="bg-[#161924]"], .app-shell [class*="bg-[#191c28]"], .app-shell [class*="bg-[#191d2c]"], .app-shell [class*="bg-[#1e2029]"], .app-shell [class*="bg-[#202538]"] { background-color: #151515 !important; }
+.app-shell [class*="bg-[#0e111a]"], .app-shell [class*="bg-[#0f1118]"], .app-shell [class*="bg-[#10131e]"], .app-shell [class*="bg-[#12141f]"], .app-shell [class*="bg-[#13151f]"] { background-color: #0b0b0b !important; }
+.app-shell [class*="border-[#"], .app-shell [class*="border-[#1b2030"], .app-shell [class*="border-[#202740"], .app-shell [class*="border-[#242839"] { border-color: rgba(255,255,255,.12) !important; }
+.app-shell [class*="bg-gradient-to-r"], .app-shell [class*="bg-gradient-to-br"] { background: #7dff32 !important; background-image: none !important; color: #071006 !important; }
+.app-shell [class*="from-[#ff"], .app-shell [class*="from-[#9d"], .app-shell [class*="from-[#6d"], .app-shell [class*="from-[#7d"] { --tw-gradient-from: #7dff32 !important; }
+.app-shell [class*="to-[#6d"], .app-shell [class*="to-[#4568"], .app-shell [class*="to-[#3a86"], .app-shell [class*="to-[#00f0"] { --tw-gradient-to: #7dff32 !important; }
+.app-shell [class*="focus:border-purple"], .app-shell [class*="focus:border-pink"], .app-shell [class*="focus:border-blue"]:focus { border-color: #7dff32 !important; }
+.app-shell a:hover, .app-shell button:hover { color: #7dff32; }
+.app-shell [class*="text-purple-"], .app-shell [class*="text-pink-"], .app-shell [class*="text-blue-"], .app-shell [class*="text-cyan-"] { color: #7dff32 !important; }
+.auth-theme { background: #111216; color: #fff; }
+.auth-theme > div { background: #1b1c20 !important; border-color: rgba(255,255,255,.1) !important; box-shadow: 0 24px 70px rgba(0,0,0,.35) !important; }
+.auth-theme input, .auth-theme select { background: #242424 !important; border-color: rgba(255,255,255,.08) !important; color: #fff !important; }
+.auth-theme button[type="submit"], .auth-theme button[class*="bg-gradient"] { background: #7dff32 !important; background-image: none !important; color: #071006 !important; }
+.auth-theme h1, .auth-theme h2 { color: #fff !important; background-image: none !important; }
+.auth-theme [class*="text-purple"], .auth-theme [class*="text-pink"], .auth-theme [class*="text-blue"] { color: #7dff32 !important; }
 .landing-shell [class*="bg-[#07090e]"],
 .landing-shell [class*="bg-[#080b12]"],
 .landing-shell [class*="bg-[#0f1320]"],
