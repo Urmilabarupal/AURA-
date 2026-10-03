@@ -307,9 +307,39 @@ export const SingleWallet: React.FC = () => {
       {/* Deposit Modal */}
       {depositModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-[#141829] border border-[#202740] shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#1d243b] pb-3">
-              <h3 className="text-sm font-bold text-slate-100">Deposit {BRAND.tokenSymbol} / USDT</h3>
+          <div className="deposit-promo-modal w-full max-w-3xl overflow-hidden rounded-[28px] bg-[#151515] border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.65)] p-0">
+            <div className="deposit-promo-copy p-7 sm:p-10">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#a5ff72]">Limited-time offer</p>
+                  <h2 className="max-w-[440px] text-[clamp(2.8rem,6vw,4.7rem)] font-extrabold leading-[0.92] tracking-[-0.06em] text-white">Deposit<br />bonus <span className="text-[#b7ff00]">of 112%</span></h2>
+                </div>
+                <button
+                  onClick={() => setDepositModalOpen(false)}
+                  className="rounded-full p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label="Close deposit promotion"
+                >
+                  <X size={22} strokeWidth={1.8} />
+                </button>
+              </div>
+              <p className="mt-8 max-w-[390px] text-base font-semibold leading-[1.08] tracking-[-0.025em] text-white/90 sm:text-xl">Celebrate your next trade with more buying power. Deposit and start exploring the platform.</p>
+              <button
+                onClick={() => document.getElementById('deposit-form')?.scrollIntoView({ behavior: 'smooth' })}
+                className="mt-10 rounded-[14px] bg-gradient-to-r from-[#00f5b0] to-[#39ff14] px-8 py-4 text-sm font-bold tracking-[-0.01em] text-[#061007] shadow-[0_10px_30px_rgba(57,255,20,0.18)] transition-transform hover:scale-[1.02]"
+              >
+                Claim now
+              </button>
+            </div>
+            <div className="deposit-promo-art relative flex min-h-[240px] items-center justify-center overflow-hidden bg-[#b7ff00] p-8 sm:min-h-[390px]">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_72%,rgba(255,255,255,0.3),transparent_52%)]" />
+              <div className="relative text-center text-[#151515]">
+                <div className="text-[7rem] font-black leading-none tracking-[-0.14em] sm:text-[10rem]">112</div>
+                <div className="mt-1 text-3xl font-black uppercase leading-[0.9] tracking-[-0.04em] sm:text-4xl">The<br />trading<br />bonus</div>
+              </div>
+            </div>
+            <div id="deposit-form" className="deposit-promo-form space-y-4 border-t border-white/10 p-7 sm:p-10">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-white">Deposit {BRAND.tokenSymbol} / USDT</h3>
               <button
                 onClick={() => setDepositModalOpen(false)}
                 className="text-slate-400 hover:text-white"
@@ -324,7 +354,7 @@ export const SingleWallet: React.FC = () => {
                 <QrCode size={120} className="text-black" />
               </div>
               <div className="text-center">
-                <p className="text-[10px] text-slate-500">Scan QR Code or copy deposit address below</p>
+                <p className="text-[10px] text-white/45">Scan QR Code or copy deposit address below</p>
                 <div className="mt-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141829] border border-[#202740] text-xs font-mono text-purple-300">
                   <span className="truncate max-w-[240px]">{user?.walletAddress}</span>
                   <button onClick={copyAddress} className="text-slate-400 hover:text-white">
@@ -353,7 +383,7 @@ export const SingleWallet: React.FC = () => {
               <button
                 type="submit"
                 disabled={isDepositing}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                className="w-full rounded-[14px] bg-gradient-to-r from-[#00f5b0] to-[#39ff14] py-3.5 text-xs font-bold text-[#061007] shadow-[0_10px_28px_rgba(57,255,20,0.16)] transition-all hover:brightness-105 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isDepositing ? (
                   <>
@@ -367,6 +397,7 @@ export const SingleWallet: React.FC = () => {
                 )}
               </button>
             </form>
+            </div>
           </div>
         </div>
       )}
