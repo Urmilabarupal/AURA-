@@ -14,6 +14,7 @@
 */
 
 import React from 'react';
+import { BRAND } from '../../config/brand';
 import { DollarSign, FileCheck, Percent } from 'lucide-react';
 
 export const SalesPolicyView: React.FC = () => {
@@ -30,14 +31,14 @@ export const SalesPolicyView: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-slate-100">1. Trading & Swap Fees</h2>
           <p>
-            Spot trading orders incur a flat maker/taker fee of 0.1%. Direct conversions between AURA and USDT utilize instant liquidity algorithmic pricing with guaranteed zero slippage within standard size tiers.
+            Spot trading orders incur a flat maker/taker fee of 0.1%. Direct conversions between {BRAND.tokenSymbol} and USDT utilize instant liquidity algorithmic pricing with guaranteed zero slippage within standard size tiers.
           </p>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-slate-100">2. Withdrawal Network Fees</h2>
           <p>
-            On-chain withdrawals incur only actual network blockchain gas fees (e.g. 1.0 USDT for TRC-20, 0.1 AURA for native chain settlement). The protocol does not charge custodial surcharge fees.
+            On-chain withdrawals incur only actual network blockchain gas fees (e.g. 1.0 USDT for TRC-20, 0.1 {BRAND.tokenSymbol} for native chain settlement). The protocol does not charge custodial surcharge fees.
           </p>
         </section>
 

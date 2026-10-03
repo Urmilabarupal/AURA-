@@ -22,6 +22,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { BRAND } from '../../config/brand';
+import { ThemeToggle } from '../common/ThemeToggle';
 import {
   AlertCircle,
   ArrowDown,
@@ -188,16 +189,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
                   onClick={() => handleNav(item.id)}
                   className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all text-left relative cursor-pointer ${
                     isActive
-                      ? 'bg-[#1e2538] text-white font-semibold'
-                      : 'text-[#8e98af] hover:text-slate-200 hover:bg-[#181c2a]'
+                      ? 'bg-[#00e699]/15 dark:bg-[#00e699]/15 light:bg-emerald-50 text-[#00e699] dark:text-[#00e699] light:text-emerald-700 font-semibold border-l-2 border-[#00e699]'
+                      : 'text-slate-400 dark:text-slate-400 light:text-slate-600 hover:text-white dark:hover:text-white light:hover:text-slate-900 hover:bg-[#141b27] dark:hover:bg-[#141b27] light:hover:bg-slate-100'
                   }`}
                 >
-                  {isActive && (
-                    <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[#1d68ff] rounded-r-full" />
-                  )}
                   <Icon
                     size={15}
-                    className={isActive ? 'text-[#3a86ff]' : 'text-[#8e98af]'}
+                    className={isActive ? 'text-[#00e699] dark:text-[#00e699] light:text-emerald-600' : 'text-slate-500'}
                   />
                   <span className="truncate">{item.label}</span>
                 </button>
@@ -221,21 +219,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#141622] border-r border-[#1e2334] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#000000] dark:bg-[#000000] light:bg-white border-r border-[#141a24] dark:border-[#141a24] light:border-slate-200 flex flex-col justify-between transition-all duration-300 ease-in-out lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
         {/* Top: Brand Header matching Screenshot 1 */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="p-5 flex items-center justify-between border-b border-[#1b2030] shrink-0">
+          <div className="p-4 sm:p-5 flex items-center justify-between border-b border-[#161d2a] dark:border-[#161d2a] light:border-slate-200 shrink-0">
             <div className="flex items-center gap-3">
-              {/* Folded ribbon HX Logo */}
+              {/* Logo */}
               <div className="relative w-8 h-7 flex items-center justify-center">
                 <svg className="w-8 h-7" viewBox="0 0 64 54" fill="none">
                   <defs>
                     <linearGradient id="sideRibbonGradAll" x1="0%" y1="100%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#ff2a6d" />
-                      <stop offset="48%" stopColor="#9d4edd" />
+                      <stop offset="0%" stopColor="#00e699" />
+                      <stop offset="50%" stopColor="#00d2d3" />
                       <stop offset="100%" stopColor="#38bdf8" />
                     </linearGradient>
                   </defs>
@@ -257,10 +255,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
 
               {/* Dynamic Brand Text */}
               <div className="leading-tight">
-                <div className="text-sm font-extrabold tracking-[0.2em] text-white">
+                <div className="text-sm font-extrabold tracking-[0.2em] text-white dark:text-white light:text-slate-900">
                   {BRAND.name.split(' ')[0] || BRAND.name}
                 </div>
-                <div className="text-[11px] font-extrabold tracking-[0.2em] text-slate-300">
+                <div className="text-[11px] font-extrabold tracking-[0.2em] text-[#00e699] dark:text-[#00e699] light:text-emerald-600">
                   {BRAND.name.split(' ').slice(1).join(' ') || ''}
                 </div>
               </div>
@@ -326,32 +324,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
           </nav>
         </div>
 
-        {/* Bottom Section: SIP Bonus & User Profile matching Screenshot 1 */}
-        <div className="p-4 space-y-3 border-t border-[#1b2030] bg-[#141622] shrink-0">
-          {/* SIP Bonus Card matching Screenshot 1 */}
+        {/* Bottom Section: SIP Bonus, ThemeToggle & User Profile */}
+        <div className="p-3.5 space-y-2.5 border-t border-[#161d2a] dark:border-[#161d2a] light:border-slate-200 bg-[#070a10] dark:bg-[#070a10] light:bg-slate-50 shrink-0">
+          
+          {/* Theme Toggle row */}
+          <div className="flex items-center justify-between px-2 py-1 rounded-xl bg-[#0e131d] dark:bg-[#0e131d] light:bg-white border border-[#1b2334] dark:border-[#1b2334] light:border-slate-200 text-xs">
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-400 light:text-slate-600">Theme</span>
+            <ThemeToggle showLabel />
+          </div>
+
+          {/* SIP Bonus Card */}
           <button
             type="button"
             onClick={() => handleNav('sip-bonus')}
-            className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#2a1e47] via-[#20203d] to-[#1e2540] border border-[#3b2d66] hover:border-[#6349a8] transition-all flex items-center gap-2.5 cursor-pointer text-left shadow-md group"
+            className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-950/40 via-[#0e1520] to-[#0b1018] border border-emerald-500/30 hover:border-emerald-500/60 transition-all flex items-center gap-2.5 cursor-pointer text-left shadow-sm group"
           >
-            <div className="w-6 h-6 rounded-lg bg-[#7c3aed]/20 border border-[#8b5cf6]/40 flex items-center justify-center text-purple-400 group-hover:scale-105 transition-transform">
-              <span className="text-xs font-bold">$</span>
-            </div>
-            <span className="text-xs font-semibold text-slate-200 group-hover:text-white">
-              SIP Bonus
-            </span>
-          </button>
-
-          {/* User Profile Pill matching Screenshot 1 */}
-          <div
-            onClick={() => handleNav('profile')}
-            className="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-[#10131e] border border-[#1c2233] hover:border-[#2b354e] transition-colors cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-full bg-[#1e88e5] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-inner">
-              <span className="text-sm">👦</span>
+            <div className="w-6 h-6 rounded-lg bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] group-hover:scale-105 transition-transform">
+              <span className="text-xs font-black">$</span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-white truncate font-mono">
+              <span className="text-xs font-bold text-white dark:text-white light:text-slate-900 group-hover:text-emerald-400">
+                SIP Bonus
+              </span>
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 light:text-slate-500 leading-none mt-0.5">Recurring Salary</p>
+            </div>
+          </button>
+
+          {/* User Profile Pill */}
+          <div
+            onClick={() => handleNav('profile')}
+            className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-[#0e131d] dark:bg-[#0e131d] light:bg-white border border-[#1b2334] dark:border-[#1b2334] light:border-slate-200 hover:border-emerald-500/40 transition-colors cursor-pointer"
+          >
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#00b875] to-[#00e699] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-inner">
+              <span className="text-xs">👦</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-white dark:text-white light:text-slate-900 truncate font-mono">
                 {user?.id || BRAND.defaultUserId}
               </p>
             </div>

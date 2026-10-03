@@ -173,7 +173,7 @@ export const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1118] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#000000] dark:bg-[#000000] light:bg-[#f8fafc] text-slate-100 dark:text-slate-100 light:text-slate-900 flex flex-col font-sans transition-colors duration-200">
       {/* Sidebar Navigation */}
       <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
 

@@ -14,6 +14,7 @@
 */
 
 import React from 'react';
+import { BRAND } from '../../config/brand';
 import { FileText, Shield } from 'lucide-react';
 
 export const TermsView: React.FC = () => {
@@ -30,7 +31,7 @@ export const TermsView: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-slate-100">1. Acceptance of Terms</h2>
           <p>
-            By connecting a wallet or registering an account on AURA Financial, you agree to comply with these terms, our security policies, and all applicable protocol rules.
+            By connecting a wallet or registering an account on {BRAND.name}, you agree to comply with these terms, our security policies, and all applicable protocol rules.
           </p>
         </section>
 

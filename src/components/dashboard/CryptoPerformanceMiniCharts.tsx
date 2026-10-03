@@ -3,11 +3,7 @@
 
  PURPOSE:
  High-fidelity, responsive 24-Hour Crypto Market Performance component using Recharts.
- Features:
- - Mini sparkline area charts for top assets (XAH, BTC, ETH, BNB, SOL)
- - Interactive active asset selector with expanded 24H trend visualization
- - Realistic 24-hour hourly points, high/low stats, 24h volume
- - Custom glowing Recharts Tooltip with gradient fills matching luxury dark theme
+ True Pitch Black OLED (#000000) styling with hairline borders (#18181c) and hover glow.
 */
 
 import React, { useState } from 'react';
@@ -98,13 +94,13 @@ const CRYPTO_DATA: AssetTrend[] = [
     gradientId: 'btcAreaGrad',
     history: [
       { time: '00:00', price: 87500 },
-      { time: '03:00', price: 87200 },
-      { time: '06:00', price: 87900 },
-      { time: '09:00', price: 88400 },
-      { time: '12:00', price: 88100 },
+      { time: '03:00', price: 88100 },
+      { time: '06:00', price: 87800 },
+      { time: '09:00', price: 88600 },
+      { time: '12:00', price: 89100 },
       { time: '15:00', price: 88900 },
-      { time: '18:00', price: 89100 },
-      { time: '21:00', price: 89320 },
+      { time: '18:00', price: 89300 },
+      { time: '21:00', price: 89200 },
       { time: 'Now', price: 89450 },
     ],
   },
@@ -116,7 +112,7 @@ const CRYPTO_DATA: AssetTrend[] = [
     high24h: '$624.00',
     low24h: '$608.20',
     volume24h: '$1.45B',
-    color: '#ef4444',
+    color: '#ff3b5c',
     gradientId: 'bnbAreaGrad',
     history: [
       { time: '00:00', price: 622 },
@@ -137,7 +133,7 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0];
     return (
-      <div className="rounded-xl bg-[#0e111a]/95 border border-[#2a324a] p-2.5 shadow-2xl backdrop-blur-md text-xs font-mono">
+      <div className="rounded-xl bg-[#000000]/95 border border-[#27272e] p-2.5 shadow-2xl backdrop-blur-md text-xs font-mono">
         <div className="text-[10px] text-slate-400 font-sans">{label} (UTC)</div>
         <div className="text-sm font-bold text-white mt-0.5">
           ${typeof dataPoint.value === 'number' ? dataPoint.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : dataPoint.value}
@@ -149,19 +145,19 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
 };
 
 export const CryptoPerformanceMiniCharts: React.FC = () => {
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('XAH');
+  const [selectedSymbol, setSelectedSymbol] = useState<string>(BRAND.tokenSymbol);
   const [timeframe, setTimeframe] = useState<'1H' | '24H' | '7D'>('24H');
 
   const activeAsset = CRYPTO_DATA.find((a) => a.symbol === selectedSymbol) || CRYPTO_DATA[0];
   const isPositive = activeAsset.change24h >= 0;
 
   return (
-    <div className="rounded-2xl bg-[#161924] border border-[#202538] p-5 sm:p-6 shadow-xl space-y-5 select-none font-sans">
+    <div className="rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/30 p-5 sm:p-6 shadow-xl space-y-5 select-none font-sans transition-all duration-300">
       
       {/* Header with Title & Timeframe Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1f2538] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18181c] pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#3b82f6]/20 to-[#8b5cf6]/20 border border-[#8b5cf6]/30 flex items-center justify-center text-purple-400 shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-purple-400 shrink-0">
             <TrendingUp size={16} />
           </div>
           <div>
@@ -169,19 +165,19 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
               <h3 className="text-sm font-bold text-white tracking-tight">
                 24-Hour Market Performance
               </h3>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-[#00e699] border border-emerald-500/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00e699] animate-pulse" />
                 Live Feed
               </span>
             </div>
-            <p className="text-[11px] text-[#8e98af]">
+            <p className="text-[11px] text-slate-400">
               Real-time multi-asset valuation & 24h technical performance
             </p>
           </div>
         </div>
 
         {/* Timeframe pills */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0e111a] border border-[#1f2436] self-start sm:self-auto">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-[#020204] border border-[#18181c] self-start sm:self-auto">
           {(['1H', '24H', '7D'] as const).map((tf) => (
             <button
               key={tf}
@@ -189,8 +185,8 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
               onClick={() => setTimeframe(tf)}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 timeframe === tf
-                  ? 'bg-[#1e2538] text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#18181c] text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               {tf}
@@ -211,19 +207,19 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
               onClick={() => setSelectedSymbol(asset.symbol)}
               className={`p-3.5 rounded-xl border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between h-28 ${
                 isSelected
-                  ? 'bg-[#1b2030] border-[#384366] shadow-lg'
-                  : 'bg-[#0e111a] border-[#1b2030] hover:border-[#2a334d] hover:bg-[#131724]'
+                  ? 'bg-[#121217] border-[#00e699]/40 shadow-lg shadow-[#00e699]/5'
+                  : 'bg-[#030305] border-[#18181c] hover:border-[#27272e] hover:bg-[#0a0a0e]'
               }`}
             >
               {/* Asset Header */}
               <div className="flex items-center justify-between z-10">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-bold text-white">{asset.symbol}</span>
-                  <span className="text-[10px] text-[#8e98af] truncate max-w-[60px]">{asset.name}</span>
+                  <span className="text-[10px] text-slate-400 truncate max-w-[60px]">{asset.name}</span>
                 </div>
                 <div
                   className={`text-[11px] font-bold font-mono flex items-center ${
-                    pos ? 'text-[#00e699]' : 'text-red-400'
+                    pos ? 'text-[#00e699]' : 'text-[#ff3b5c]'
                   }`}
                 >
                   {pos ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
@@ -263,11 +259,11 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
       </div>
 
       {/* Main Expanded Active Asset 24H Chart */}
-      <div className="rounded-xl bg-[#0e111a] border border-[#1b2030] p-4 sm:p-5 space-y-4">
+      <div className="rounded-xl bg-[#020204] border border-[#18181c] p-4 sm:p-5 space-y-4">
         {/* Active Stats Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#161a29] border border-[#252e46] flex items-center justify-center font-bold text-sm text-white">
+            <div className="w-10 h-10 rounded-xl bg-[#0e0e12] border border-[#222228] flex items-center justify-center font-bold text-sm text-white">
               {activeAsset.symbol}
             </div>
             <div>
@@ -278,15 +274,15 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
                 <span
                   className={`text-xs font-bold font-mono px-2 py-0.5 rounded-full flex items-center ${
                     isPositive
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      ? 'bg-emerald-500/10 text-[#00e699] border border-emerald-500/20'
+                      : 'bg-red-500/10 text-[#ff3b5c] border border-red-500/20'
                   }`}
                 >
                   {isPositive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
                   <span>{isPositive ? `+${activeAsset.change24h}%` : `${activeAsset.change24h}%`}</span>
                 </span>
               </div>
-              <div className="text-xs text-[#8e98af] font-mono">
+              <div className="text-xs text-slate-400 font-mono">
                 Live Price: <strong className="text-white text-sm">{activeAsset.price}</strong>
               </div>
             </div>
@@ -295,15 +291,15 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
           {/* 24h High / Low / Volume */}
           <div className="flex items-center gap-4 text-xs font-mono">
             <div>
-              <span className="text-[10px] text-[#8e98af] block font-sans">24h High</span>
+              <span className="text-[10px] text-slate-400 block font-sans">24h High</span>
               <span className="text-white font-bold">{activeAsset.high24h}</span>
             </div>
             <div>
-              <span className="text-[10px] text-[#8e98af] block font-sans">24h Low</span>
+              <span className="text-[10px] text-slate-400 block font-sans">24h Low</span>
               <span className="text-white font-bold">{activeAsset.low24h}</span>
             </div>
             <div>
-              <span className="text-[10px] text-[#8e98af] block font-sans">24h Volume</span>
+              <span className="text-[10px] text-slate-400 block font-sans">24h Volume</span>
               <span className="text-purple-400 font-bold">{activeAsset.volume24h}</span>
             </div>
           </div>
@@ -322,14 +318,14 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
               </defs>
               <XAxis
                 dataKey="time"
-                stroke="#475569"
+                stroke="#64748b"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
                 dy={6}
               />
               <YAxis
-                stroke="#475569"
+                stroke="#64748b"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
@@ -343,7 +339,7 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
                 stroke={activeAsset.color}
                 strokeWidth={2.4}
                 fill={`url(#${activeAsset.gradientId})`}
-                dot={{ r: 3, fill: activeAsset.color, stroke: '#0e111a', strokeWidth: 2 }}
+                dot={{ r: 3, fill: activeAsset.color, stroke: '#000000', strokeWidth: 2 }}
                 activeDot={{ r: 6, fill: '#ffffff', stroke: activeAsset.color, strokeWidth: 3 }}
               />
             </AreaChart>

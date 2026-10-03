@@ -14,6 +14,7 @@
 */
 
 import React from 'react';
+import { BRAND } from '../../config/brand';
 import { AlertTriangle, FileText, Lock, Shield } from 'lucide-react';
 
 export const LegalView: React.FC = () => {
@@ -37,7 +38,7 @@ export const LegalView: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-slate-100">1. Regulatory Framework</h2>
           <p>
-            AURA operates under decentralized cryptographic consensus. Users are responsible for ensuring that participation complies with the domestic taxation, legal, and exchange controls of their jurisdiction of residence.
+            {BRAND.name} operates under decentralized cryptographic consensus. Users are responsible for ensuring that participation complies with the domestic taxation, legal, and exchange controls of their jurisdiction of residence.
           </p>
         </section>
 

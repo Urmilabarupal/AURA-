@@ -213,11 +213,11 @@ export const ApiService = {
   },
 
   async convertDirect(params: {
-    fromCurrency: 'USDT' | 'AURA';
-    toCurrency: 'USDT' | 'AURA';
+    fromCurrency: string;
+    toCurrency: string;
     amount: number;
   }): Promise<ApiResponse<{ received: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.convertDirect(params);
+    return AuthoritativeBackend.convertDirect(params as any);
   },
 
   // Community

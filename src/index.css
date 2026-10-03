@@ -7,10 +7,49 @@
 
 @layer base {
   :root {
-    --bg-dark: #080a10;
-    --card-dark: #101422;
-    --card-border: #1e2538;
-    --accent-gradient: linear-gradient(135deg, #ff3864 0%, #9d4edd 50%, #3a86ff 100%);
+    --bg-dark: #000000;
+    --card-dark: #08080a;
+    --card-border: #18181c;
+    --olymp-green: #00e699;
+    --olymp-green-hover: #00ffaa;
+    --olymp-green-dim: rgba(0, 230, 153, 0.12);
+    --olymp-red: #ff3b5c;
+    --olymp-red-dim: rgba(255, 59, 92, 0.12);
+    --olymp-cyan: #00d2d3;
+  }
+
+  /* Dark Theme (Pure Full Dark Black OLED) */
+  html.dark, html[data-theme="dark"], html:not([data-theme="light"]) {
+    color-scheme: dark;
+    --app-bg: #000000;
+    --app-header: #000000;
+    --app-card: #08080a;
+    --app-card-sub: #030304;
+    --app-border: #18181c;
+    --app-border-hover: #26262e;
+    --app-text: #ffffff;
+    --app-text-muted: #94a3b8;
+    --app-text-dim: #64748b;
+    --app-btn-green: #00e699;
+    --app-btn-green-hover: #00ffaa;
+    --app-btn-green-text: #020f07;
+  }
+
+  /* Light Theme (White Mode) */
+  html.light, html[data-theme="light"] {
+    color-scheme: light;
+    --app-bg: #f8fafc;
+    --app-header: #ffffff;
+    --app-card: #ffffff;
+    --app-card-sub: #f1f5f9;
+    --app-border: #e2e8f0;
+    --app-border-hover: #cbd5e1;
+    --app-text: #0f172a;
+    --app-text-muted: #475569;
+    --app-text-dim: #94a3b8;
+    --app-btn-green: #00b875;
+    --app-btn-green-hover: #00a366;
+    --app-btn-green-text: #ffffff;
   }
 
   html {
@@ -22,12 +61,13 @@
   }
 
   html, body, #root {
-    background-color: #080a10;
-    color: #f1f5f9;
+    background-color: var(--app-bg, #000000);
+    color: var(--app-text, #ffffff);
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   h1, h2, h3, h4, h5, h6, button, input, select, textarea, p, span, a, label {
@@ -39,6 +79,44 @@
   }
 }
 
+/* Olymp Trade Signature Button Classes */
+.btn-olymp-green {
+  background-color: #00e699;
+  color: #020f07;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px 0 rgba(0, 230, 153, 0.25);
+}
+
+.btn-olymp-green:hover {
+  background-color: #00ffaa;
+  box-shadow: 0 8px 24px 0 rgba(0, 230, 153, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-olymp-green:active {
+  transform: translateY(0);
+}
+
+.btn-olymp-red {
+  background-color: #ff3b5c;
+  color: #ffffff;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px 0 rgba(255, 59, 92, 0.25);
+}
+
+.btn-olymp-red:hover {
+  background-color: #ff5271;
+  box-shadow: 0 8px 24px 0 rgba(255, 59, 92, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-olymp-red:active {
+  transform: translateY(0);
+}
+
+/* Keyframes */
 @keyframes marquee {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
@@ -47,7 +125,7 @@
 .animate-marquee {
   display: flex;
   width: max-content;
-  animation: marquee 32s linear infinite;
+  animation: marquee 34s linear infinite;
 }
 
 .animate-marquee:hover {
@@ -61,35 +139,84 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1c2236;
+  background: #18181c;
   border-radius: 9999px;
 }
 
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #2f3a5a;
+  background: #00e699;
 }
 
-/* Luxury Glass Panel & Card styling */
-.glass-panel {
-  background: rgba(20, 23, 36, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-.card-glow-hover {
+/* High-craft card & glow styles */
+.card-olymp {
+  background: #08080a;
+  border: 1px solid #18181c;
+  border-radius: 1.25rem;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.card-glow-hover:hover {
+.card-olymp:hover {
+  border-color: rgba(0, 230, 153, 0.4);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.9), 0 0 24px -4px rgba(0, 230, 153, 0.16);
+  transform: translateY(-3px);
+}
+
+/* Hover elevation & glow micro-interactions */
+.hover-lift {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.hover-lift:hover {
   transform: translateY(-2px);
-  border-color: rgba(157, 78, 221, 0.35);
-  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5), 0 0 20px -4px rgba(157, 78, 221, 0.15);
+  border-color: rgba(0, 230, 153, 0.35);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 18px -4px rgba(0, 230, 153, 0.14);
+}
+
+.hairline-border {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.grid-bg-dark {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Real-time price flash animation */
+@keyframes flashGreen {
+  0% { background-color: rgba(0, 230, 153, 0.35); color: #00ffaa; }
+  100% { background-color: transparent; }
+}
+
+@keyframes flashRed {
+  0% { background-color: rgba(255, 59, 92, 0.35); color: #ff5271; }
+  100% { background-color: transparent; }
+}
+
+.flash-green {
+  animation: flashGreen 0.7s ease-out;
+}
+
+.flash-red {
+  animation: flashRed 0.7s ease-out;
+}
+
+@keyframes pulseLive {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+.animate-pulse-live {
+  animation: pulseLive 1.6s infinite ease-in-out;
 }
 
 /* Custom micro-animations */
@@ -104,19 +231,19 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes pulseSubtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.03); }
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
 }
 
-.animate-pulse-subtle {
-  animation: pulseSubtle 3s infinite ease-in-out;
+.animate-float-slow {
+  animation: floatSlow 4s ease-in-out infinite;
 }

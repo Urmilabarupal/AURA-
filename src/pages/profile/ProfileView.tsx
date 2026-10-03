@@ -27,6 +27,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import { ApiService } from '../../services/api';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowLeft,
@@ -244,7 +245,7 @@ export const ProfileView: React.FC = () => {
                 <input
                   type="text"
                   readOnly
-                  value={user?.id || 'HX633547863'}
+                  value={user?.id || BRAND.defaultUserId}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238] text-xs font-mono text-purple-300 opacity-80 cursor-not-allowed select-all"
                 />
               </div>
@@ -253,7 +254,7 @@ export const ProfileView: React.FC = () => {
                 <input
                   type="text"
                   readOnly
-                  value={user?.referBy || 'HX001'}
+                  value={user?.referBy || BRAND.defaultReferId}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238] text-xs font-mono text-slate-300 opacity-80 cursor-not-allowed select-all"
                 />
               </div>

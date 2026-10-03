@@ -18,6 +18,7 @@
 */
 
 import React from 'react';
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/common/Toast';
 import { LandingPage } from './pages/landing/LandingPage';
@@ -32,8 +33,8 @@ const AppContent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full bg-[#141722] flex flex-col items-center justify-center text-slate-300 space-y-3">
-        <Loader2 size={32} className="animate-spin text-purple-500" />
+      <div className="min-h-screen w-full bg-[#000000] dark:bg-[#000000] light:bg-[#f8fafc] flex flex-col items-center justify-center text-slate-300 space-y-3">
+        <Loader2 size={32} className="animate-spin text-emerald-400" />
         <span className="text-xs font-mono font-medium text-slate-400">
           Initializing Secure Session...
         </span>
@@ -58,10 +59,12 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <AppContent />
-      </ToastProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

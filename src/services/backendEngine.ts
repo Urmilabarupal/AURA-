@@ -41,6 +41,7 @@ import {
   UserProfile,
   UserWallets,
 } from '../types';
+import { BRAND } from '../config/brand';
 
 // Storage keys
 const STORAGE_KEY_USER = 'aura_auth_user_v1';
@@ -52,17 +53,17 @@ const STORAGE_KEY_TICKETS = 'aura_tickets_v1';
 
 // Seed User
 const DEFAULT_USER: UserProfile = {
-  id: 'HX633547863',
+  id: BRAND.defaultUserId,
   username: '0x7A****02d9b8',
   name: 'Alexander Vance',
   firstName: 'Alexander',
   lastName: 'Vance',
-  email: 'alexander.vance@aurafinancial.io',
+  email: `alexander.vance@${BRAND.domain}`,
   mobile: '+1 555-019-4829',
   country: 'USA (+1)',
   walletAddress: '0x7ACCd8BFC2DC0A1135ef3C95973F27d0C02a11b0',
-  referId: 'HX001',
-  referBy: 'HX99842',
+  referId: BRAND.defaultReferId,
+  referBy: `${BRAND.name.slice(0, 2).toUpperCase()}99842`,
   createdAt: '2026-01-15T10:00:00Z',
   passcodeConfigured: true,
   kycStatus: 'VERIFIED',
@@ -87,7 +88,7 @@ const DEFAULT_WALLETS: UserWallets = {
 const DEFAULT_TRANSACTIONS: Transaction[] = [
   {
     id: 'TX-98412-A1',
-    userId: 'HX633547863',
+    userId: BRAND.defaultUserId,
     type: 'APP_TRANSFER',
     typeLabel: 'App Transfer',
     amount: 150.0,
@@ -102,7 +103,7 @@ const DEFAULT_TRANSACTIONS: Transaction[] = [
   },
   {
     id: 'TX-98411-B2',
-    userId: 'HX633547863',
+    userId: BRAND.defaultUserId,
     type: 'DEPOSIT',
     typeLabel: 'Chain Deposit',
     amount: 500.0,
@@ -117,7 +118,7 @@ const DEFAULT_TRANSACTIONS: Transaction[] = [
   },
   {
     id: 'TX-98410-C3',
-    userId: 'HX633547863',
+    userId: BRAND.defaultUserId,
     type: 'STAKING_INCOME',
     typeLabel: 'Staking Yield',
     amount: 25.5,
@@ -131,21 +132,21 @@ const DEFAULT_TRANSACTIONS: Transaction[] = [
   },
   {
     id: 'TX-98409-D4',
-    userId: 'HX633547863',
+    userId: BRAND.defaultUserId,
     type: 'TRADE_BUY',
     typeLabel: 'Spot Buy',
     amount: 0.15,
-    currency: 'AURA',
+    currency: BRAND.tokenSymbol,
     amountUSD: 50.58,
     status: 'COMPLETED',
     timestamp: '2026-09-26 18:30:12',
     referenceId: 'REF-55102948',
-    description: 'Bought 0.15 AURA @ 337.20 USDT',
+    description: `Bought 0.15 ${BRAND.tokenSymbol} @ 337.20 USDT`,
     fromWallet: 'spot',
   },
   {
     id: 'TX-98408-E5',
-    userId: 'HX633547863',
+    userId: BRAND.defaultUserId,
     type: 'TICKET_PURCHASE',
     typeLabel: 'Lottery Ticket',
     amount: 10.0,
@@ -233,30 +234,30 @@ export class AuthoritativeBackend {
   // Farming Plans
   public static readonly FARMING_PLANS: FarmingPlan[] = [
     {
-      id: 'farm_aura_usdt',
-      poolPair: 'AURA/USDT LP',
+      id: 'farm_native_usdt',
+      poolPair: `${BRAND.tokenSymbol}/USDT LP`,
       apyPercent: 124.5,
       lockPeriodDays: 30,
       tvlUSD: 4829100,
-      rewardToken: 'AURA',
+      rewardToken: BRAND.tokenSymbol,
       multiplier: '40x',
     },
     {
-      id: 'farm_aura_eth',
-      poolPair: 'AURA/ETH LP',
+      id: 'farm_native_eth',
+      poolPair: `${BRAND.tokenSymbol}/ETH LP`,
       apyPercent: 92.0,
       lockPeriodDays: 60,
       tvlUSD: 2315000,
-      rewardToken: 'AURA',
+      rewardToken: BRAND.tokenSymbol,
       multiplier: '25x',
     },
     {
-      id: 'farm_hxc_usdt',
-      poolPair: 'HXC/USDT LP',
+      id: 'farm_secondary_usdt',
+      poolPair: `${BRAND.secondaryTokenSymbol}/USDT LP`,
       apyPercent: 68.4,
       lockPeriodDays: 14,
       tvlUSD: 1104000,
-      rewardToken: 'HXC',
+      rewardToken: BRAND.secondaryTokenSymbol,
       multiplier: '15x',
     },
   ];
@@ -312,7 +313,7 @@ export class AuthoritativeBackend {
     {
       id: 'TK-849201',
       ticketNumber: '849201',
-      userId: 'HX633547863',
+      userId: BRAND.defaultUserId,
       purchaseDate: '2026-09-25 11:15:42',
       drawDate: '2026-10-02',
       drawWeek: 40,
@@ -324,7 +325,7 @@ export class AuthoritativeBackend {
     {
       id: 'TK-830114',
       ticketNumber: '830114',
-      userId: 'HX633547863',
+      userId: BRAND.defaultUserId,
       purchaseDate: '2026-09-18 16:40:02',
       drawDate: '2026-09-25',
       drawWeek: 39,
@@ -392,12 +393,12 @@ export class AuthoritativeBackend {
       name: data.name,
       firstName: data.name.split(' ')[0] || data.name,
       lastName: data.name.split(' ').slice(1).join(' ') || '',
-      email: `${data.name.toLowerCase().replace(/\s+/g, '.') || 'user'}@aurafinancial.io`,
+      email: `${data.name.toLowerCase().replace(/\s+/g, '.') || 'user'}@${BRAND.domain}`,
       mobile: data.mobile,
       country: data.country,
       walletAddress: generatedWallet,
-      referId: `HX${Math.floor(100 + Math.random() * 900)}`,
-      referBy: data.referId || 'HX001',
+      referId: `${BRAND.name.slice(0, 2).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`,
+      referBy: data.referId || BRAND.defaultReferId,
       createdAt: new Date().toISOString(),
       passcodeConfigured: false,
       kycStatus: 'UNVERIFIED',
@@ -770,8 +771,8 @@ export class AuthoritativeBackend {
   }
 
   public static async convertDirect(params: {
-    fromCurrency: 'USDT' | 'AURA';
-    toCurrency: 'USDT' | 'AURA';
+    fromCurrency: string;
+    toCurrency: string;
     amount: number;
   }): Promise<ApiResponse<{ received: number; wallets: UserWallets }>> {
     const rate = 337.2;
@@ -797,13 +798,13 @@ export class AuthoritativeBackend {
       return {
         success: true,
         data: { received, wallets: { ...this.wallets } },
-        message: `Converted ${params.amount} USDT to ${received} AURA.`,
+        message: `Converted ${params.amount} USDT to ${received} ${BRAND.tokenSymbol}.`,
       };
     } else {
       if (this.wallets.spotBalanceNative < params.amount) {
         return {
           success: false,
-          error: { code: 'INSUFFICIENT_FUNDS', message: 'Insufficient AURA in Spot Wallet.' },
+          error: { code: 'INSUFFICIENT_FUNDS', message: `Insufficient ${BRAND.tokenSymbol} in Spot Wallet.` },
         };
       }
       const received = +(params.amount * rate).toFixed(2);
@@ -814,7 +815,7 @@ export class AuthoritativeBackend {
       return {
         success: true,
         data: { received, wallets: { ...this.wallets } },
-        message: `Converted ${params.amount} AURA to ${received} USDT.`,
+        message: `Converted ${params.amount} ${BRAND.tokenSymbol} to ${received} USDT.`,
       };
     }
   }
@@ -1162,7 +1163,7 @@ export class AuthoritativeBackend {
       {
         id: 'TK-849201',
         ticketNumber: '849201',
-        userId: 'HX633547863',
+        userId: BRAND.defaultUserId,
         purchaseDate: '2026-09-25 11:15:42',
         drawDate: '2026-10-02',
         drawWeek: 40,

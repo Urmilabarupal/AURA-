@@ -167,18 +167,18 @@ export const TradeView: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* 1. Pair Header & Key Statistics (Screenshots 9 & 10) */}
-      <section className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#1b2238] pb-4">
+      <section className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#18181c] pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center font-black text-sm text-purple-400">
-              AX
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-black text-sm text-[#00e699]">
+              {BRAND.shortName.slice(0, 2).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-slate-100 font-mono tracking-tight">
                   {BRAND.tokenSymbol}/USDT
                 </h1>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950/40 text-[#00e699] border border-emerald-800/40">
                   Spot
                 </span>
               </div>
@@ -188,7 +188,7 @@ export const TradeView: React.FC = () => {
 
           {/* Big Price Display (Screenshot 9) */}
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-extrabold text-emerald-400 font-mono tracking-tight">
+            <span className="text-3xl font-extrabold text-[#00e699] font-mono tracking-tight">
               {currentPrice.toFixed(3)}
             </span>
             <span className="text-xs font-semibold text-slate-400 font-mono">0.000 (0.00%)</span>
@@ -197,27 +197,27 @@ export const TradeView: React.FC = () => {
 
         {/* 24h Metrics Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
-          <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
+          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
             <p className="text-[10px] text-slate-500 font-medium">24h High</p>
             <p className="font-mono font-bold text-slate-200 mt-0.5">{high24h.toFixed(3)}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
+          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
             <p className="text-[10px] text-slate-500 font-medium">24h Low</p>
             <p className="font-mono font-bold text-slate-200 mt-0.5">{low24h.toFixed(3)}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
+          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
             <p className="text-[10px] text-slate-500 font-medium">24h Volume ({BRAND.tokenSymbol})</p>
             <p className="font-mono font-bold text-slate-200 mt-0.5">{volNative}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
+          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
             <p className="text-[10px] text-slate-500 font-medium">24h Volume (USDT)</p>
             <p className="font-mono font-bold text-slate-200 mt-0.5">{volUSDT}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
+          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
             <p className="text-[10px] text-slate-500 font-medium">Total Supply</p>
             <p className="font-mono font-bold text-slate-200 mt-0.5">{totalSupply}</p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238]">
+          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
             <p className="text-[10px] text-slate-500 font-medium">Circulating Supply</p>
             <p className="font-mono font-bold text-purple-400 mt-0.5">{circulatingSupply}</p>
           </div>
@@ -237,7 +237,7 @@ export const TradeView: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-blue-400"></span> MA10: 335.09
             </span>
             <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span> MA20: 335.16
+              <span className="w-2 h-2 rounded-full bg-[#00e699]"></span> MA20: 335.16
             </span>
             <span className="flex items-center gap-1 text-purple-400 font-semibold">
               <span className="w-2 h-2 rounded-full bg-purple-400"></span> MA30: 335.19
@@ -245,14 +245,14 @@ export const TradeView: React.FC = () => {
           </div>
 
           {/* Timeframe Selectors (Screenshot 9 & 10) */}
-          <div className="flex items-center gap-1 bg-[#0c0f1a] p-1 rounded-xl border border-[#1f263d]">
+          <div className="flex items-center gap-1 bg-[#020204] p-1 rounded-xl border border-[#18181c]">
             {['1m', '5m', '15m', '1h', '1D', 'All'].map((tf) => (
               <button
                 key={tf}
                 onClick={() => setSelectedTimeframe(tf)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   selectedTimeframe === tf
-                    ? 'bg-purple-600 text-white shadow-sm'
+                    ? 'bg-[#00e699] text-black font-extrabold shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -263,13 +263,13 @@ export const TradeView: React.FC = () => {
         </div>
 
         {/* Visual Simulated SVG Chart with Candlesticks & MAs (matching Screenshot 9) */}
-        <div className="w-full h-64 bg-[#0a0d16] rounded-xl border border-[#1a2136] p-4 relative overflow-hidden flex flex-col justify-between">
+        <div className="w-full h-64 bg-[#000000] rounded-xl border border-[#141418] p-4 relative overflow-hidden flex flex-col justify-between">
           {/* Grid lines */}
           <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-20">
-            <div className="border-b border-dashed border-slate-600 w-full"></div>
-            <div className="border-b border-dashed border-slate-600 w-full"></div>
-            <div className="border-b border-dashed border-slate-600 w-full"></div>
-            <div className="border-b border-dashed border-slate-600 w-full"></div>
+            <div className="border-b border-dashed border-slate-700 w-full"></div>
+            <div className="border-b border-dashed border-slate-700 w-full"></div>
+            <div className="border-b border-dashed border-slate-700 w-full"></div>
+            <div className="border-b border-dashed border-slate-700 w-full"></div>
           </div>
 
           {/* SVG Price curve */}
@@ -337,18 +337,18 @@ export const TradeView: React.FC = () => {
           </svg>
 
           {/* Chart Tooltip Box (Screenshot 9 overlay) */}
-          <div className="absolute top-4 left-4 p-3 rounded-xl bg-[#141829]/90 backdrop-blur-md border border-[#262f4e] text-[10px] font-mono space-y-1 shadow-xl">
-            <p className="text-purple-300 font-bold">2026/09/29 20:00</p>
+          <div className="absolute top-4 left-4 p-3 rounded-xl bg-[#08080a]/95 backdrop-blur-md border border-[#222228] text-[10px] font-mono space-y-1 shadow-2xl">
+            <p className="text-[#00e699] font-bold">2026/09/29 20:00</p>
             <div className="grid grid-cols-2 gap-x-3 text-slate-300">
               <span>Open: 342.00</span>
               <span>Close: 342.00</span>
               <span>Low: 342.00</span>
               <span>High: 342.00</span>
             </div>
-            <div className="pt-1 border-t border-slate-700/50 text-slate-400">
+            <div className="pt-1 border-t border-[#18181c] text-slate-400">
               <p className="text-amber-400">MA5: 335.659</p>
               <p className="text-blue-400">MA10: 335.090</p>
-              <p className="text-purple-400">MA30: 335.196</p>
+              <p className="text-[#00e699]">MA30: 335.196</p>
             </div>
           </div>
         </div>
@@ -357,7 +357,7 @@ export const TradeView: React.FC = () => {
       {/* 2. Middle Row: Live Trades Feed & Buy/Sell Order Panel (Screenshot 10) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Live Trades Table (Left 6 Cols) */}
-        <div className="lg:col-span-6 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
+        <div className="lg:col-span-6 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide">
               Recent Trades
@@ -375,19 +375,19 @@ export const TradeView: React.FC = () => {
           ) : (
             <div className="overflow-x-auto max-h-[380px] overflow-y-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2 px-2">Price (USDT)</th>
                     <th className="py-2 px-2 text-right">Amount ({BRAND.tokenSymbol})</th>
                     <th className="py-2 px-2 text-right">Time</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#171d30]">
+                <tbody className="divide-y divide-[#141418]">
                   {trades.map((tr) => (
-                    <tr key={tr.id} className="hover:bg-[#151a2d]">
+                    <tr key={tr.id} className="hover:bg-[#121216] transition-colors">
                       <td
                         className={`py-2 px-2 font-bold ${
-                          tr.type === 'BUY' ? 'text-emerald-400' : 'text-pink-400'
+                          tr.type === 'BUY' ? 'text-[#00e699]' : 'text-[#ff3b5c]'
                         }`}
                       >
                         {tr.price.toFixed(3)}
@@ -407,42 +407,42 @@ export const TradeView: React.FC = () => {
         </div>
 
         {/* Buy / Sell Order Panel (Right 6 Cols, Screenshot 10) */}
-        <div className="lg:col-span-6 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-6 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
           {/* Buy/Sell Tabs (Screenshot 10) */}
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setSide('BUY')}
-              className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
+              className={`py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 side === 'BUY'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/50'
-                  : 'bg-[#181e33] text-slate-400 hover:text-white'
+                  ? 'bg-[#00e699] text-black font-extrabold shadow-lg shadow-[#00e699]/30'
+                  : 'bg-[#141418] text-slate-400 hover:text-white'
               }`}
             >
-              Buy
+              Buy · CALL
             </button>
             <button
               type="button"
               onClick={() => setSide('SELL')}
-              className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
+              className={`py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 side === 'SELL'
-                  ? 'bg-pink-600 text-white shadow-lg shadow-pink-950/50'
-                  : 'bg-[#181e33] text-slate-400 hover:text-white'
+                  ? 'bg-[#ff3b5c] text-white font-extrabold shadow-lg shadow-[#ff3b5c]/30'
+                  : 'bg-[#141418] text-slate-400 hover:text-white'
               }`}
             >
-              Sell
+              Sell · PUT
             </button>
           </div>
 
           {/* Total Balance Card */}
-          <div className="p-3.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
             <div>
               <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
                 Total Balance
               </p>
               <h4 className="text-base font-extrabold text-slate-100 font-mono">
                 {availableBalance.toFixed(side === 'BUY' ? 2 : 4)}{' '}
-                <span className="text-xs text-purple-400 font-bold">
+                <span className="text-xs text-[#00e699] font-bold">
                   {side === 'BUY' ? 'USDT' : BRAND.tokenSymbol}
                 </span>
               </h4>
@@ -456,9 +456,9 @@ export const TradeView: React.FC = () => {
                   name="tradeWallet"
                   checked={walletSource === 'spot'}
                   onChange={() => setWalletSource('spot')}
-                  className="accent-purple-500"
+                  className="accent-[#00e699]"
                 />
-                <span className={walletSource === 'spot' ? 'text-purple-300 font-bold' : 'text-slate-500'}>
+                <span className={walletSource === 'spot' ? 'text-[#00e699] font-bold' : 'text-slate-500'}>
                   Spot
                 </span>
               </label>
@@ -468,9 +468,9 @@ export const TradeView: React.FC = () => {
                   name="tradeWallet"
                   checked={walletSource === 'main'}
                   onChange={() => setWalletSource('main')}
-                  className="accent-purple-500"
+                  className="accent-[#00e699]"
                 />
-                <span className={walletSource === 'main' ? 'text-purple-300 font-bold' : 'text-slate-500'}>
+                <span className={walletSource === 'main' ? 'text-[#00e699] font-bold' : 'text-slate-500'}>
                   Main Wallet
                 </span>
               </label>
@@ -483,14 +483,14 @@ export const TradeView: React.FC = () => {
               <div
                 className={`p-3 rounded-xl border flex items-start gap-2.5 text-xs ${
                   orderFeedback.type === 'success'
-                    ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-300'
-                    : 'bg-red-950/40 border-red-800/50 text-red-300'
+                    ? 'bg-emerald-950/40 border-emerald-800/50 text-[#00e699]'
+                    : 'bg-red-950/40 border-red-800/50 text-[#ff3b5c]'
                 }`}
               >
                 {orderFeedback.type === 'success' ? (
-                  <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-emerald-400" />
+                  <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-[#00e699]" />
                 ) : (
-                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
+                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-[#ff3b5c]" />
                 )}
                 <span>{orderFeedback.msg}</span>
               </div>
@@ -507,7 +507,7 @@ export const TradeView: React.FC = () => {
                 step="0.001"
                 value={orderPrice}
                 onChange={(e) => setOrderPrice(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-slate-100 focus:outline-none focus:border-[#00e699]"
               />
             </div>
 
@@ -522,26 +522,26 @@ export const TradeView: React.FC = () => {
                 step="0.0001"
                 value={orderAmount}
                 onChange={(e) => setOrderAmount(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-slate-100 focus:outline-none focus:border-[#00e699]"
               />
             </div>
 
             {/* Total Calculation */}
-            <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between text-xs font-mono">
+            <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between text-xs font-mono">
               <span className="text-slate-400">Total</span>
               <span className="font-bold text-slate-100">
-                {totalCost.toFixed(4)} <span className="text-purple-400">USDT</span>
+                {totalCost.toFixed(4)} <span className="text-[#00e699]">USDT</span>
               </span>
             </div>
 
-            {/* Execute Button (Screenshot 10 Buy Now) */}
+            {/* Execute Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 px-4 rounded-xl text-xs font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              className={`w-full py-3 px-4 rounded-xl text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 side === 'BUY'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 shadow-emerald-950/40'
-                  : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:opacity-95 shadow-rose-950/40'
+                  ? 'bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold shadow-[#00e699]/30'
+                  : 'bg-[#ff3b5c] hover:bg-[#ff5271] text-white font-extrabold shadow-[#ff3b5c]/30'
               }`}
             >
               {isSubmitting ? (
@@ -550,21 +550,21 @@ export const TradeView: React.FC = () => {
                   <span>Executing Order...</span>
                 </>
               ) : (
-                <span>{side === 'BUY' ? 'Buy Now' : 'Sell Now'}</span>
+                <span>{side === 'BUY' ? 'Execute Buy Order' : 'Execute Sell Order'}</span>
               )}
             </button>
           </form>
         </div>
       </div>
 
-      {/* 3. Bottom Row: Order History & Trade History (Screenshot 11) */}
-      <section className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-        <div className="flex items-center gap-3 border-b border-[#1b2238] pb-3">
+      {/* 3. Bottom Row: Order History & Trade History */}
+      <section className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
+        <div className="flex items-center gap-3 border-b border-[#18181c] pb-3">
           <button
             onClick={() => setHistoryTab('orders')}
-            className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
+            className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
               historyTab === 'orders'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-[#00e699] text-black font-extrabold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -572,9 +572,9 @@ export const TradeView: React.FC = () => {
           </button>
           <button
             onClick={() => setHistoryTab('trades')}
-            className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
+            className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
               historyTab === 'trades'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-[#00e699] text-black font-extrabold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
