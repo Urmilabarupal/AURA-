@@ -69,7 +69,7 @@ export const FarmingIncome: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveRoute('farming')}
-            className="p-2 rounded-xl bg-[#141829] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-[#08080a] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
@@ -84,8 +84,8 @@ export const FarmingIncome: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Harvest Ledger */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+          <div className="border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">
               Harvest History ({transactions.length})
             </h3>
@@ -101,7 +101,7 @@ export const FarmingIncome: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
@@ -114,7 +114,7 @@ export const FarmingIncome: React.FC = () => {
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-[#151a2d]">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 text-purple-400">{tx.referenceId}</td>
+                      <td className="py-3 px-3 text-[#00e699]">{tx.referenceId}</td>
                       <td className="py-3 px-3 text-slate-300">{BRAND.tokenSymbol}/USDT LP</td>
                       <td className="py-3 px-3 text-right font-bold text-emerald-400">
                         +${tx.amountUSD.toFixed(2)} USDT
@@ -131,7 +131,7 @@ export const FarmingIncome: React.FC = () => {
         </div>
 
         {/* Right Column: Harvest Box */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 font-mono">
               Ready to Claim
@@ -139,7 +139,7 @@ export const FarmingIncome: React.FC = () => {
             <h3 className="text-base font-extrabold text-slate-100 mt-1">Pending Yield</h3>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1b2238] space-y-2">
+          <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] space-y-2">
             <span className="text-xs text-slate-400">Harvestable Balance</span>
             <h4 className="text-3xl font-black text-emerald-400 font-mono">
               ${harvestableUSD.toFixed(2)} <span className="text-xs text-slate-400 font-normal">USDT</span>

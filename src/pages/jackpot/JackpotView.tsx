@@ -63,7 +63,7 @@ export const JackpotView: React.FC = () => {
         </div>
         <button
           onClick={() => setActiveRoute('jackpot-deposit')}
-          className="py-2 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md transition-colors"
+          className="py-2 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] shadow-md transition-colors"
         >
           Deposit to Jackpot
         </button>
@@ -71,8 +71,8 @@ export const JackpotView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Recent Transactions / Data Not Found (Screenshot 40 Left) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-          <div className="border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+          <div className="border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">Recent Transactions</h3>
           </div>
 
@@ -86,7 +86,7 @@ export const JackpotView: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Date</th>
@@ -110,9 +110,9 @@ export const JackpotView: React.FC = () => {
         </div>
 
         {/* Right Column: User ID, Status, Expected Return (Screenshot 40 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           {/* User ID & Status Card */}
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
             <div>
               <p className="text-[11px] text-slate-500 font-mono">User id: {user?.id}</p>
               <h4 className="text-sm font-bold text-slate-200 mt-1">Jackpot Status</h4>
@@ -129,7 +129,7 @@ export const JackpotView: React.FC = () => {
 
             {/* Stylized Badge (Screenshot 40 Right) */}
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-blue-500 p-0.5 shadow-lg flex items-center justify-center">
-              <div className="w-full h-full bg-[#0d101d] rounded-[14px] flex items-center justify-center text-purple-400 font-bold">
+              <div className="w-full h-full bg-[#0d101d] rounded-[14px] flex items-center justify-center text-[#00e699] font-bold">
                 <Trophy size={24} />
               </div>
             </div>
@@ -137,14 +137,14 @@ export const JackpotView: React.FC = () => {
 
           {/* You Will Receive & Total Jackpot Income (Screenshot 40) */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+            <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
               <p className="text-[10px] text-slate-400 font-semibold">You will Receive</p>
-              <h5 className="text-base font-black text-purple-300 font-mono">
+              <h5 className="text-base font-black text-[#00ffaa] font-mono">
                 {youWillReceiveUSDT} <span className="text-[10px] text-slate-400 font-normal">USDT</span>
               </h5>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+            <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
               <p className="text-[10px] text-slate-400 font-semibold">Total jackpot income</p>
               <h5 className="text-base font-black text-emerald-400 font-mono">
                 ${totalJackpotIncome.toFixed(2)}
@@ -153,11 +153,11 @@ export const JackpotView: React.FC = () => {
           </div>
 
           {/* Today Jackpot Income (Screenshot 40) */}
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
             <p className="text-xs text-slate-400 font-semibold">Today jackpot income</p>
             <h4 className="text-xl font-black text-slate-100 font-mono">
               ${todayJackpotIncome.toFixed(2)}{' '}
-              <span className="text-xs text-purple-400">USDT</span>
+              <span className="text-xs text-[#00e699]">USDT</span>
             </h4>
           </div>
 

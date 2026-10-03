@@ -3,7 +3,9 @@
 
  PURPOSE:
  Halving and Secondary Asset Liquidity Conversion interface.
- All brand names, token symbols, and labels are fully dynamic from BRAND config.
+ Styled with authentic Olymp Trade pitch-black OLED palette:
+ - Canvas: #000000, Obsidian card bodies: #08080a, Sub-insets: #020204, Hairline borders: #18181c
+ - Buttons & Accents: Signature Olymp Trade Emerald Green (#00e699)
 */
 
 import React, { useEffect, useState } from 'react';
@@ -84,38 +86,39 @@ export const HxcConvert: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header */}
+    <div className="space-y-6 pb-12 font-sans select-none text-slate-100">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
-            {BRAND.name} Convert
+          <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+            {BRAND.name} Liquidity Conversion
           </h1>
-          <p className="text-xs text-slate-400">Halving & Liquidity Distribution Ledger</p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Halving & Liquidity Distribution Ledger
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Tabs & Transactions */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-8 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
           {/* Top Tabs */}
-          <div className="flex items-center gap-2 border-b border-[#1b2238] pb-3">
+          <div className="flex items-center gap-2 border-b border-[#18181c] pb-3">
             <button
               onClick={() => setActiveTab('income')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'income'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#00e699] text-black shadow-md shadow-[#00e699]/20'
+                  : 'text-slate-400 hover:text-white bg-[#020204]'
               }`}
             >
               Convert Income
             </button>
             <button
               onClick={() => setActiveTab('daily')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'daily'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#00e699] text-black shadow-md shadow-[#00e699]/20'
+                  : 'text-slate-400 hover:text-white bg-[#020204]'
               }`}
             >
               {BRAND.name} Convert Income Daily
@@ -123,19 +126,16 @@ export const HxcConvert: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h3 className="text-sm font-bold text-slate-200">
-              Transaction ({transactions.length})
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+              Transaction Ledger ({transactions.length})
             </h3>
             <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-300">
-                <option value="all">Sort By</option>
-              </select>
               <div className="relative">
                 <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
-                  placeholder="Search Transaction"
-                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none"
+                  placeholder="Search ledger..."
+                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#00e699]"
                 />
               </div>
             </div>
@@ -144,14 +144,14 @@ export const HxcConvert: React.FC = () => {
           {transactions.length === 0 ? (
             <EmptyState
               title="Data Not Found"
-              description="The requested information is currently unavailable"
+              description="No liquidity conversion transactions logged on this account."
               actionText="Reload Data"
               onAction={loadTransactions}
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
@@ -160,18 +160,18 @@ export const HxcConvert: React.FC = () => {
                     <th className="py-2.5 px-3 text-right">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#171d30]">
+                <tbody className="divide-y divide-[#121216]">
                   {transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-[#151a2d]">
+                    <tr key={tx.id} className="hover:bg-[#0e0e12] transition-colors">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 font-mono text-purple-400">{tx.referenceId}</td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">
+                      <td className="py-3 px-3 text-[#00e699]">{tx.referenceId}</td>
+                      <td className="py-3 px-3 text-right font-bold text-slate-200">
                         {tx.amount} {BRAND.secondaryTokenSymbol}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
+                      <td className="py-3 px-3 text-right font-bold text-[#00e699]">
                         +${tx.amountUSD.toFixed(2)} USDT
                       </td>
-                      <td className="py-3 px-3 text-right text-slate-500 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-right text-slate-500 text-[11px]">
                         {tx.timestamp}
                       </td>
                     </tr>
@@ -184,23 +184,30 @@ export const HxcConvert: React.FC = () => {
           <div className="pt-2 text-center">
             <button
               onClick={loadTransactions}
-              className="w-full max-w-xs py-2.5 px-6 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 shadow-md shadow-indigo-950/40 cursor-pointer inline-flex items-center justify-center gap-2"
+              className="py-2.5 px-6 rounded-xl text-xs font-extrabold text-black bg-[#00e699] hover:bg-[#00ffaa] shadow-md shadow-[#00e699]/20 cursor-pointer inline-flex items-center justify-center gap-2 transition-all active:scale-95"
             >
-              <span>See More</span>
+              <span>Refresh Records</span>
             </button>
           </div>
         </div>
 
         {/* Right Column: Metrics & Convert Actions */}
         <div className="lg:col-span-4 space-y-4">
-          {/* Card 1: Convert Box with Reset & Convert Now */}
-          <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
+          {/* Card 1: Convert Box */}
+          <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
             <div>
-              <p className="text-xs font-bold text-slate-300">{BRAND.name} Convert</p>
-              <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between mt-2">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Total Balance</span>
-                <span className="text-base font-black text-slate-100 font-mono">
-                  {hxcBalance.toFixed(2)} <span className="text-xs text-purple-400">{BRAND.secondaryTokenSymbol}</span>
+              <p className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                {BRAND.name} Balance
+              </p>
+              <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between mt-2">
+                <span className="text-[10px] text-slate-500 uppercase font-mono font-bold">
+                  Available Balance
+                </span>
+                <span className="text-base font-black text-white font-mono">
+                  {hxcBalance.toFixed(2)}{' '}
+                  <span className="text-xs text-[#00e699] font-sans">
+                    {BRAND.secondaryTokenSymbol}
+                  </span>
                 </span>
               </div>
             </div>
@@ -209,14 +216,14 @@ export const HxcConvert: React.FC = () => {
               <div
                 className={`p-2.5 rounded-xl border flex items-start gap-2 text-xs ${
                   feedback.type === 'success'
-                    ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-300'
-                    : 'bg-red-950/40 border-red-800/50 text-red-300'
+                    ? 'bg-emerald-950/40 border-[#00e699]/40 text-[#00e699]'
+                    : 'bg-red-950/40 border-red-800/50 text-[#ff3b5c]'
                 }`}
               >
                 {feedback.type === 'success' ? (
-                  <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-emerald-400" />
+                  <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-[#00e699]" />
                 ) : (
-                  <AlertCircle size={14} className="shrink-0 mt-0.5 text-red-400" />
+                  <AlertCircle size={14} className="shrink-0 mt-0.5 text-[#ff3b5c]" />
                 )}
                 <span>{feedback.msg}</span>
               </div>
@@ -227,26 +234,26 @@ export const HxcConvert: React.FC = () => {
               <button
                 type="button"
                 onClick={handleReset}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-blue-400 border border-blue-500/40 hover:bg-blue-500/10 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-slate-300 border border-[#18181c] hover:bg-[#121216] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <RotateCcw size={14} />
-                <span>Reset</span>
+                <span>Reset Parameters</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleConvertNow}
                 disabled={isConverting}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-blue-950/40 cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl text-xs font-extrabold text-black bg-[#00e699] hover:bg-[#00ffaa] disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-[#00e699]/25 cursor-pointer active:scale-95"
               >
                 {isConverting ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" />
-                    <span>Processing...</span>
+                    <Loader2 size={14} className="animate-spin text-black" />
+                    <span>Processing Conversion...</span>
                   </>
                 ) : (
                   <>
-                    <Repeat size={14} />
+                    <Repeat size={14} className="stroke-[2.5]" />
                     <span>Convert Now</span>
                   </>
                 )}
@@ -255,36 +262,41 @@ export const HxcConvert: React.FC = () => {
           </div>
 
           {/* Card 2: Convert Total */}
-          <div className="p-4 rounded-2xl bg-[#131728] border border-[#202740] shadow-md flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-semibold">{BRAND.name} Convert Total</span>
-            <span className="text-base font-black text-slate-100 font-mono">
-              {hxcConvertTotal.toFixed(2)} <span className="text-xs text-purple-400">{BRAND.secondaryTokenSymbol}</span>
+          <div className="p-4 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl flex items-center justify-between">
+            <span className="text-xs text-slate-400 font-semibold font-mono">
+              Cumulative Converted
+            </span>
+            <span className="text-base font-black text-white font-mono">
+              {hxcConvertTotal.toFixed(2)}{' '}
+              <span className="text-xs text-[#00e699] font-sans">
+                {BRAND.secondaryTokenSymbol}
+              </span>
             </span>
           </div>
 
           {/* Card 3: 5 Years Income Cards */}
-          <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-3">
+          <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">{BRAND.name} Convert Income Total</span>
-              <span className="text-sm font-bold text-slate-100 font-mono">
+              <span className="text-xs text-slate-400">Total Income</span>
+              <span className="text-sm font-bold text-white font-mono">
                 ${incomeTotal.toFixed(4)} USDT
               </span>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#1b2238]">
-              <span className="text-xs text-slate-400">{BRAND.name} Convert Total Income 5 Years</span>
-              <span className="text-sm font-bold text-emerald-400 font-mono">
+            <div className="flex items-center justify-between pt-2 border-t border-[#18181c]">
+              <span className="text-xs text-slate-400">5 Years Projection</span>
+              <span className="text-sm font-bold text-[#00e699] font-mono">
                 ${income5Years.toFixed(4)} USDT
               </span>
             </div>
 
-            <div className="pt-2 border-t border-[#1b2238] space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-400">
+            <div className="pt-2 border-t border-[#18181c] space-y-1">
+              <div className="flex justify-between text-[11px] text-slate-400 font-mono">
                 <span>Achievement: $0.0000</span>
-                <span className="font-mono text-purple-400">0.00%</span>
+                <span className="text-[#00e699] font-bold">0.00%</span>
               </div>
-              <div className="w-full bg-[#0c0f1a] h-2 rounded-full overflow-hidden">
-                <div className="w-1/4 bg-blue-500 h-full rounded-full"></div>
+              <div className="w-full bg-[#020204] border border-[#18181c] h-2 rounded-full overflow-hidden">
+                <div className="w-1/4 bg-[#00e699] h-full rounded-full" />
               </div>
             </div>
           </div>

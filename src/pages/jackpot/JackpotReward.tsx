@@ -70,27 +70,27 @@ export const JackpotReward: React.FC = () => {
       </div>
 
       {/* Team Business Summary Card (Screenshot 43 Top) */}
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-        <div className="border-b border-[#1b2238] pb-3 flex items-center justify-between">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+        <div className="border-b border-[#18181c] pb-3 flex items-center justify-between">
           <h3 className="text-sm font-bold text-slate-200">Team Business</h3>
-          <span className="text-xs text-purple-400 font-mono">Userid: {user?.id}</span>
+          <span className="text-xs text-[#00e699] font-mono">Userid: {user?.id}</span>
         </div>
 
         {/* 3 Metric Columns with 3D Icons (Screenshot 43) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
             <div>
               <h4 className="text-2xl font-black text-slate-100 font-mono">
                 {direct.toFixed(2)}
               </h4>
               <p className="text-xs text-slate-400 font-semibold mt-1">Direct</p>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-inner">
+            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[#00e699] shadow-inner">
               <Rocket size={28} />
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
             <div>
               <h4 className="text-2xl font-black text-slate-100 font-mono">
                 {masterLeg.toFixed(2)}
@@ -102,7 +102,7 @@ export const JackpotReward: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+          <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
             <div>
               <h4 className="text-2xl font-black text-slate-100 font-mono">
                 {anotherLeg.toFixed(2)}
@@ -117,15 +117,15 @@ export const JackpotReward: React.FC = () => {
       </div>
 
       {/* Jackpot Reward Ladder (Screenshots 43 & 44) */}
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
         {/* Your Reward Banner (Screenshot 44) */}
         <div className="p-4 rounded-xl bg-gradient-to-r from-purple-950/60 to-blue-950/60 border border-purple-500/30 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-purple-500/20 text-purple-400">
+            <div className="p-2.5 rounded-xl bg-purple-500/20 text-[#00e699]">
               <Trophy size={20} />
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-purple-300">YOUR REWARD</span>
+              <span className="text-[10px] uppercase font-bold text-[#00ffaa]">YOUR REWARD</span>
               <h4 className="text-xl font-black text-slate-100 font-mono">
                 {emptyStateMode ? '0 Rank' : 'Rank 1'}
               </h4>
@@ -141,7 +141,7 @@ export const JackpotReward: React.FC = () => {
               className={`p-4 rounded-2xl border transition-all ${
                 tier.unlocked
                   ? 'bg-[#151c33] border-purple-500/40 shadow-md'
-                  : 'bg-[#0c0f1a] border-[#1d243b]'
+                  : 'bg-[#020204] border-[#1d243b]'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

@@ -219,7 +219,7 @@ export const TradeView: React.FC = () => {
           </div>
           <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
             <p className="text-[10px] text-slate-500 font-medium">Circulating Supply</p>
-            <p className="font-mono font-bold text-purple-400 mt-0.5">{circulatingSupply}</p>
+            <p className="font-mono font-bold text-[#00e699] mt-0.5">{circulatingSupply}</p>
           </div>
         </div>
 
@@ -239,7 +239,7 @@ export const TradeView: React.FC = () => {
             <span className="flex items-center gap-1 text-emerald-400 font-semibold">
               <span className="w-2 h-2 rounded-full bg-[#00e699]"></span> MA20: 335.16
             </span>
-            <span className="flex items-center gap-1 text-purple-400 font-semibold">
+            <span className="flex items-center gap-1 text-[#00e699] font-semibold">
               <span className="w-2 h-2 rounded-full bg-purple-400"></span> MA30: 335.19
             </span>
           </div>
@@ -595,7 +595,7 @@ export const TradeView: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                 <tr>
                   <th className="py-2.5 px-3">Order ID</th>
                   <th className="py-2.5 px-3">Side</th>
@@ -610,7 +610,7 @@ export const TradeView: React.FC = () => {
               <tbody className="divide-y divide-[#171d30]">
                 {orders.map((ord) => (
                   <tr key={ord.id} className="hover:bg-[#151a2d]">
-                    <td className="py-3 px-3 text-purple-400 font-bold">{ord.id}</td>
+                    <td className="py-3 px-3 text-[#00e699] font-bold">{ord.id}</td>
                     <td className="py-3 px-3">
                       <span
                         className={`font-bold px-2 py-0.5 rounded text-[10px] ${

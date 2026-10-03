@@ -2,21 +2,13 @@
  FILE: src/pages/staking/StakingView.tsx
 
  PURPOSE:
- Staking Overview and Active Lock Status management.
- Corresponds to Reference Screenshot 34. Implements Section 17.
-
- RESPONSIBILITIES:
- - Display active staking plan status card: "Plan not activated" vs "Active Staking"
- - Render Total Amount staked in native token
- - Provide transaction log for stake deposits and daily yield accruals
- - Support "Data Not Found" empty state and populated state
- - Link directly to Staking Plans
-
- API:
- Calls ApiService.getWallets and ApiService.getTransactions.
-
- NOTE:
- Developer documentation only. Never expose sensitive information.
+ Staking Overview and Active Lock Status management with Real-Time APY Percentage Visualization.
+ Styled with authentic Olymp Trade Pitch-Black OLED theme:
+ - Pitch black OLED canvas (#000000)
+ - High-density Recharts APY Curve & Compound Yield simulator
+ - Active staking plan status card & total staked metrics
+ - Real-time transaction ledger with clean monospace typography
+ - Neon emerald (#00e699) primary buttons & indicators
 */
 
 import React, { useEffect, useState } from 'react';
@@ -25,7 +17,19 @@ import { ApiService } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Transaction } from '../../types';
 import { BRAND } from '../../config/brand';
-import { ArrowRight, CheckCircle2, Coins, Layers, Lock, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
+import { StakingApyVisualizer } from '../../components/staking/StakingApyVisualizer';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Coins,
+  History,
+  Layers,
+  Lock,
+  Percent,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react';
 
 export const StakingView: React.FC = () => {
   const { wallets, setActiveRoute, emptyStateMode } = useAuth();
@@ -55,57 +59,86 @@ export const StakingView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-12 font-sans select-none">
+      {/* 1. Header with Live Status Tag */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">Staking</h1>
-          <p className="text-xs text-slate-400">Fixed-Yield Compound Staking Ledger</p>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+              Staking Vaults
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full bg-[#00e699]/15 border border-[#00e699]/30 text-[#00e699] text-[10px] font-mono font-bold">
+              UP TO 102.5% APY
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Institutional Fixed-Yield & Compounded Smart Contract Pools
+          </p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setActiveRoute('staking-plan')}
+          className="px-4 py-2.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-xs tracking-tight shadow-lg shadow-[#00e699]/25 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+        >
+          <Sparkles size={14} className="stroke-[2.5]" />
+          <span>Browse All Plans</span>
+          <ArrowRight size={14} className="stroke-[2.5]" />
+        </button>
       </div>
 
+      {/* 2. Real-Time APY Percentage Visualization & Dynamic Yield Simulator (Recharts) */}
+      <StakingApyVisualizer
+        initialStakeAmount={1000}
+        onSelectPlan={(planId) => setActiveRoute('staking-plan')}
+      />
+
+      {/* 3. Staking Overview Metrics & Transaction Ledger */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Transactions / Empty State (Screenshot 34 Left) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="flex items-center justify-between border-b border-[#1b2238] pb-3">
-            <h3 className="text-sm font-bold text-slate-200">
-              Transactions ({transactions.length})
-            </h3>
+        {/* Left Column: Transactions / Empty State */}
+        <div className="lg:col-span-8 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
+          <div className="flex items-center justify-between border-b border-[#18181c] pb-3">
+            <div className="flex items-center gap-2">
+              <History size={16} className="text-[#00e699]" />
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                Staking Ledger ({transactions.length})
+              </h3>
+            </div>
             <button
               onClick={() => setActiveRoute('staking-plan')}
-              className="text-xs text-purple-400 hover:text-purple-300 font-semibold"
+              className="text-xs text-[#00e699] hover:text-[#00ffaa] font-semibold transition-colors cursor-pointer"
             >
-              Browse Plans
+              Deposit New Stake
             </button>
           </div>
 
           {transactions.length === 0 ? (
             <EmptyState
               title="Data Not Found"
-              description="The requested information is currently unavailable"
-              actionText="View Staking Plans"
+              description="No active staking transactions detected on this account."
+              actionText="Deposit & Stake Now"
               onAction={() => setActiveRoute('staking-plan')}
             />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
-                    <th className="py-2.5 px-3">Plan</th>
+                    <th className="py-2.5 px-3">Pool Tier</th>
                     <th className="py-2.5 px-3 text-right">Amount</th>
                     <th className="py-2.5 px-3 text-right">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#171d30]">
+                <tbody className="divide-y divide-[#121216]">
                   {transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-[#151a2d]">
+                    <tr key={tx.id} className="hover:bg-[#0e0e12] transition-colors">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 text-purple-400">{tx.referenceId}</td>
+                      <td className="py-3 px-3 text-[#00e699]">{tx.referenceId}</td>
                       <td className="py-3 px-3 text-slate-300">{tx.description}</td>
-                      <td className="py-3 px-3 text-right font-bold text-emerald-400">
-                        {tx.amount} {tx.currency}
+                      <td className="py-3 px-3 text-right font-bold text-[#00e699]">
+                        +{tx.amount} {tx.currency}
                       </td>
                       <td className="py-3 px-3 text-right text-slate-500 text-[11px]">
                         {tx.timestamp}
@@ -118,55 +151,69 @@ export const StakingView: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column: Staking Status Card (Screenshot 34 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          {/* Staking Banner */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-blue-950/60 to-purple-950/60 border border-blue-500/30 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400 shrink-0">
-              <Lock size={18} />
+        {/* Right Column: User Staking Status Card */}
+        <div className="lg:col-span-4 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
+          {/* Staking Status Banner */}
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] flex items-start gap-3">
+            <div className="p-2.5 rounded-lg bg-[#00e699]/15 text-[#00e699] shrink-0">
+              <Lock size={18} className="stroke-[2.5]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-slate-100">Staking</h4>
-              <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                Smart Contract Status
+              </h4>
+              <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
                 {isStakingActive
-                  ? 'Plan active! Earning daily compounded yields.'
-                  : 'Plan not activated, join Staking and enjoy steady Incomes!'}
+                  ? 'Plan active! Earning daily compounded yields automatically.'
+                  : 'No active plan found. Select a high-yield term to start earning daily.'}
               </p>
             </div>
           </div>
 
           {/* Total Amount Staked */}
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
-            <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
-              TOTAL AMOUNT
-            </span>
-            <h3 className="text-2xl font-black text-slate-100 font-mono">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider font-mono">
+                Total Staked Principal
+              </span>
+              <span className="text-[10px] font-mono text-[#00e699] font-bold">100% APR LOCK</span>
+            </div>
+            <h3 className="text-2xl font-black text-white font-mono">
               {totalStakedAURA.toFixed(2)}{' '}
-              <span className="text-xs font-bold text-purple-400">{BRAND.tokenSymbol}</span>
+              <span className="text-xs font-bold text-[#00e699] font-sans">
+                {BRAND.tokenSymbol}
+              </span>
             </h3>
-            <p className="text-xs text-slate-500 font-mono">${totalStakedUSD.toFixed(2)} USDT</p>
+            <p className="text-xs text-slate-400 font-mono">
+              ≈ ${totalStakedUSD.toLocaleString()} USDT
+            </p>
           </div>
 
-          {/* Status Indicator (Screenshot 34) */}
-          <div className="p-3.5 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center gap-2.5">
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                isStakingActive ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'
-              }`}
-            ></span>
-            <span className="text-xs font-semibold text-slate-200">
-              {isStakingActive ? 'Staking Plan Active (100% APR)' : 'Staking Not Started'}
+          {/* Status Indicator */}
+          <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  isStakingActive ? 'bg-[#00e699] animate-pulse' : 'bg-[#ff3b5c]'
+                }`}
+              />
+              <span className="text-xs font-semibold text-slate-200">
+                {isStakingActive ? 'Compounding Active' : 'Staking Inactive'}
+              </span>
+            </div>
+            <span className="text-[11px] font-mono font-bold text-[#00e699]">
+              {isStakingActive ? '102.5% APY' : '0%'}
             </span>
           </div>
 
           {/* Action Button */}
           <button
             onClick={() => setActiveRoute('staking-plan')}
-            className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:opacity-95 shadow-md shadow-purple-950/40 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="w-full py-3 px-4 rounded-xl text-xs font-extrabold text-black bg-[#00e699] hover:bg-[#00ffaa] shadow-lg shadow-[#00e699]/25 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
           >
-            <Sparkles size={14} />
-            <span>Choose Staking Plan</span>
-            <ArrowRight size={14} />
+            <Sparkles size={14} className="stroke-[2.5]" />
+            <span>Deposit into Staking Pool</span>
+            <ArrowRight size={14} className="stroke-[2.5]" />
           </button>
         </div>
       </div>

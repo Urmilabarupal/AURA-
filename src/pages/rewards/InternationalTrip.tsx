@@ -62,7 +62,7 @@ export const InternationalTrip: React.FC = () => {
           <h1 className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-purple-200 to-pink-300 tracking-tight">
             Travel To International Trip
           </h1>
-          <p className="text-xs sm:text-sm font-extrabold tracking-widest text-purple-400 uppercase font-mono">
+          <p className="text-xs sm:text-sm font-extrabold tracking-widest text-[#00e699] uppercase font-mono">
             EXPLORER 4N 5D PACKAGE
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-300 pt-2 font-medium">
@@ -83,7 +83,7 @@ export const InternationalTrip: React.FC = () => {
         {/* Dual Progress Pill Cards (Screenshot 16 bottom) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto pt-2">
           {/* Stake Only */}
-          <div className="p-4 rounded-2xl bg-[#0c0f1a]/80 border border-[#232b47] text-left space-y-2">
+          <div className="p-4 rounded-2xl bg-[#020204]/80 border border-[#232b47] text-left space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-pink-400 uppercase tracking-wide">
                 Stake Only
@@ -106,7 +106,7 @@ export const InternationalTrip: React.FC = () => {
           </div>
 
           {/* Matching Only */}
-          <div className="p-4 rounded-2xl bg-[#0c0f1a]/80 border border-[#232b47] text-left space-y-2">
+          <div className="p-4 rounded-2xl bg-[#020204]/80 border border-[#232b47] text-left space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-400 uppercase tracking-wide">
                 Matching Only
@@ -131,9 +131,9 @@ export const InternationalTrip: React.FC = () => {
       </div>
 
       {/* 2. Campaign Details & Criteria Cards (Screenshot 17) */}
-      <section className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-6">
+      <section className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-6">
         <div className="text-center max-w-xl mx-auto space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/40 border border-purple-500/30 text-purple-300 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/40 border border-purple-500/30 text-[#00ffaa] text-xs font-semibold">
             <Calendar size={13} />
             <span>Offer From 01 Sep 2026 to 31st Dec 2026</span>
           </div>
@@ -145,9 +145,9 @@ export const InternationalTrip: React.FC = () => {
         {/* 3 Metric Cards (Screenshot 17) */}
         <div className="space-y-3">
           {/* Card 1: Self Staking - Stake Only */}
-          <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1e253b] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3.5">
-              <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shrink-0">
+              <div className="p-2.5 rounded-xl bg-purple-500/10 text-[#00e699] border border-purple-500/20 shrink-0">
                 <Luggage size={20} />
               </div>
               <div>
@@ -166,7 +166,7 @@ export const InternationalTrip: React.FC = () => {
           </div>
 
           {/* Card 2: Self Portfolio - Matching Only */}
-          <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1e253b] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3.5">
               <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shrink-0">
                 <Compass size={20} />
@@ -187,7 +187,7 @@ export const InternationalTrip: React.FC = () => {
           </div>
 
           {/* Card 3: Matching Achievement */}
-          <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1e253b] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3.5">
               <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
                 <Award size={20} />

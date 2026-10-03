@@ -28,6 +28,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BRAND } from '../../config/brand';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
+import { realMarketApi, LiveMarketPair, LiveCandle, LiveOrderBookRow } from '../../services/realMarketApi';
 import heroTerminalImg from '../../assets/images/olymptrade_hero_terminal_1790946814485.jpg';
 import mobilePlatformImg from '../../assets/images/olymptrade_mobile_platform_1790946827477.jpg';
 import assetsShowcaseImg from '../../assets/images/olymptrade_assets_showcase_1790946842771.jpg';
@@ -89,7 +90,7 @@ interface OrderBookRow {
 }
 
 export const LandingPage: React.FC = () => {
-  const { setAuthStage, setActiveRoute } = useAuth();
+  const { user, wallets, setAuthStage, setActiveRoute } = useAuth();
   const { isDark } = useTheme();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -100,10 +101,20 @@ export const LandingPage: React.FC = () => {
   // Active section for floating dock
   const [activeSection, setActiveSection] = useState<string>('terminal');
 
+  // Unified Security Gate: Without login, dashboard CANNOT open!
+  const handleStartApp = () => {
+    const savedPass = typeof localStorage !== 'undefined' ? localStorage.getItem('xah_custom_passcode') : '';
+    if (user && savedPass) {
+      setAuthStage('LOCKED');
+    } else {
+      setAuthStage('UNAUTHENTICATED');
+    }
+  };
+
   // Interactive Terminal State
   const [accountMode, setAccountMode] = useState<'demo' | 'real'>('demo');
   const [demoBalance, setDemoBalance] = useState<number>(10000.0);
-  const [selectedAssetId, setSelectedAssetId] = useState<string>('native');
+  const [selectedAssetId, setSelectedAssetId] = useState<string>('ETHUSDT');
   const [tradeDuration, setTradeDuration] = useState<number>(5);
   const [tradeAmount, setTradeAmount] = useState<number>(50);
   const [activeIndicator, setActiveIndicator] = useState<'VOL' | 'SMA' | 'RSI'>('VOL');
@@ -114,35 +125,75 @@ export const LandingPage: React.FC = () => {
   const [hoveredPrice, setHoveredPrice] = useState<number | null>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
-  // Live Simulated Price Engine
-  const [livePrice, setLivePrice] = useState<number>(337.2);
-  const [candles, setCandles] = useState<
-    { open: number; high: number; low: number; close: number; volume: number; isUp: boolean }[]
-  >([
-    { open: 335.0, high: 336.2, low: 334.8, close: 335.8, volume: 142, isUp: true },
-    { open: 335.8, high: 336.5, low: 335.2, close: 336.1, volume: 98, isUp: true },
-    { open: 336.1, high: 336.8, low: 335.6, close: 335.9, volume: 110, isUp: false },
-    { open: 335.9, high: 337.0, low: 335.7, close: 336.6, volume: 165, isUp: true },
-    { open: 336.6, high: 337.4, low: 336.2, close: 336.8, volume: 84, isUp: true },
-    { open: 336.8, high: 337.5, low: 336.5, close: 337.1, volume: 190, isUp: true },
-    { open: 337.1, high: 337.8, low: 336.8, close: 337.0, volume: 130, isUp: false },
-    { open: 337.0, high: 337.9, low: 336.9, close: 337.5, volume: 210, isUp: true },
-    { open: 337.5, high: 338.2, low: 337.1, close: 337.2, volume: 175, isUp: false },
-  ]);
+  // Real Market Data Feed
+  const [livePairs, setLivePairs] = useState<LiveMarketPair[]>([]);
+  const [livePrice, setLivePrice] = useState<number>(2840.50);
+  const [candles, setCandles] = useState<LiveCandle[]>([]);
+  const [orderBookAsks, setOrderBookAsks] = useState<LiveOrderBookRow[]>([]);
+  const [orderBookBids, setOrderBookBids] = useState<LiveOrderBookRow[]>([]);
 
-  // Live Order Book Rows
-  const [orderBookAsks, setOrderBookAsks] = useState<OrderBookRow[]>([
-    { price: 337.6, size: 4.82, total: 1627 },
-    { price: 337.5, size: 8.15, total: 2750 },
-    { price: 337.4, size: 12.4, total: 4183 },
-    { price: 337.3, size: 6.9, total: 2327 },
-  ]);
-  const [orderBookBids, setOrderBookBids] = useState<OrderBookRow[]>([
-    { price: 337.1, size: 14.2, total: 4786 },
-    { price: 337.0, size: 9.65, total: 3252 },
-    { price: 336.9, size: 18.3, total: 6165 },
-    { price: 336.8, size: 5.12, total: 1724 },
-  ]);
+  // Default Pairs fallback before first network tick
+  const DEFAULT_PAIRS = [
+    { id: 'ETHUSDT', symbol: 'ETHUSDT', name: 'ETH / USDT', payout: 92, price: 2840.5, delta: '+2.45%', up: true, type: 'Crypto' },
+    { id: 'BTCUSDT', symbol: 'BTCUSDT', name: 'BTC / USDT', payout: 95, price: 84650.0, delta: '+3.12%', up: true, type: 'Crypto' },
+    { id: 'BNBUSDT', symbol: 'BNBUSDT', name: 'BNB / USDT', payout: 88, price: 624.1, delta: '+1.80%', up: true, type: 'Crypto' },
+    { id: 'SOLUSDT', symbol: 'SOLUSDT', name: 'SOL / USDT', payout: 90, price: 178.4, delta: '+5.40%', up: true, type: 'Crypto' },
+    { id: 'XRPUSDT', symbol: 'XRPUSDT', name: 'XRP / USDT', payout: 86, price: 0.584, delta: '-0.32%', up: false, type: 'Crypto' },
+  ];
+
+  const currentPairMeta = livePairs.find((p) => p.symbol === selectedAssetId);
+  const currentPair = {
+    id: selectedAssetId,
+    name: currentPairMeta ? currentPairMeta.name : (DEFAULT_PAIRS.find((p) => p.id === selectedAssetId)?.name || 'ETH / USDT'),
+    payout: currentPairMeta ? currentPairMeta.payout : 92,
+    price: currentPairMeta ? currentPairMeta.price : livePrice,
+    delta: currentPairMeta ? `${currentPairMeta.change24h >= 0 ? '+' : ''}${currentPairMeta.change24h.toFixed(2)}%` : '+2.45%',
+    up: currentPairMeta ? currentPairMeta.change24h >= 0 : true,
+    high24h: currentPairMeta ? currentPairMeta.high24h : livePrice * 1.02,
+    low24h: currentPairMeta ? currentPairMeta.low24h : livePrice * 0.98,
+  };
+
+  // Subscribe to real live ticker feed
+  useEffect(() => {
+    const unsub = realMarketApi.subscribe((pairs) => {
+      if (pairs && pairs.length > 0) {
+        setLivePairs(pairs);
+        const match = pairs.find((p) => p.symbol === selectedAssetId);
+        if (match) {
+          setLivePrice(match.price);
+        }
+      }
+    });
+
+    return () => unsub();
+  }, [selectedAssetId]);
+
+  // Load real Candlesticks and Order Book from Binance API
+  useEffect(() => {
+    let isMounted = true;
+    async function loadRealChartData() {
+      const [cList, ob] = await Promise.all([
+        realMarketApi.fetchRealCandlesticks(selectedAssetId, '1m', 24),
+        realMarketApi.fetchRealOrderBook(selectedAssetId, 6),
+      ]);
+
+      if (isMounted) {
+        if (cList && cList.length > 0) {
+          setCandles(cList);
+          setLivePrice(cList[cList.length - 1].close);
+        }
+        if (ob && ob.asks.length > 0) setOrderBookAsks(ob.asks);
+        if (ob && ob.bids.length > 0) setOrderBookBids(ob.bids);
+      }
+    }
+
+    loadRealChartData();
+    const interval = setInterval(loadRealChartData, 4000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [selectedAssetId]);
 
   // Active simulated positions
   const [activeTrades, setActiveTrades] = useState<SimulatedTrade[]>([]);
@@ -153,55 +204,19 @@ export const LandingPage: React.FC = () => {
   const [calcTradesPerDay, setCalcTradesPerDay] = useState<number>(12);
   const [calcPlan, setCalcPlan] = useState<'quick' | 'staking' | 'hybrid'>('quick');
 
-  const TRADING_PAIRS = [
-    { id: 'native', name: `${BRAND.tokenSymbol}/USDT`, payout: 95, price: 337.2, delta: '+8.74%', up: true, type: 'Crypto' },
-    { id: 'eurusd', name: 'EUR/USD', payout: 92, price: 1.0845, delta: '+0.32%', up: true, type: 'Forex' },
-    { id: 'btcusdt', name: 'BTC/USDT', payout: 88, price: 64250.0, delta: '+3.15%', up: true, type: 'Crypto' },
-    { id: 'gold', name: 'Gold (XAU)', payout: 85, price: 2348.6, delta: '-0.42%', up: false, type: 'Commodities' },
-    { id: 'solusdt', name: 'SOL/USDT', payout: 90, price: 148.9, delta: '+5.40%', up: true, type: 'Crypto' },
-  ];
+  const TRADING_PAIRS = livePairs.length > 0
+    ? livePairs.slice(0, 5).map((lp) => ({
+        id: lp.symbol,
+        name: lp.name,
+        payout: lp.payout,
+        price: lp.price,
+        delta: `${lp.change24h >= 0 ? '+' : ''}${lp.change24h.toFixed(2)}%`,
+        up: lp.change24h >= 0,
+        type: 'Crypto',
+      }))
+    : DEFAULT_PAIRS;
 
-  const currentPair = TRADING_PAIRS.find((p) => p.id === selectedAssetId) || TRADING_PAIRS[0];
   const expectedProfit = +(tradeAmount * (currentPair.payout / 100)).toFixed(2);
-
-  // Real-time ticking price generator
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setLivePrice((prev) => {
-        const delta = (Math.random() - 0.48) * (prev * 0.0012);
-        const newPrice = +(prev + delta).toFixed(2);
-        setCandles((cList) => {
-          const last = cList[cList.length - 1];
-          const updatedLast = {
-            ...last,
-            close: newPrice,
-            high: Math.max(last.high, newPrice),
-            low: Math.min(last.low, newPrice),
-            volume: last.volume + Math.floor(Math.random() * 5),
-            isUp: newPrice >= last.open,
-          };
-          return [...cList.slice(0, -1), updatedLast];
-        });
-        return newPrice;
-      });
-
-      // Update Order Book randomly
-      setOrderBookAsks((prev) =>
-        prev.map((r) => ({
-          ...r,
-          size: +(r.size + (Math.random() - 0.5) * 0.8).toFixed(2),
-        }))
-      );
-      setOrderBookBids((prev) =>
-        prev.map((r) => ({
-          ...r,
-          size: +(r.size + (Math.random() - 0.5) * 0.8).toFixed(2),
-        }))
-      );
-    }, 1400);
-
-    return () => clearInterval(timer);
-  }, [selectedAssetId]);
 
   // Trade resolution countdown
   useEffect(() => {
@@ -360,7 +375,7 @@ export const LandingPage: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setAuthStage('UNAUTHENTICATED')}
+              onClick={handleStartApp}
               className="hidden sm:inline-flex px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white rounded-xl hover:bg-[#121217] transition-colors cursor-pointer"
             >
               Sign In
@@ -368,7 +383,7 @@ export const LandingPage: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setAuthStage('AUTHENTICATED')}
+              onClick={handleStartApp}
               className="px-5 py-2.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-xs tracking-tight shadow-lg shadow-[#00e699]/30 hover:shadow-[#00e699]/50 active:scale-[0.97] transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap"
             >
               <span>Launch Platform</span>
@@ -421,13 +436,13 @@ export const LandingPage: React.FC = () => {
             </a>
             <div className="pt-2 border-t border-[#18181c] flex flex-col gap-2">
               <button
-                onClick={() => setAuthStage('UNAUTHENTICATED')}
+                onClick={handleStartApp}
                 className="w-full py-2.5 rounded-xl border border-[#222228] text-xs font-bold text-slate-200 cursor-pointer"
               >
                 Sign In
               </button>
               <button
-                onClick={() => setAuthStage('AUTHENTICATED')}
+                onClick={handleStartApp}
                 className="w-full py-2.5 rounded-xl bg-[#00e699] text-black font-extrabold text-xs cursor-pointer"
               >
                 Launch Platform
@@ -534,7 +549,13 @@ export const LandingPage: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setAccountMode('real')}
+                    onClick={() => {
+                      if (!user) {
+                        handleStartApp();
+                      } else {
+                        setAccountMode('real');
+                      }
+                    }}
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       accountMode === 'real' ? 'bg-[#00e699] text-black font-extrabold' : 'text-slate-400 hover:text-white'
                     }`}
@@ -546,7 +567,9 @@ export const LandingPage: React.FC = () => {
                 <div className="hidden sm:flex items-center gap-2 text-xs font-mono">
                   <span className="text-slate-400">Balance:</span>
                   <span className="font-extrabold text-[#00e699]">
-                    ${accountMode === 'demo' ? demoBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '2,100.00'}
+                    ${accountMode === 'demo'
+                      ? demoBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                      : (wallets ? wallets.mainBalanceUSDT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00')}
                   </span>
                 </div>
               </div>
@@ -971,8 +994,8 @@ export const LandingPage: React.FC = () => {
               {/* Card 2B: Passive Yield */}
               <div className="rounded-3xl bg-[#08080a] border border-[#18181c] hover:border-purple-500/40 p-6 shadow-2xl space-y-3 transition-all duration-300 hover:-translate-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-purple-400">03. SMART CONTRACT STAKING</span>
-                  <Percent size={16} className="text-purple-400" />
+                  <span className="text-xs font-mono font-bold text-[#00e699]">03. SMART CONTRACT STAKING</span>
+                  <Percent size={16} className="text-[#00e699]" />
                 </div>
                 <h4 className="text-lg font-black text-white tracking-tight">
                   Up to 124.5% APY Staking Pools
@@ -982,7 +1005,7 @@ export const LandingPage: React.FC = () => {
                 </p>
                 <div className="pt-2 flex items-center justify-between text-xs font-mono">
                   <span className="text-slate-500">Audited Security</span>
-                  <span className="text-purple-400 font-bold">Daily Compound Yield</span>
+                  <span className="text-[#00e699] font-bold">Daily Compound Yield</span>
                 </div>
               </div>
 
@@ -1107,7 +1130,7 @@ export const LandingPage: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-slate-400 font-sans">Staking APY Boost</div>
-                    <div className="text-lg font-bold text-purple-400 mt-0.5">
+                    <div className="text-lg font-bold text-[#00e699] mt-0.5">
                       +${((calcStakeVal * 0.68) / 12).toFixed(2)} /mo
                     </div>
                   </div>
@@ -1115,7 +1138,7 @@ export const LandingPage: React.FC = () => {
 
                 <button
                   type="button"
-                  onClick={() => setAuthStage('AUTHENTICATED')}
+                  onClick={handleStartApp}
                   className="w-full py-3.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] active:scale-[0.98] text-black font-extrabold text-xs tracking-tight transition-all cursor-pointer font-sans shadow-lg shadow-[#00e699]/30"
                 >
                   Start with Free $10,000 Virtual Demo
@@ -1161,7 +1184,7 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setAuthStage('AUTHENTICATED')}
+                  onClick={handleStartApp}
                   className="px-6 py-3 rounded-xl bg-white text-black font-extrabold text-xs tracking-tight hover:bg-[#00e699] transition-colors whitespace-nowrap cursor-pointer shadow-lg"
                 >
                   Explore Pool Data →
@@ -1246,14 +1269,14 @@ export const LandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
             <button
               type="button"
-              onClick={() => setAuthStage('AUTHENTICATED')}
+              onClick={handleStartApp}
               className="px-8 py-4 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-sm sm:text-base tracking-tight shadow-xl shadow-[#00e699]/30 transition-all cursor-pointer"
             >
               Open Free $10,000 Demo
             </button>
             <button
               type="button"
-              onClick={() => setAuthStage('UNAUTHENTICATED')}
+              onClick={handleStartApp}
               className="px-8 py-4 rounded-xl bg-[#0a0a0e] hover:bg-[#121216] text-white border border-[#222228] font-bold text-sm tracking-tight transition-all cursor-pointer"
             >
               Deposit & Trade Real Funds
@@ -1277,22 +1300,58 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-6 text-slate-400 text-xs">
-              <button onClick={() => setActiveRoute('about')} className="hover:text-white transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  if (!user) handleStartApp();
+                  else setActiveRoute('about');
+                }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
                 About Protocol
               </button>
-              <button onClick={() => setActiveRoute('trade')} className="hover:text-white transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  if (!user) handleStartApp();
+                  else setActiveRoute('trade');
+                }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
                 Trading Terminal
               </button>
-              <button onClick={() => setActiveRoute('staking')} className="hover:text-white transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  if (!user) handleStartApp();
+                  else setActiveRoute('staking');
+                }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
                 Staking Plans
               </button>
-              <button onClick={() => setActiveRoute('legal')} className="hover:text-white transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  if (!user) handleStartApp();
+                  else setActiveRoute('legal');
+                }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
                 Regulatory Disclosures
               </button>
-              <button onClick={() => setActiveRoute('privacy')} className="hover:text-white transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  if (!user) handleStartApp();
+                  else setActiveRoute('privacy');
+                }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
                 Privacy Policy
               </button>
-              <button onClick={() => setActiveRoute('contact')} className="hover:text-white transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  if (!user) handleStartApp();
+                  else setActiveRoute('contact');
+                }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
                 Help Desk
               </button>
             </div>

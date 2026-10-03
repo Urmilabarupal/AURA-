@@ -77,7 +77,7 @@ export const SipBonus: React.FC = () => {
               className={`p-6 rounded-2xl border transition-all ${
                 tier.isUnlocked
                   ? 'bg-[#151c33] border-purple-500/40 shadow-lg'
-                  : 'bg-[#131728] border-[#202740]'
+                  : 'bg-[#08080a] border-[#18181c]'
               }`}
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -120,12 +120,12 @@ export const SipBonus: React.FC = () => {
                 <div className="md:min-w-[200px] text-right space-y-2">
                   <div className="flex justify-between text-xs text-slate-400">
                     <span>Active Users:</span>
-                    <span className="font-mono text-purple-300 font-bold">
+                    <span className="font-mono text-[#00ffaa] font-bold">
                       {tier.activeUsersCount} / {tier.neededPersons}
                     </span>
                   </div>
 
-                  <div className="w-full bg-[#0c0f1a] h-2.5 rounded-full overflow-hidden border border-[#1e253b]">
+                  <div className="w-full bg-[#020204] h-2.5 rounded-full overflow-hidden border border-[#18181c]">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         tier.isUnlocked

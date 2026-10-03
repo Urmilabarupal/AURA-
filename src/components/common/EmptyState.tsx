@@ -40,7 +40,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center p-8 rounded-2xl bg-[#121626]/80 border border-[#1e253b] ${className}`}
+      className={`flex flex-col items-center justify-center text-center p-8 rounded-2xl bg-[#08080a]/80 border border-[#18181c] ${className}`}
     >
       {/* Visual illustration resembling reference screenshots' cloud/box mascot */}
       <div className="relative mb-5 flex items-center justify-center">

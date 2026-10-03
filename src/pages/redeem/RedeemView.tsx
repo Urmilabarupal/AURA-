@@ -125,14 +125,14 @@ export const RedeemView: React.FC = () => {
       {/* Main Grid: Transactions on Left, Redeem Box on Right (Screenshots 27 & 28) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Transaction List / Empty State */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="flex items-center justify-between border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+          <div className="flex items-center justify-between border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">
               Transaction ({transactions.length})
             </h3>
             <button
               onClick={loadTransactions}
-              className="text-xs text-purple-400 hover:text-purple-300 font-semibold"
+              className="text-xs text-[#00e699] hover:text-[#00ffaa] font-semibold"
             >
               Refresh
             </button>
@@ -148,7 +148,7 @@ export const RedeemView: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
@@ -161,7 +161,7 @@ export const RedeemView: React.FC = () => {
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-[#151a2d]">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 font-mono text-purple-400">{tx.referenceId}</td>
+                      <td className="py-3 px-3 font-mono text-[#00e699]">{tx.referenceId}</td>
                       <td className="py-3 px-3 text-slate-400">{tx.description}</td>
                       <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
                         +${tx.amount.toFixed(2)} USDT
@@ -187,7 +187,7 @@ export const RedeemView: React.FC = () => {
         </div>
 
         {/* Right Column: Redeem Box (Screenshots 27 & 28 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           <div>
             <h3 className="text-base font-extrabold text-slate-100">Redeem</h3>
             <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
@@ -197,7 +197,7 @@ export const RedeemView: React.FC = () => {
 
           {/* 3 Metric Rows (Screenshots 27 & 28) */}
           <div className="space-y-2.5">
-            <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-xs text-slate-400">
                 <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
                   <HandCoins size={16} />
@@ -209,7 +209,7 @@ export const RedeemView: React.FC = () => {
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-xs text-slate-400">
                 <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
                   <HandCoins size={16} />
@@ -221,9 +221,9 @@ export const RedeemView: React.FC = () => {
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-xs text-slate-400">
-                <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400">
+                <div className="p-1.5 rounded-lg bg-purple-500/10 text-[#00e699]">
                   <Coins size={16} />
                 </div>
                 <span>Available Now</span>
@@ -263,12 +263,12 @@ export const RedeemView: React.FC = () => {
                   max={availableNow}
                   value={redeemAmount}
                   onChange={(e) => setRedeemAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full pl-3.5 pr-14 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-sm font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                  className="w-full pl-3.5 pr-14 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-sm font-mono text-slate-100 focus:outline-none focus:border-purple-500"
                 />
                 <button
                   type="button"
                   onClick={() => setRedeemAmount(availableNow)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-md text-[10px] font-bold text-purple-400 hover:text-white bg-[#1a2138] hover:bg-purple-600 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-md text-[10px] font-bold text-[#00e699] hover:text-white bg-[#1a2138] hover:bg-purple-600 transition-colors"
                 >
                   MAX
                 </button>

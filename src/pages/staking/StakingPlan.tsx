@@ -3,19 +3,11 @@
 
  PURPOSE:
  Staking Plans Catalog and Yield Commitment interface.
- Corresponds to Reference Screenshot 35. Implements Section 17.
-
- RESPONSIBILITIES:
- - Render Staking Plan cards (1825 Days 100% APR, 730 Days 45%, 365 Days 25%, 90 Days 12%)
- - Display period, currency, period type (/ Day), APR %, and feature checkmarks
- - Provide working "Choose Plan" commitment modal with live yield calculation
- - Enforce server-authoritative balance verification and stake execution
-
- API:
- Calls ApiService.getStakingPlans, ApiService.stake, and ApiService.getWallets.
-
- NOTE:
- Developer documentation only. Never expose sensitive information.
+ Styled with authentic Olymp Trade pitch-black OLED palette:
+ - Canvas: #000000, Obsidian card bodies: #08080a, Hairline borders: #18181c
+ - Buttons: Signature Olymp Trade Emerald Green (#00e699)
+ - Real-time yield estimator inside commitment modal
+ - Server-authoritative balance verification
 */
 
 import React, { useEffect, useState } from 'react';
@@ -25,6 +17,7 @@ import { StakingPlan } from '../../types';
 import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
+  ArrowLeft,
   Calendar,
   Check,
   CheckCircle2,
@@ -34,6 +27,7 @@ import {
   Loader2,
   Lock,
   Percent,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
   X,
@@ -118,87 +112,150 @@ export const StakingPlanView: React.FC = () => {
     ? +((stakeAmount * (selectedPlan.aprPercent / 100)) / 365).toFixed(4)
     : 0;
 
+  const totalReturnEst = selectedPlan
+    ? +((stakeAmount * (selectedPlan.aprPercent / 100) * (selectedPlan.durationDays / 365))).toFixed(2)
+    : 0;
+
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 font-sans select-none">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
-            Staking Plan
-          </h1>
-          <p className="text-xs text-slate-400">Guaranteed Return Fixed-Term Staking Pools</p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveRoute('staking')}
+              className="p-1.5 rounded-lg bg-[#08080a] border border-[#18181c] text-slate-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+              Staking Vault Catalog
+            </h1>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Guaranteed Yield Fixed-Term Pools with On-Chain Auto-Restaking
+          </p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setActiveRoute('staking')}
+          className="px-3.5 py-2 rounded-xl bg-[#08080a] border border-[#18181c] text-xs font-mono font-semibold text-[#00e699] hover:bg-[#121216] transition-colors cursor-pointer flex items-center gap-2"
+        >
+          <TrendingUp size={14} />
+          <span>View Real-Time APY Chart</span>
+        </button>
       </div>
 
-      {/* Plans Grid (Screenshot 35 layout) */}
+      {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {plans.map((plan) => (
-          <div
-            key={plan.id}
-            className="p-6 rounded-2xl bg-[#131728] border border-[#202740] hover:border-purple-500/50 transition-all shadow-xl space-y-5 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              {/* Plan Title & APR Badge (Screenshot 35) */}
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 font-mono">
-                    Premium Pool
-                  </span>
-                  <h3 className="text-lg font-black text-slate-100 mt-0.5">{plan.name}</h3>
-                </div>
-                <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 shrink-0">
-                  <Percent size={20} />
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-slate-400 leading-relaxed">{plan.description}</p>
-
-              {/* Bullet Features with Checkmarks (Screenshot 35) */}
-              <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Check size={14} className="text-blue-400" />
-                  <span>Period: <strong className="text-white">{plan.durationDays} Days</strong></span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Check size={14} className="text-blue-400" />
-                  <span>Currency: <strong className="text-white">{plan.currency}</strong></span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Check size={14} className="text-blue-400" />
-                  <span>Period Type: <strong className="text-white">{plan.periodType}</strong></span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Check size={14} className="text-blue-400" />
-                  <span>APR: <strong className="text-emerald-400 font-mono">{plan.aprPercent.toFixed(2)}%</strong></span>
-                </div>
-              </div>
-            </div>
-
-            {/* Choose Plan Button (Screenshot 35) */}
-            <button
-              onClick={() => handleOpenPlan(plan)}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-950/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        {plans.map((plan) => {
+          const isVip = plan.durationDays >= 1825;
+          return (
+            <div
+              key={plan.id}
+              className={`p-6 rounded-2xl bg-[#08080a] border transition-all duration-200 shadow-2xl flex flex-col justify-between space-y-5 ${
+                isVip
+                  ? 'border-[#00e699]/40 hover:border-[#00e699] hover:shadow-[0_0_30px_rgba(0,230,153,0.15)]'
+                  : 'border-[#18181c] hover:border-[#282830]'
+              }`}
             >
-              <Sparkles size={14} />
-              <span>Choose Plan</span>
-            </button>
-          </div>
-        ))}
+              <div className="space-y-4">
+                {/* Plan Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider font-mono ${
+                        isVip ? 'text-[#00e699]' : 'text-slate-400'
+                      }`}
+                    >
+                      {isVip ? '★ Institutional Sovereign Tier' : 'Standard Yield Pool'}
+                    </span>
+                    <h3 className="text-lg font-black text-white mt-0.5">{plan.name}</h3>
+                  </div>
+                  <div
+                    className={`p-2 rounded-xl shrink-0 ${
+                      isVip
+                        ? 'bg-[#00e699]/15 border border-[#00e699]/30 text-[#00e699]'
+                        : 'bg-[#020204] border border-[#18181c] text-slate-300'
+                    }`}
+                  >
+                    <Percent size={20} className="stroke-[2.5]" />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs text-slate-400 leading-relaxed">{plan.description}</p>
+
+                {/* Features Box */}
+                <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-2.5 text-xs">
+                  <div className="flex items-center justify-between text-slate-300">
+                    <span className="flex items-center gap-2">
+                      <Check size={14} className="text-[#00e699]" />
+                      Lock Period:
+                    </span>
+                    <strong className="text-white font-mono">{plan.durationDays} Days</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-300">
+                    <span className="flex items-center gap-2">
+                      <Check size={14} className="text-[#00e699]" />
+                      Payout Currency:
+                    </span>
+                    <strong className="text-white font-mono">{plan.currency}</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-300">
+                    <span className="flex items-center gap-2">
+                      <Check size={14} className="text-[#00e699]" />
+                      Settlement Frequency:
+                    </span>
+                    <strong className="text-white">{plan.periodType}</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-300 border-t border-[#18181c] pt-2">
+                    <span className="flex items-center gap-2 font-bold text-white">
+                      <TrendingUp size={14} className="text-[#00e699]" />
+                      Fixed APR:
+                    </span>
+                    <strong className="text-base font-black text-[#00e699] font-mono">
+                      {plan.aprPercent.toFixed(2)}%
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Choose Plan Button (Olymp Trade Green) */}
+              <button
+                type="button"
+                onClick={() => handleOpenPlan(plan)}
+                className={`w-full py-3.5 px-4 rounded-xl text-xs font-extrabold tracking-tight transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+                  isVip
+                    ? 'bg-[#00e699] hover:bg-[#00ffaa] text-black shadow-lg shadow-[#00e699]/30'
+                    : 'bg-[#18181c] hover:bg-[#222228] text-white hover:text-[#00e699] border border-[#222228]'
+                }`}
+              >
+                <Sparkles size={14} className="stroke-[2.5]" />
+                <span>Select {plan.name}</span>
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       {/* Plan Commitment Modal */}
       {selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-[#141829] border border-[#202740] shadow-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-[#1d243b] pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-md rounded-3xl bg-[#08080a] border border-[#18181c] shadow-2xl p-6 sm:p-7 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#18181c] pb-3">
               <div>
-                <h3 className="text-sm font-bold text-slate-100">{selectedPlan.name}</h3>
-                <p className="text-[11px] text-purple-400 font-mono">
+                <h3 className="text-base font-bold text-white">{selectedPlan.name}</h3>
+                <p className="text-xs text-[#00e699] font-mono mt-0.5">
                   {selectedPlan.aprPercent}% APR · {selectedPlan.durationDays} Days Lock
                 </p>
               </div>
-              <button onClick={() => setSelectedPlan(null)} className="text-slate-400 hover:text-white">
+              <button
+                type="button"
+                onClick={() => setSelectedPlan(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-[#18181c] transition-colors cursor-pointer"
+              >
                 <X size={18} />
               </button>
             </div>
@@ -206,35 +263,35 @@ export const StakingPlanView: React.FC = () => {
             <form onSubmit={handleExecuteStake} className="space-y-4">
               {feedback && (
                 <div
-                  className={`p-3 rounded-xl border flex items-start gap-2 text-xs ${
+                  className={`p-3 rounded-xl border flex items-start gap-2.5 text-xs ${
                     feedback.type === 'success'
-                      ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-300'
-                      : 'bg-red-950/40 border-red-800/50 text-red-300'
+                      ? 'bg-emerald-950/40 border-[#00e699]/40 text-[#00e699]'
+                      : 'bg-red-950/40 border-red-800/50 text-[#ff3b5c]'
                   }`}
                 >
                   {feedback.type === 'success' ? (
-                    <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-400" />
+                    <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-[#00e699]" />
                   ) : (
-                    <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-400" />
+                    <AlertCircle size={16} className="shrink-0 mt-0.5 text-[#ff3b5c]" />
                   )}
                   <span>{feedback.msg}</span>
                 </div>
               )}
 
-              <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between text-xs">
+              <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between text-xs">
                 <span className="text-slate-400">Available in Main Wallet:</span>
-                <span className="font-mono font-bold text-slate-100">
+                <span className="font-mono font-bold text-white">
                   {wallets?.mainBalanceNative.toFixed(4) || '0.0000'} {BRAND.tokenSymbol}
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex justify-between text-[11px] text-slate-300">
-                  <span>Stake Amount ({BRAND.tokenSymbol})</span>
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs text-slate-300">
+                  <label className="font-semibold">Stake Amount ({BRAND.tokenSymbol})</label>
                   <button
                     type="button"
                     onClick={() => setStakeAmount(wallets?.mainBalanceNative || 0)}
-                    className="text-purple-400 hover:text-purple-300 font-bold"
+                    className="text-[#00e699] hover:text-[#00ffaa] font-bold text-xs"
                   >
                     MAX
                   </button>
@@ -245,38 +302,51 @@ export const StakingPlanView: React.FC = () => {
                   step="1"
                   value={stakeAmount}
                   onChange={(e) => setStakeAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-sm font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-3 rounded-xl bg-[#020204] border border-[#18181c] text-sm font-mono text-white focus:outline-none focus:border-[#00e699] transition-colors"
                 />
               </div>
 
-              {/* Yield Forecast */}
-              <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1.5 text-xs font-mono">
-                <div className="flex justify-between text-slate-400">
-                  <span>Estimated Daily Yield:</span>
-                  <span className="font-bold text-emerald-400">+{dailyReturnEst} {BRAND.tokenSymbol}/day</span>
+              {/* Yield Projection Breakdown */}
+              <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] space-y-2 text-xs font-mono">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>Daily Estimated Payout:</span>
+                  <span className="text-[#00e699] font-bold">
+                    +{dailyReturnEst} {BRAND.tokenSymbol}
+                  </span>
                 </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Total Lock Period Yield:</span>
-                  <span className="font-bold text-slate-100">
-                    +{(dailyReturnEst * selectedPlan.durationDays).toFixed(2)} {BRAND.tokenSymbol}
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>Total Maturity Return:</span>
+                  <span className="text-[#00ffaa] font-bold">
+                    +{totalReturnEst} {BRAND.tokenSymbol}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-[#18181c] pt-2 text-white">
+                  <span className="font-bold">Total Payout at Maturity:</span>
+                  <span className="font-black text-white">
+                    {(stakeAmount + totalReturnEst).toFixed(2)} {BRAND.tokenSymbol}
                   </span>
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isStaking}
-                className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-950/40"
-              >
-                {isStaking ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin" />
-                    <span>Locking Staking Assets...</span>
-                  </>
-                ) : (
-                  <span>Confirm & Lock Staking</span>
-                )}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isStaking}
+                  className="w-full py-3.5 px-4 rounded-xl text-xs font-extrabold text-black bg-[#00e699] hover:bg-[#00ffaa] shadow-lg shadow-[#00e699]/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isStaking ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin text-black" />
+                      <span>Locking Capital On-Chain...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={15} className="stroke-[2.5]" />
+                      <span>Confirm & Lock {stakeAmount} {BRAND.tokenSymbol}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -26,7 +26,7 @@ export const PrivacyView: React.FC = () => {
         <p className="text-xs text-slate-400">User Data Protection & Encryption Protocol</p>
       </div>
 
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-6 text-xs text-slate-300 leading-relaxed">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-6 text-xs text-slate-300 leading-relaxed">
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-slate-100">1. Information Collection</h2>
           <p>

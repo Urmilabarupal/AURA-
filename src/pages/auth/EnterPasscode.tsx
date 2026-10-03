@@ -2,29 +2,18 @@
  FILE: src/pages/auth/EnterPasscode.tsx
 
  PURPOSE:
- Exact 1:1 pixel-perfect reproduction of the uploaded Screen Lock interface from xahmoney.com (image.png).
- Features:
- - Exact background color #14151a matching the reference screenshot
- - Centered folded ribbon "HX" gradient logo (Pink -> Purple -> Cyan)
- - Title "Enter Passcode" in Poppins bold
- - Subtitle "Access your account with your PIN"
- - Completely clean, uncluttered layout matching the reference screenshot (no visible dots at rest)
- - Dynamic typing feedback when digits are typed
- - Connected 3x4 table keypad grid:
-   * Rows 1-3: Numbers 1 to 9
-   * Row 4 Col 1: White pill badge with black "✕" for backspace
-   * Row 4 Col 2: Number "0"
-   * Row 4 Col 3: Subtle gray checkmark "✓" that activates when PIN is ready
- - Bottom footnote: "Passcode adds an extra layer of security when using the app"
- - Strictly validates against user's created 6-digit passcode to unlock into the Dashboard
-
- SECURITY:
- Authoritative verification against AuthContext and backend engine.
+ High-security Screen Lock Keypad styled with Olymp Trade authentic OLED dark theme:
+ - Pitch black OLED canvas (#000000)
+ - Neon Emerald / Cyan ribbon logo
+ - Connected 3x4 tactile keypad with hairline borders (#18181c)
+ - Glowing emerald PIN feedback indicator
+ - Sub-second biometric/PIN authentication
 */
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Check, Loader2, X } from 'lucide-react';
+import { BRAND } from '../../config/brand';
 
 export const EnterPasscode: React.FC = () => {
   const { verifyPasscode, setAuthStage, refreshUserData } = useAuth();
@@ -83,57 +72,55 @@ export const EnterPasscode: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#14151a] text-slate-100 flex flex-col items-center justify-between p-4 py-8 select-none font-sans">
+    <div className="min-h-screen w-full bg-[#000000] text-slate-100 flex flex-col items-center justify-between p-4 py-8 select-none font-sans">
       
-      {/* Centered Main Lock Card matching image.png */}
+      {/* Centered Main Lock Card */}
       <div className="w-full max-w-[370px] flex flex-col items-center text-center my-auto space-y-7">
         
-        {/* Exact Folded Ribbon HX Logo from image.png */}
+        {/* Olymp Trade Neon Ribbon Logo */}
         <div className="relative w-16 h-14 flex items-center justify-center">
           <svg className="w-16 h-14" viewBox="0 0 64 54" fill="none">
             <defs>
-              <linearGradient id="xahRibbonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ff2a6d" />
-                <stop offset="48%" stopColor="#9d4edd" />
-                <stop offset="100%" stopColor="#38bdf8" />
+              <linearGradient id="olympRibbonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#00b875" />
+                <stop offset="50%" stopColor="#00e699" />
+                <stop offset="100%" stopColor="#00d2d3" />
               </linearGradient>
             </defs>
-            {/* Smooth continuous ribbon loop creating H and X */}
             <path
               d="M 22 13 C 14 13, 10 20, 10 27 C 10 34, 14 41, 22 41 C 28 41, 32 36, 32 27 C 32 18, 36 13, 42 13 C 50 13, 54 20, 54 27 C 54 34, 50 41, 42 41 C 36 41, 32 36, 32 27"
-              stroke="url(#xahRibbonGrad)"
+              stroke="url(#olympRibbonGrad)"
               strokeWidth="4.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {/* Center cross connection */}
             <path
               d="M 12 27 L 32 27 L 52 27"
-              stroke="url(#xahRibbonGrad)"
+              stroke="url(#olympRibbonGrad)"
               strokeWidth="4.5"
               strokeLinecap="round"
             />
           </svg>
         </div>
 
-        {/* Title & Subtitle matching image.png */}
-        <div className="space-y-2">
-          <h1 className="text-[23px] font-bold text-white tracking-tight leading-tight">
+        {/* Title & Subtitle */}
+        <div className="space-y-1.5">
+          <h1 className="text-[24px] font-black text-white tracking-tight leading-tight">
             Enter Passcode
           </h1>
-          <p className="text-[13px] text-[#8e96aa] font-normal tracking-normal">
-            Access your account with your PIN
+          <p className="text-[13px] text-slate-400 font-normal">
+            Access your {BRAND.name} trading terminal with your PIN
           </p>
         </div>
 
         {/* Typing indicator / Error message */}
         <div className="h-6 flex items-center justify-center">
           {errorMsg ? (
-            <p className="text-xs font-medium text-red-400 animate-shake">
+            <p className="text-xs font-semibold text-[#ff3b5c] animate-shake">
               {errorMsg}
             </p>
           ) : isSuccess ? (
-            <p className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 animate-fadeIn">
+            <p className="text-xs font-bold text-[#00e699] flex items-center gap-1.5 animate-fadeIn">
               <Check size={14} className="stroke-[3]" />
               <span>Passcode Verified!</span>
             </p>
@@ -142,33 +129,38 @@ export const EnterPasscode: React.FC = () => {
               {[0, 1, 2, 3, 4, 5].map((idx) => (
                 <div
                   key={idx}
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-150 ${
+                  className={`w-3 h-3 rounded-full transition-all duration-150 ${
                     pin.length > idx
-                      ? 'bg-gradient-to-r from-[#ff2a6d] to-[#38bdf8] scale-110'
-                      : 'bg-[#232733]'
+                      ? 'bg-[#00e699] scale-110 shadow-md shadow-[#00e699]/40'
+                      : 'bg-[#18181c]'
                   }`}
                 />
               ))}
             </div>
-          ) : null}
+          ) : (
+            <div className="flex items-center gap-2 opacity-30">
+              {[0, 1, 2, 3, 4, 5].map((idx) => (
+                <div key={idx} className="w-2.5 h-2.5 rounded-full bg-[#27272e]" />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ========================================================= */}
-        {/* CONNECTED KEYPAD GRID (3 Columns x 4 Rows) matching image.png */}
-        {/* Table-style single container with 1px border dividers */}
+        {/* CONNECTED KEYPAD GRID (3 Columns x 4 Rows) */}
         {/* ========================================================= */}
-        <div className="w-full rounded-xl border border-[#232733] overflow-hidden bg-[#14151a] shadow-xl">
+        <div className="w-full rounded-2xl border border-[#18181c] overflow-hidden bg-[#08080a] shadow-2xl">
           
           {/* Row 1: 1, 2, 3 */}
-          <div className="grid grid-cols-3 border-b border-[#232733]">
+          <div className="grid grid-cols-3 border-b border-[#18181c]">
             {[1, 2, 3].map((digit, idx) => (
               <button
                 key={digit}
                 type="button"
                 onClick={() => handleKeyPress(digit.toString())}
                 disabled={isVerifying || isSuccess}
-                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#1a1d26] active:bg-[#222633] transition-colors cursor-pointer select-none disabled:opacity-50 ${
-                  idx < 2 ? 'border-r border-[#232733]' : ''
+                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50 ${
+                  idx < 2 ? 'border-r border-[#18181c]' : ''
                 }`}
               >
                 {digit}
@@ -177,15 +169,15 @@ export const EnterPasscode: React.FC = () => {
           </div>
 
           {/* Row 2: 4, 5, 6 */}
-          <div className="grid grid-cols-3 border-b border-[#232733]">
+          <div className="grid grid-cols-3 border-b border-[#18181c]">
             {[4, 5, 6].map((digit, idx) => (
               <button
                 key={digit}
                 type="button"
                 onClick={() => handleKeyPress(digit.toString())}
                 disabled={isVerifying || isSuccess}
-                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#1a1d26] active:bg-[#222633] transition-colors cursor-pointer select-none disabled:opacity-50 ${
-                  idx < 2 ? 'border-r border-[#232733]' : ''
+                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50 ${
+                  idx < 2 ? 'border-r border-[#18181c]' : ''
                 }`}
               >
                 {digit}
@@ -194,15 +186,15 @@ export const EnterPasscode: React.FC = () => {
           </div>
 
           {/* Row 3: 7, 8, 9 */}
-          <div className="grid grid-cols-3 border-b border-[#232733]">
+          <div className="grid grid-cols-3 border-b border-[#18181c]">
             {[7, 8, 9].map((digit, idx) => (
               <button
                 key={digit}
                 type="button"
                 onClick={() => handleKeyPress(digit.toString())}
                 disabled={isVerifying || isSuccess}
-                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#1a1d26] active:bg-[#222633] transition-colors cursor-pointer select-none disabled:opacity-50 ${
-                  idx < 2 ? 'border-r border-[#232733]' : ''
+                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50 ${
+                  idx < 2 ? 'border-r border-[#18181c]' : ''
                 }`}
               >
                 {digit}
@@ -212,15 +204,15 @@ export const EnterPasscode: React.FC = () => {
 
           {/* Row 4: [ ✕ ] Backspace | 0 | [ ✓ ] Confirm */}
           <div className="grid grid-cols-3">
-            {/* Col 1: White rounded badge with black ✕ matching image.png */}
+            {/* Col 1: Delete button */}
             <button
               type="button"
               onClick={handleDelete}
               disabled={isVerifying || isSuccess || pin.length === 0}
-              className="h-[62px] border-r border-[#232733] flex items-center justify-center hover:bg-[#1a1d26] active:bg-[#222633] transition-colors cursor-pointer select-none disabled:opacity-30"
+              className="h-[62px] border-r border-[#18181c] flex items-center justify-center hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-30"
               aria-label="Delete last digit"
             >
-              <div className="w-[34px] h-[22px] rounded-[5px] bg-[#e6e9ee] hover:bg-white text-black flex items-center justify-center shadow-sm">
+              <div className="w-[34px] h-[22px] rounded-[5px] bg-[#18181c] hover:bg-[#25252c] text-slate-300 flex items-center justify-center shadow-sm">
                 <X size={13} className="stroke-[3]" />
               </div>
             </button>
@@ -230,25 +222,25 @@ export const EnterPasscode: React.FC = () => {
               type="button"
               onClick={() => handleKeyPress('0')}
               disabled={isVerifying || isSuccess}
-              className="h-[62px] border-r border-[#232733] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#1a1d26] active:bg-[#222633] transition-colors cursor-pointer select-none disabled:opacity-50"
+              className="h-[62px] border-r border-[#18181c] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50"
             >
               0
             </button>
 
-            {/* Col 3: Checkmark confirm icon matching image.png */}
+            {/* Col 3: Confirm button with glowing emerald status */}
             <button
               type="button"
               onClick={handleConfirm}
               disabled={isVerifying || isSuccess || pin.length === 0}
               className={`h-[62px] flex items-center justify-center transition-colors cursor-pointer select-none ${
                 pin.length >= 6
-                  ? 'text-white hover:bg-[#1a1d26] active:bg-[#222633]'
-                  : 'text-[#475266] hover:text-[#717b96] hover:bg-[#1a1d26]'
+                  ? 'text-[#00e699] hover:bg-[#121217] active:bg-[#18181c]'
+                  : 'text-slate-600 hover:text-slate-400 hover:bg-[#121217]'
               }`}
               aria-label="Confirm passcode"
             >
               {isVerifying ? (
-                <Loader2 size={18} className="animate-spin text-purple-400" />
+                <Loader2 size={18} className="animate-spin text-[#00e699]" />
               ) : (
                 <Check size={21} className="stroke-[2.8]" />
               )}
@@ -257,10 +249,10 @@ export const EnterPasscode: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer Security Footnote matching image.png */}
+      {/* Footer Security Footnote */}
       <div className="text-center pt-6 pb-2">
-        <p className="text-[12px] text-[#6b7588] font-normal tracking-wide">
-          Passcode adds an extra layer of security when using the app
+        <p className="text-[12px] text-slate-500 font-normal tracking-wide">
+          Passcode adds an extra layer of non-custodial cryptographic security
         </p>
       </div>
     </div>

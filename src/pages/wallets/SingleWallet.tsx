@@ -172,7 +172,7 @@ export const SingleWallet: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveRoute('wallets')}
-            className="p-2 rounded-xl bg-[#141829] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-[#08080a] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
@@ -188,14 +188,14 @@ export const SingleWallet: React.FC = () => {
       {/* Main Grid: Transactions on Left, Balance Card on Right (Screenshot 13 layout) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Transactions Section */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-          <div className="flex items-center justify-between border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+          <div className="flex items-center justify-between border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide">
               Transactions ({transactions.length})
             </h3>
             <button
               onClick={loadTransactions}
-              className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+              className="text-xs text-[#00e699] hover:text-[#00ffaa] flex items-center gap-1 font-semibold"
             >
               <RefreshCw size={12} />
               <span>Refresh</span>
@@ -212,7 +212,7 @@ export const SingleWallet: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
@@ -225,7 +225,7 @@ export const SingleWallet: React.FC = () => {
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-[#151a2d]">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 font-mono text-[11px] text-purple-400">
+                      <td className="py-3 px-3 font-mono text-[11px] text-[#00e699]">
                         {tx.referenceId}
                       </td>
                       <td className="py-3 px-3 text-right font-mono font-bold text-slate-100">
@@ -248,14 +248,14 @@ export const SingleWallet: React.FC = () => {
         </div>
 
         {/* Right Column: Balance & Action Card (Screenshot 13 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
               Balance
             </p>
             <h2 className="text-3xl font-black text-slate-100 font-mono">
               {emptyStateMode ? '0.00' : (wallets?.spotBalanceUSDT || 0).toFixed(2)}{' '}
-              <span className="text-sm font-bold text-purple-400">USDT</span>
+              <span className="text-sm font-bold text-[#00e699]">USDT</span>
             </h2>
             <div className="flex items-center justify-between text-xs text-slate-400 pt-1 font-mono">
               <span>{BRAND.tokenSymbol}:</span>
@@ -269,7 +269,7 @@ export const SingleWallet: React.FC = () => {
           <div className="grid grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => setDepositModalOpen(true)}
-              className="py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-950/50 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] shadow-lg shadow-blue-950/50 flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               <Download size={15} />
               <span>Deposit</span>
@@ -284,7 +284,7 @@ export const SingleWallet: React.FC = () => {
           </div>
 
           {/* Quick Wallet Address Box */}
-          <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+          <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
             <span className="text-[10px] text-slate-500 font-semibold uppercase">
               Deposit Address ({BRAND.tokenSymbol}-20)
             </span>
@@ -307,7 +307,7 @@ export const SingleWallet: React.FC = () => {
       {/* Deposit Modal */}
       {depositModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-[#141829] border border-[#202740] shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#1d243b] pb-3">
               <h3 className="text-sm font-bold text-slate-100">Deposit {BRAND.tokenSymbol} / USDT</h3>
               <button
@@ -319,13 +319,13 @@ export const SingleWallet: React.FC = () => {
             </div>
 
             {/* QR Code Simulation */}
-            <div className="flex flex-col items-center p-4 rounded-xl bg-[#0c0f1a] border border-[#1d243b] space-y-3">
+            <div className="flex flex-col items-center p-4 rounded-xl bg-[#020204] border border-[#1d243b] space-y-3">
               <div className="w-36 h-36 bg-white rounded-xl p-2 flex items-center justify-center shadow-lg">
                 <QrCode size={120} className="text-black" />
               </div>
               <div className="text-center">
                 <p className="text-[10px] text-slate-500">Scan QR Code or copy deposit address below</p>
-                <div className="mt-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141829] border border-[#202740] text-xs font-mono text-purple-300">
+                <div className="mt-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#08080a] border border-[#18181c] text-xs font-mono text-[#00ffaa]">
                   <span className="truncate max-w-[240px]">{user?.walletAddress}</span>
                   <button onClick={copyAddress} className="text-slate-400 hover:text-white">
                     {copiedAddr ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
@@ -346,14 +346,14 @@ export const SingleWallet: React.FC = () => {
                   step="10"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-slate-100 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isDepositing}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
                 {isDepositing ? (
                   <>
@@ -374,7 +374,7 @@ export const SingleWallet: React.FC = () => {
       {/* Withdraw Modal */}
       {withdrawModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-[#141829] border border-[#202740] shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#1d243b] pb-3">
               <h3 className="text-sm font-bold text-slate-100">Withdraw Funds</h3>
               <button
@@ -399,7 +399,7 @@ export const SingleWallet: React.FC = () => {
                 <select
                   value={withdrawWallet}
                   onChange={(e) => setWithdrawWallet(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-200 focus:outline-none"
                 >
                   <option value="spot">Spot Wallet (${wallets?.spotBalanceUSDT.toFixed(2)})</option>
                   <option value="main">Main Wallet (${wallets?.mainBalanceUSDT.toFixed(2)})</option>
@@ -413,7 +413,7 @@ export const SingleWallet: React.FC = () => {
                 <select
                   value={withdrawChain}
                   onChange={(e) => setWithdrawChain(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-200 focus:outline-none"
                 >
                   <option value={BRAND.chainNetwork}>{BRAND.chainNetwork} (Fee: 0.1 {BRAND.tokenSymbol})</option>
                   <option value="TRC-20">TRON TRC-20 (Fee: 1.0 USDT)</option>
@@ -431,7 +431,7 @@ export const SingleWallet: React.FC = () => {
                   placeholder="Paste on-chain address"
                   value={withdrawAddr}
                   onChange={(e) => setWithdrawAddr(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs font-mono text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
@@ -442,7 +442,7 @@ export const SingleWallet: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setWithdrawAmount(wallets?.spotBalanceUSDT || 0)}
-                    className="text-purple-400 hover:text-purple-300 font-bold"
+                    className="text-[#00e699] hover:text-[#00ffaa] font-bold"
                   >
                     MAX
                   </button>
@@ -453,7 +453,7 @@ export const SingleWallet: React.FC = () => {
                   step="0.01"
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-slate-100 focus:outline-none focus:border-purple-500"
                 />
               </div>
 

@@ -65,7 +65,7 @@ export const FarmingView: React.FC = () => {
         </div>
         <button
           onClick={() => setActiveRoute('farming-plan')}
-          className="py-2 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md transition-colors"
+          className="py-2 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] shadow-md transition-colors"
         >
           Explore LP Pools
         </button>
@@ -73,7 +73,7 @@ export const FarmingView: React.FC = () => {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-md flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
               Total Value Locked (TVL)
@@ -83,12 +83,12 @@ export const FarmingView: React.FC = () => {
             </h3>
             <span className="text-[10px] text-emerald-400 font-mono">Cross-chain Protocol Depth</span>
           </div>
-          <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400">
+          <div className="p-3 rounded-2xl bg-purple-500/10 text-[#00e699]">
             <Zap size={24} />
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-md flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
               Harvested Yield
@@ -114,7 +114,7 @@ export const FarmingView: React.FC = () => {
           {plans.map((pool) => (
             <div
               key={pool.id}
-              className="p-5 rounded-2xl bg-[#131728] border border-[#202740] hover:border-purple-500/40 shadow-lg space-y-4 flex flex-col justify-between transition-all"
+              className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-purple-500/40 shadow-lg space-y-4 flex flex-col justify-between transition-all"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -124,7 +124,7 @@ export const FarmingView: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-slate-100">{pool.poolPair}</h4>
-                      <span className="text-[10px] text-purple-400 font-mono font-bold">
+                      <span className="text-[10px] text-[#00e699] font-mono font-bold">
                         {pool.multiplier}
                       </span>
                     </div>
@@ -134,7 +134,7 @@ export const FarmingView: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1 text-xs font-mono">
+                <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] space-y-1 text-xs font-mono">
                   <div className="flex justify-between text-slate-400">
                     <span>Lock Duration:</span>
                     <span className="text-slate-200">{pool.lockPeriodDays} Days</span>
@@ -145,14 +145,14 @@ export const FarmingView: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-slate-400">
                     <span>Reward Token:</span>
-                    <span className="text-purple-400 font-bold">{pool.rewardToken}</span>
+                    <span className="text-[#00e699] font-bold">{pool.rewardToken}</span>
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={() => setActiveRoute('farming-plan')}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] shadow-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Farm LP</span>
                 <ArrowRight size={14} />
@@ -163,8 +163,8 @@ export const FarmingView: React.FC = () => {
       </div>
 
       {/* Farming History */}
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide border-b border-[#1b2238] pb-3">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide border-b border-[#18181c] pb-3">
           Farming Activity History
         </h3>
 
@@ -178,7 +178,7 @@ export const FarmingView: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                 <tr>
                   <th className="py-2 px-3">Type</th>
                   <th className="py-2 px-3">Reference ID</th>
@@ -191,7 +191,7 @@ export const FarmingView: React.FC = () => {
                 {transactions.map((tx) => (
                   <tr key={tx.id} className="hover:bg-[#151a2d]">
                     <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                    <td className="py-3 px-3 text-purple-400">{tx.referenceId}</td>
+                    <td className="py-3 px-3 text-[#00e699]">{tx.referenceId}</td>
                     <td className="py-3 px-3 text-slate-300">{BRAND.tokenSymbol}/USDT LP</td>
                     <td className="py-3 px-3 text-right font-bold text-emerald-400">
                       +${tx.amountUSD.toFixed(2)} USDT

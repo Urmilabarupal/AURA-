@@ -49,7 +49,7 @@ export const CommunityIncome: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Sub-Navigation Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#131728] border border-[#202740] shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveRoute('community-overview')}
@@ -71,7 +71,7 @@ export const CommunityIncome: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveRoute('community-income')}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm"
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#00e699] text-black font-extrabold shadow-sm"
           >
             Income
           </button>
@@ -86,15 +86,15 @@ export const CommunityIncome: React.FC = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-md space-y-1">
+        <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md space-y-1">
           <p className="text-xs text-slate-400 font-semibold uppercase">Total Commission Earned</p>
           <h3 className="text-2xl font-black text-slate-100 font-mono">
-            ${totalCommission.toFixed(2)} <span className="text-xs text-purple-400">USDT</span>
+            ${totalCommission.toFixed(2)} <span className="text-xs text-[#00e699]">USDT</span>
           </h3>
           <p className="text-[10px] text-slate-500">All-time multi-level commissions</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-md space-y-1">
+        <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md space-y-1">
           <p className="text-xs text-slate-400 font-semibold uppercase">Today's Income</p>
           <h3 className="text-2xl font-black text-emerald-400 font-mono">
             ${(totalCommission * 0.08).toFixed(2)} USDT
@@ -102,7 +102,7 @@ export const CommunityIncome: React.FC = () => {
           <p className="text-[10px] text-slate-500">Credited automatically</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-md space-y-1">
+        <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md space-y-1">
           <p className="text-xs text-slate-400 font-semibold uppercase">Direct Bonus Share</p>
           <h3 className="text-2xl font-black text-blue-400 font-mono">
             ${(totalCommission * 0.45).toFixed(2)} USDT
@@ -112,14 +112,14 @@ export const CommunityIncome: React.FC = () => {
       </div>
 
       {/* Income Breakdown by Level */}
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide border-b border-[#1b2238] pb-3">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide border-b border-[#18181c] pb-3">
           Level Commission Breakdown (Levels 1 - 10)
         </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
-            <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+            <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
               <tr>
                 <th className="py-2.5 px-3">Level</th>
                 <th className="py-2.5 px-3">Commission Rate</th>
@@ -132,7 +132,7 @@ export const CommunityIncome: React.FC = () => {
               {levels.map((lvl) => (
                 <tr key={lvl.level} className="hover:bg-[#151a2d]">
                   <td className="py-3 px-3 font-bold text-slate-200">Level {lvl.level}</td>
-                  <td className="py-3 px-3 text-purple-400 font-bold">{lvl.commissionPercent}%</td>
+                  <td className="py-3 px-3 text-[#00e699] font-bold">{lvl.commissionPercent}%</td>
                   <td className="py-3 px-3 text-slate-300">{lvl.referredUsersCount}</td>
                   <td className="py-3 px-3 text-slate-300">${lvl.totalDepositUSDT.toFixed(2)} USDT</td>
                   <td className="py-3 px-3 text-right font-bold text-emerald-400">

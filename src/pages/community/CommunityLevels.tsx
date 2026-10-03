@@ -47,7 +47,7 @@ export const CommunityLevels: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Sub-Navigation Bar (Screenshot 45) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#131728] border border-[#202740] shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveRoute('community-overview')}
@@ -57,7 +57,7 @@ export const CommunityLevels: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveRoute('community-levels')}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm"
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#00e699] text-black font-extrabold shadow-sm"
           >
             Levels
           </button>
@@ -84,8 +84,8 @@ export const CommunityLevels: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Referred Users */}
-        <div className="lg:col-span-7 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-          <div className="border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-7 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+          <div className="border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">Referred Users</h3>
           </div>
 
@@ -102,7 +102,7 @@ export const CommunityLevels: React.FC = () => {
           {levels.map((lvl) => (
             <div
               key={lvl.level}
-              className="p-4 rounded-2xl bg-[#131728] border border-[#202740] shadow-md space-y-2 text-center"
+              className="p-4 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md space-y-2 text-center"
             >
               <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-300">
                 <Users size={14} className="text-blue-400" />

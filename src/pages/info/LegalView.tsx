@@ -27,7 +27,7 @@ export const LegalView: React.FC = () => {
         <p className="text-xs text-slate-400">Risk Disclosures & Protocol Compliance</p>
       </div>
 
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-6 text-xs text-slate-300 leading-relaxed">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-6 text-xs text-slate-300 leading-relaxed">
         <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-800/40 flex items-start gap-3">
           <AlertTriangle size={18} className="text-amber-400 shrink-0 mt-0.5" />
           <p>

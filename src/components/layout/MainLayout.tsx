@@ -183,17 +183,15 @@ export const MainLayout: React.FC = () => {
         <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
         {/* Page Content Container */}
-        <main className={`flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px] ${activeRoute === 'home' ? 'pb-24 lg:pb-8' : 'pb-8'}`}>
+        <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px] pb-28 sm:pb-24">
           {/* Subpage Header matching screenshot (rendered on all pages except Home) */}
           {activeRoute !== 'home' && <SubpageHeader currentRoute={activeRoute} />}
           {renderActivePage()}
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Dock (Rendered ONLY on Home page) */}
-      {activeRoute === 'home' && (
-        <MobileBottomNav onOpenMenu={() => setMobileMenuOpen(true)} />
-      )}
+      {/* Mobile Bottom Navigation Dock (Rendered on ALL pages as requested) */}
+      <MobileBottomNav onOpenMenu={() => setMobileMenuOpen(true)} />
 
       {/* Security Notice Modal (Step 12 of Auth Flow from Screenshots 4 & 5) */}
       <SecurityModal

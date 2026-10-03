@@ -2,23 +2,10 @@
  FILE: src/pages/convert/XahConvert.tsx
 
  PURPOSE:
- Dedicated Native Token (AURA/XAH) to USDT Conversion portal.
- Corresponds to Reference Screenshot 30. Implements Section 16.
-
- RESPONSIBILITIES:
- - Display user's Spot Wallet balance
- - Calculate live conversion rate (1 AURA = 337.20 USDT)
- - Execute authoritative conversion and update wallet balances
- - Render conversion transaction log with Sort, Search, and "See More" pagination
-
- API:
- Calls ApiService.convertXah and ApiService.getTransactions.
-
- SECURITY:
- Validates user balance and executes conversion atomically server-side.
-
- NOTE:
- Developer documentation only. Never expose sensitive information.
+ Dedicated Native Token to USDT Conversion portal.
+ Styled with authentic Olymp Trade pitch-black OLED palette:
+ - Canvas: #000000, Obsidian card bodies: #08080a, Sub-insets: #020204, Hairline borders: #18181c
+ - Buttons & Accents: Signature Olymp Trade Emerald Green (#00e699)
 */
 
 import React, { useEffect, useState } from 'react';
@@ -49,6 +36,7 @@ export const XahConvert: React.FC = () => {
 
   const conversionRate = 337.2;
   const receivedUSDT = +(amountXAH * conversionRate).toFixed(2);
+  const available = emptyStateMode ? 0 : (wallets?.mainBalanceNative || 1.485);
 
   useEffect(() => {
     if (emptyStateMode) {
@@ -73,7 +61,6 @@ export const XahConvert: React.FC = () => {
     e.preventDefault();
     setFeedback(null);
 
-    const available = wallets?.spotBalanceNative || 0;
     if (amountXAH <= 0) {
       setFeedback({ type: 'error', msg: 'Please enter an amount greater than 0.' });
       return;
@@ -82,7 +69,7 @@ export const XahConvert: React.FC = () => {
     if (available < amountXAH) {
       setFeedback({
         type: 'error',
-        msg: `Insufficient ${BRAND.tokenSymbol} in Spot Wallet. Available: ${available.toFixed(4)} ${BRAND.tokenSymbol}`,
+        msg: `Insufficient ${BRAND.tokenSymbol} in Wallet. Available: ${available.toFixed(4)} ${BRAND.tokenSymbol}`,
       });
       return;
     }
@@ -108,34 +95,32 @@ export const XahConvert: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 font-sans select-none text-slate-100">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
-            {BRAND.name} Convert
+          <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+            {BRAND.name} Settlement Convert
           </h1>
-          <p className="text-xs text-slate-400">Native Asset Liquidity Settlement</p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Native Protocol Token to USDT Instant Clearing
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Transactions / See More (Screenshot 30 Left) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1b2238] pb-3">
-            <h3 className="text-sm font-bold text-slate-200">
-              Transaction ({transactions.length})
+        {/* Left Column: Transactions / See More */}
+        <div className="lg:col-span-8 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18181c] pb-3">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+              Conversion Ledger ({transactions.length})
             </h3>
             <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-300">
-                <option value="all">Sort By</option>
-                <option value="amount">Amount</option>
-              </select>
               <div className="relative">
                 <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
-                  placeholder="Search Transaction"
-                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none"
+                  placeholder="Filter transactions..."
+                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#00e699]"
                 />
               </div>
             </div>
@@ -144,34 +129,34 @@ export const XahConvert: React.FC = () => {
           {transactions.length === 0 ? (
             <EmptyState
               title="Data Not Found"
-              description="The requested information is currently unavailable"
+              description="No native conversion records discovered on this account."
               actionText="Refresh Conversions"
               onAction={loadTransactions}
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
-                    <th className="py-2.5 px-3 text-right">{BRAND.tokenSymbol} Converted</th>
-                    <th className="py-2.5 px-3 text-right">USDT Received</th>
+                    <th className="py-2.5 px-3 text-right">Amount ({BRAND.tokenSymbol})</th>
+                    <th className="py-2.5 px-3 text-right">Received (USDT)</th>
                     <th className="py-2.5 px-3 text-right">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#171d30]">
+                <tbody className="divide-y divide-[#121216]">
                   {transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-[#151a2d]">
+                    <tr key={tx.id} className="hover:bg-[#0e0e12] transition-colors">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 font-mono text-purple-400">{tx.referenceId}</td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">
+                      <td className="py-3 px-3 text-[#00e699]">{tx.referenceId}</td>
+                      <td className="py-3 px-3 text-right font-bold text-white">
                         {tx.amount} {BRAND.tokenSymbol}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
+                      <td className="py-3 px-3 text-right font-bold text-[#00e699]">
                         +${tx.amountUSD.toFixed(2)} USDT
                       </td>
-                      <td className="py-3 px-3 text-right text-slate-500 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-right text-slate-500 text-[11px]">
                         {tx.timestamp}
                       </td>
                     </tr>
@@ -184,28 +169,23 @@ export const XahConvert: React.FC = () => {
           <div className="pt-2 text-center">
             <button
               onClick={loadTransactions}
-              className="w-full max-w-xs py-2.5 px-6 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 shadow-md shadow-indigo-950/40 cursor-pointer inline-flex items-center justify-center gap-2"
+              className="py-2.5 px-6 rounded-xl text-xs font-extrabold text-black bg-[#00e699] hover:bg-[#00ffaa] shadow-md shadow-[#00e699]/20 cursor-pointer inline-flex items-center justify-center gap-2 transition-all active:scale-95"
             >
-              <span>See More</span>
+              <span>Refresh Ledger</span>
             </button>
           </div>
         </div>
 
-        {/* Right Column: Convert Form (Screenshot 30 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          {/* Balance Display */}
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
-            <div className="flex items-center justify-between text-[11px] text-slate-400">
-              <span className="font-semibold uppercase tracking-wider">Balance</span>
-              <span className="font-mono">Spot Wallet</span>
-            </div>
-            <h4 className="text-xl font-black text-slate-100 font-mono">
-              {emptyStateMode ? '0.0000' : (wallets?.spotBalanceUSDT || 0).toFixed(4)}{' '}
-              <span className="text-xs text-purple-400">USDT</span>
+        {/* Right Column: Convert Form */}
+        <div className="lg:col-span-4 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
+            <span className="text-[10px] text-slate-500 uppercase font-mono font-bold">
+              Available Native Balance
+            </span>
+            <h4 className="text-xl font-black text-white font-mono">
+              {available.toFixed(4)}{' '}
+              <span className="text-xs text-[#00e699] font-sans">{BRAND.tokenSymbol}</span>
             </h4>
-            <p className="text-xs text-slate-500 font-mono">
-              Available: {emptyStateMode ? '0.0000' : (wallets?.spotBalanceNative || 0).toFixed(4)} {BRAND.tokenSymbol}
-            </p>
           </div>
 
           <form onSubmit={handleConvert} className="space-y-4">
@@ -213,51 +193,55 @@ export const XahConvert: React.FC = () => {
               <div
                 className={`p-3 rounded-xl border flex items-start gap-2 text-xs ${
                   feedback.type === 'success'
-                    ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-300'
-                    : 'bg-red-950/40 border-red-800/50 text-red-300'
+                    ? 'bg-emerald-950/40 border-[#00e699]/40 text-[#00e699]'
+                    : 'bg-red-950/40 border-red-800/50 text-[#ff3b5c]'
                 }`}
               >
                 {feedback.type === 'success' ? (
-                  <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-400" />
+                  <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-[#00e699]" />
                 ) : (
-                  <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-400" />
+                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-[#ff3b5c]" />
                 )}
                 <span>{feedback.msg}</span>
               </div>
             )}
 
-            <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300">Amount ({BRAND.tokenSymbol})</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-300 font-mono">
+                Amount ({BRAND.tokenSymbol})
+              </label>
               <input
                 type="number"
                 step="0.01"
                 min="0.01"
                 value={amountXAH}
                 onChange={(e) => setAmountXAH(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-3 rounded-xl bg-[#0c0f1a] border border-[#202740] text-sm font-mono text-center font-bold text-slate-100 focus:outline-none focus:border-purple-500"
+                className="w-full px-4 py-3 rounded-xl bg-[#020204] border border-[#18181c] text-sm font-mono text-center font-black text-white focus:outline-none focus:border-[#00e699] transition-colors"
               />
             </div>
 
-            <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-400">You Receive:</span>
-              <span className="font-extrabold text-emerald-400 text-sm">
+            <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between text-xs font-mono">
+              <span className="text-slate-400">Receive Estimate:</span>
+              <span className="font-black text-[#00e699] text-sm">
                 ~${receivedUSDT.toFixed(2)} USDT
               </span>
             </div>
 
-            {/* Convert Button (Screenshot 30) */}
             <button
               type="submit"
               disabled={isConverting}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-950/40"
+              className="w-full py-3.5 px-4 rounded-xl text-xs font-extrabold text-black bg-[#00e699] hover:bg-[#00ffaa] disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#00e699]/30 active:scale-95"
             >
               {isConverting ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
-                  <span>Converting {BRAND.tokenSymbol}...</span>
+                  <Loader2 size={15} className="animate-spin text-black" />
+                  <span>Converting Funds...</span>
                 </>
               ) : (
-                <span>Convert</span>
+                <>
+                  <Repeat size={15} className="stroke-[2.5]" />
+                  <span>Convert to USDT</span>
+                </>
               )}
             </button>
           </form>

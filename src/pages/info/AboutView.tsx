@@ -18,7 +18,7 @@ export const AboutView: React.FC = () => {
         <p className="text-xs text-slate-400">Pioneering Decentralized Financial Infrastructure</p>
       </div>
 
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-6">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-6">
         <div className="space-y-3">
           <h2 className="text-base font-bold text-slate-100">{BRAND.name} Financial Protocol</h2>
           <p className="text-xs text-slate-300 leading-relaxed">
@@ -27,7 +27,7 @@ export const AboutView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-2">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-2">
             <Shield className="text-emerald-400" size={20} />
             <h3 className="text-xs font-bold text-slate-200">Non-Custodial Architecture</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -35,7 +35,7 @@ export const AboutView: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-2">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-2">
             <Lock className="text-blue-400" size={20} />
             <h3 className="text-xs font-bold text-slate-200">Formal Verification</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -43,7 +43,7 @@ export const AboutView: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-2">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-2">
             <Globe className="text-emerald-400" size={20} />
             <h3 className="text-xs font-bold text-slate-200">Global Liquidity Pools</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">

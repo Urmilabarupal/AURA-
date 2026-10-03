@@ -47,9 +47,9 @@ export const JackpotDirectReward: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
+        <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-[#00e699]">
               <Gift size={22} />
             </div>
             <div>
@@ -58,7 +58,7 @@ export const JackpotDirectReward: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
             <span className="text-xs text-slate-400 font-semibold uppercase">Claimable Direct Bonus</span>
             <h4 className="text-3xl font-black text-emerald-400 font-mono">
               ${directBonus.toFixed(2)} USDT
@@ -75,7 +75,7 @@ export const JackpotDirectReward: React.FC = () => {
           </button>
         </div>
 
-        <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
+        <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
               <Users size={22} />
@@ -86,10 +86,10 @@ export const JackpotDirectReward: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
             <span className="text-xs text-slate-400 font-semibold uppercase">Qualified Direct Members</span>
             <h4 className="text-3xl font-black text-slate-100 font-mono">
-              {directReferrals} <span className="text-xs text-purple-400">Users</span>
+              {directReferrals} <span className="text-xs text-[#00e699]">Users</span>
             </h4>
           </div>
 

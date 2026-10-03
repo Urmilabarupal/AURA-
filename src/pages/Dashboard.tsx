@@ -21,10 +21,11 @@
     - Scroll-revealed cards with subtle hover lift and reactive borders
 */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { CryptoPerformanceMiniCharts } from '../components/dashboard/CryptoPerformanceMiniCharts';
+import { realMarketApi, LiveMarketPair } from '../services/realMarketApi';
 import { BRAND } from '../config/brand';
 import {
   AlertTriangle,
@@ -81,6 +82,21 @@ export const Dashboard: React.FC = () => {
   const [quickTradeSeconds, setQuickTradeSeconds] = useState<number>(0);
   const [quickTradeDirection, setQuickTradeDirection] = useState<'UP' | 'DOWN' | null>(null);
   const [quickTradeResult, setQuickTradeResult] = useState<string | null>(null);
+
+  // Live market price feed from Binance
+  const [liveEthPrice, setLiveEthPrice] = useState<number>(2840.50);
+  const [liveEthChange, setLiveEthChange] = useState<number>(2.45);
+
+  useEffect(() => {
+    const unsub = realMarketApi.subscribe((pairs) => {
+      const eth = pairs.find((p) => p.symbol === 'ETHUSDT');
+      if (eth) {
+        setLiveEthPrice(eth.price);
+        setLiveEthChange(eth.change24h);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Authoritative user variables
   const userId = user?.id || BRAND.defaultUserId;
@@ -227,11 +243,15 @@ export const Dashboard: React.FC = () => {
           <div className="text-left sm:text-right">
             <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
               <span>{accountMode === 'real' ? 'Real Portfolio Value' : 'Virtual Practice Balance'}</span>
-              <span className="text-xs font-semibold text-[#00e699]">+8.74% 24h</span>
+              <span className={`text-xs font-semibold ${liveEthChange >= 0 ? 'text-[#00e699]' : 'text-rose-500'}`}>
+                {liveEthChange >= 0 ? '+' : ''}{liveEthChange.toFixed(2)}% 24h
+              </span>
             </div>
             <div className="text-2xl font-black text-white font-mono tracking-tight flex items-center gap-2">
               <span>
-                ${accountMode === 'real' ? (wallets?.totalBalanceUSDT || 2100.0).toFixed(2) : demoBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${accountMode === 'real'
+                  ? (wallets ? wallets.totalBalanceUSDT.toFixed(2) : '0.00')
+                  : demoBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               <span className="text-xs font-bold text-[#00e699]">
                 {accountMode === 'real' ? 'USDT' : 'DEMO'}
@@ -312,13 +332,15 @@ export const Dashboard: React.FC = () => {
           
           {/* Pair & Live Price (Left 3 Cols) */}
           <div className="md:col-span-3 p-3 rounded-xl bg-[#020204] border border-[#18181c]">
-            <div className="text-[10px] text-slate-400 font-mono">Market Asset</div>
+            <div className="text-[10px] text-slate-400 font-mono">Market Asset (Binance Live)</div>
             <div className="text-sm font-bold text-white font-mono">
-              {BRAND.tokenSymbol}/USDT
+              ETH/USDT
             </div>
             <div className="text-xs text-[#00e699] font-mono font-bold flex items-center gap-1 mt-0.5">
-              <span>$337.20</span>
-              <span className="text-[10px] bg-emerald-950/80 border border-emerald-500/20 px-1.5 py-0.2 rounded text-emerald-400">+8.74%</span>
+              <span>${liveEthPrice.toFixed(2)}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded ${liveEthChange >= 0 ? 'bg-emerald-950/80 border border-emerald-500/20 text-emerald-400' : 'bg-rose-950/80 border border-rose-500/20 text-rose-400'}`}>
+                {liveEthChange >= 0 ? '+' : ''}{liveEthChange.toFixed(2)}%
+              </span>
             </div>
           </div>
 
@@ -971,7 +993,7 @@ export const Dashboard: React.FC = () => {
 
               <div className="rounded-xl bg-[#020204] border border-[#18181c] p-4 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                  <div className="w-5 h-5 rounded-md bg-purple-500/15 text-purple-400 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-md bg-purple-500/15 text-[#00e699] flex items-center justify-center">
                     <Trophy size={13} />
                   </div>
                   <span>Self Lottery Win</span>
@@ -987,7 +1009,7 @@ export const Dashboard: React.FC = () => {
 
               <div className="rounded-xl bg-[#020204] border border-[#18181c] p-4 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                  <div className="w-5 h-5 rounded-md bg-purple-500/15 text-purple-400 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-md bg-purple-500/15 text-[#00e699] flex items-center justify-center">
                     <Trophy size={13} />
                   </div>
                   <span>Direct Lottery Win</span>

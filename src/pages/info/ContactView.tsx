@@ -41,7 +41,7 @@ export const ContactView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
+        <div className="lg:col-span-7 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
           <h3 className="text-sm font-bold text-slate-200">Submit Support Ticket</h3>
 
           {sent && (
@@ -59,7 +59,7 @@ export const ContactView: React.FC = () => {
                 placeholder="e.g. Staking question, deposit verification"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-100 focus:outline-none focus:border-purple-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-100 focus:outline-none focus:border-purple-500"
               />
             </div>
 
@@ -70,13 +70,13 @@ export const ContactView: React.FC = () => {
                 placeholder="Describe your question or issue in detail..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-100 focus:outline-none focus:border-purple-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-100 focus:outline-none focus:border-purple-500"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
               <Send size={14} />
               <span>Send Ticket</span>
@@ -85,7 +85,7 @@ export const ContactView: React.FC = () => {
         </div>
 
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 rounded-2xl bg-[#131728] border border-[#202740] shadow-md space-y-3">
+          <div className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
               Official Telegram Support
             </h4>

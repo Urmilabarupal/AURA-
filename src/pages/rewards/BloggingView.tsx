@@ -77,13 +77,13 @@ export const BloggingView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Transactions / Data Not Found (Screenshot 23 Left) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">
               Transaction ({transactions.length})
             </h3>
             <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-300">
+              <select className="px-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-300">
                 <option value="newest">Sort By: Newest</option>
                 <option value="amount">Sort By: Reward</option>
               </select>
@@ -92,7 +92,7 @@ export const BloggingView: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Search Transaction"
-                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none"
+                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none"
                 />
               </div>
             </div>
@@ -108,7 +108,7 @@ export const BloggingView: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
@@ -120,7 +120,7 @@ export const BloggingView: React.FC = () => {
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-[#151a2d]">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 font-mono text-purple-400">{tx.referenceId}</td>
+                      <td className="py-3 px-3 font-mono text-[#00e699]">{tx.referenceId}</td>
                       <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
                         +${tx.amountUSD.toFixed(2)} USDT
                       </td>
@@ -145,7 +145,7 @@ export const BloggingView: React.FC = () => {
         </div>
 
         {/* Right Column: Earnings & Submission Card (Screenshot 23 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
               <BookOpen size={20} />
@@ -157,14 +157,14 @@ export const BloggingView: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+            <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
               <p className="text-xs text-slate-400 font-medium">From Blogging You Will Earn :</p>
               <h4 className="text-xl font-black text-slate-100 font-mono">
                 ${willEarnUSD.toFixed(4)}
               </h4>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+            <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
               <p className="text-xs text-slate-400 font-medium">You Earned From The Blogging :</p>
               <h4 className="text-xl font-black text-emerald-400 font-mono">
                 ${earnedUSD.toFixed(4)}
@@ -174,9 +174,9 @@ export const BloggingView: React.FC = () => {
             <div className="space-y-1.5 pt-2">
               <div className="flex justify-between text-xs text-slate-400">
                 <span>Reward Cap Met</span>
-                <span className="font-mono text-purple-400 font-bold">{progressPercent.toFixed(1)}%</span>
+                <span className="font-mono text-[#00e699] font-bold">{progressPercent.toFixed(1)}%</span>
               </div>
-              <div className="w-full bg-[#0c0f1a] h-3 rounded-full overflow-hidden border border-[#1d243b]">
+              <div className="w-full bg-[#020204] h-3 rounded-full overflow-hidden border border-[#1d243b]">
                 <div
                   className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
@@ -192,11 +192,11 @@ export const BloggingView: React.FC = () => {
                 placeholder="https://medium.com/@your-review"
                 value={blogUrl}
                 onChange={(e) => setBlogUrl(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
               />
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
                 <Send size={13} />
                 <span>{submitted ? 'Bounty Review Submitted!' : 'Submit for Review'}</span>

@@ -54,7 +54,7 @@ export const CommunityTransactions: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Sub-Navigation Bar (Screenshot 38) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#131728] border border-[#202740] shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveRoute('community-overview')}
@@ -70,7 +70,7 @@ export const CommunityTransactions: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveRoute('community-transactions')}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm"
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#00e699] text-black font-extrabold shadow-sm"
           >
             Transactions
           </button>
@@ -91,8 +91,8 @@ export const CommunityTransactions: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Transactions / Data Not Found (Screenshot 38 Left) */}
-        <div className="lg:col-span-7 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-          <div className="border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-7 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+          <div className="border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">
               Transactions ({transactions.length})
             </h3>
@@ -108,7 +108,7 @@ export const CommunityTransactions: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
@@ -121,7 +121,7 @@ export const CommunityTransactions: React.FC = () => {
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-[#151a2d]">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 text-purple-400">{tx.referenceId}</td>
+                      <td className="py-3 px-3 text-[#00e699]">{tx.referenceId}</td>
                       <td className="py-3 px-3 text-slate-300">Level 1 (20%)</td>
                       <td className="py-3 px-3 text-right font-bold text-emerald-400">
                         +${tx.amountUSD.toFixed(2)} USDT
@@ -142,15 +142,15 @@ export const CommunityTransactions: React.FC = () => {
           {levels.map((lvl) => (
             <div
               key={lvl.level}
-              className="p-4 rounded-2xl bg-[#131728] border border-[#202740] shadow-md space-y-2 text-center"
+              className="p-4 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md space-y-2 text-center"
             >
               <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-300">
-                <Percent size={13} className="text-purple-400" />
+                <Percent size={13} className="text-[#00e699]" />
                 <span>Level {lvl.level}</span>
               </div>
 
               <div className="py-1">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-800/40">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-950/60 text-[#00ffaa] border border-purple-800/40">
                   REWARD {lvl.commissionPercent}%
                 </span>
                 <h4 className="text-xl font-black text-slate-100 font-mono mt-2">

@@ -87,7 +87,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
           if (toast.type === 'copy') {
             bgClass = 'bg-[#181d30] border-purple-500/40 text-slate-100 shadow-purple-950/40';
-            icon = <Copy className="text-purple-400 w-4 h-4 shrink-0" />;
+            icon = <Copy className="text-[#00e699] w-4 h-4 shrink-0" />;
           } else if (toast.type === 'error') {
             bgClass = 'bg-[#2a1318] border-red-800/60 text-red-200 shadow-red-950/40';
             icon = <AlertCircle className="text-red-400 w-4 h-4 shrink-0" />;

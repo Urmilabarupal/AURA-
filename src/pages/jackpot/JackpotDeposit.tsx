@@ -90,7 +90,7 @@ export const JackpotDeposit: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveRoute('jackpot')}
-            className="p-2 rounded-xl bg-[#141829] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-[#08080a] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
@@ -105,15 +105,15 @@ export const JackpotDeposit: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Currencies List & Deposit Form (Screenshot 41 Left) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+          <div className="border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">
-              Currencies <span className="text-purple-400 font-mono">(1)</span>
+              Currencies <span className="text-[#00e699] font-mono">(1)</span>
             </h3>
           </div>
 
           {/* Currency Row (Screenshot 41) */}
-          <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
                 ₮
@@ -162,7 +162,7 @@ export const JackpotDeposit: React.FC = () => {
                 step="10"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-sm font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-sm font-mono text-slate-100 focus:outline-none focus:border-purple-500"
               />
             </div>
 
@@ -184,7 +184,7 @@ export const JackpotDeposit: React.FC = () => {
         </div>
 
         {/* Right Column: Total Balance & Refresh (Screenshot 41 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           <div className="space-y-1">
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               Total Balance
@@ -192,7 +192,7 @@ export const JackpotDeposit: React.FC = () => {
             <p className="text-xs text-slate-500">Spot Wallet</p>
             <h3 className="text-3xl font-black text-slate-100 font-mono mt-1">
               {spotBalance.toFixed(2)}{' '}
-              <span className="text-xs font-bold text-purple-400">USDT</span>
+              <span className="text-xs font-bold text-[#00e699]">USDT</span>
             </h3>
             <p className="text-xs text-slate-400 font-mono">${spotBalance.toFixed(2)}</p>
           </div>
@@ -200,7 +200,7 @@ export const JackpotDeposit: React.FC = () => {
           {/* Big Blue Refresh Button (Screenshot 41) */}
           <button
             onClick={refreshUserData}
-            className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-950/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] shadow-lg shadow-blue-950/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <RefreshCw size={14} />
             <span>Refresh</span>

@@ -58,11 +58,11 @@ export const CommunityOverview: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Community Sub-Navigation Bar (Screenshot 38, 45, 46) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#131728] border border-[#202740] shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-md">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveRoute('community-overview')}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm"
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#00e699] text-black font-extrabold shadow-sm"
           >
             Overview
           </button>
@@ -94,7 +94,7 @@ export const CommunityOverview: React.FC = () => {
 
         <button
           onClick={copyLink}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs font-mono text-purple-300 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-[#00ffaa] hover:text-white transition-colors"
         >
           <Share2 size={13} />
           <span>{copied ? 'Copied!' : 'Copy Invite Link'}</span>
@@ -104,8 +104,8 @@ export const CommunityOverview: React.FC = () => {
       {/* Main Grid: Referred Users on Left, Total Referred People on Right (Screenshot 46) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Referred Users List */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-          <div className="border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+          <div className="border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">Referred Users</h3>
           </div>
 
@@ -119,7 +119,7 @@ export const CommunityOverview: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Member ID</th>
                     <th className="py-2.5 px-3">Name</th>
@@ -131,7 +131,7 @@ export const CommunityOverview: React.FC = () => {
                 <tbody className="divide-y divide-[#171d30]">
                   {sampleUsers.map((m) => (
                     <tr key={m.id} className="hover:bg-[#151a2d]">
-                      <td className="py-3 px-3 text-purple-400 font-bold">{m.id}</td>
+                      <td className="py-3 px-3 text-[#00e699] font-bold">{m.id}</td>
                       <td className="py-3 px-3 text-slate-200">{m.name}</td>
                       <td className="py-3 px-3 text-slate-400 text-[11px]">{m.date}</td>
                       <td className="py-3 px-3 text-right text-slate-100 font-bold">

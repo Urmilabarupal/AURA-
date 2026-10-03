@@ -90,21 +90,21 @@ export const RewardRanks: React.FC = () => {
       {/* Main Grid: Achievements on Left, Team Business on Right (Screenshots 19 & 20) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Achievements Ladder (Screenshots 19 & 20) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="flex items-center justify-between border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+          <div className="flex items-center justify-between border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">
-              Achievements <span className="font-mono text-purple-400">UserId: {user?.id}</span>
+              Achievements <span className="font-mono text-[#00e699]">UserId: {user?.id}</span>
             </h3>
           </div>
 
           {/* Current Rank Banner (Screenshot 19) */}
           <div className="p-4 rounded-xl bg-gradient-to-r from-purple-950/60 to-blue-950/60 border border-purple-500/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+              <div className="p-2.5 rounded-xl bg-purple-500/20 text-[#00e699] border border-purple-500/30">
                 <Crown size={22} />
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-purple-300">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#00ffaa]">
                   YOUR RANK
                 </p>
                 <h4 className="text-2xl font-black text-slate-100 font-mono">
@@ -112,7 +112,7 @@ export const RewardRanks: React.FC = () => {
                 </h4>
               </div>
             </div>
-            <span className="text-xs text-purple-300 font-medium">
+            <span className="text-xs text-[#00ffaa] font-medium">
               Next Tier: Rank 2 (100% Volume Met)
             </span>
           </div>
@@ -125,7 +125,7 @@ export const RewardRanks: React.FC = () => {
                 className={`p-4 rounded-2xl border transition-all ${
                   item.achieved
                     ? 'bg-[#151c33] border-purple-500/40 shadow-md'
-                    : 'bg-[#0c0f1a] border-[#1d243b]'
+                    : 'bg-[#020204] border-[#1d243b]'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -193,28 +193,28 @@ export const RewardRanks: React.FC = () => {
         </div>
 
         {/* Right Column: Team Business Card (Screenshots 19 & 20 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+          <div className="border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">Team Business</h3>
             <p className="text-xs text-slate-500 font-mono">Userid: {user?.id}</p>
           </div>
 
           <div className="space-y-4">
             {/* Direct */}
-            <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
               <div>
                 <h4 className="text-2xl font-black text-slate-100 font-mono">
                   {directVolume.toFixed(2)}
                 </h4>
                 <p className="text-xs text-slate-400 font-semibold mt-0.5">Direct</p>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-inner">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[#00e699] shadow-inner">
                 <Rocket size={24} />
               </div>
             </div>
 
             {/* Master Leg */}
-            <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
               <div>
                 <h4 className="text-2xl font-black text-slate-100 font-mono">
                   {masterLegVolume.toFixed(2)}
@@ -227,7 +227,7 @@ export const RewardRanks: React.FC = () => {
             </div>
 
             {/* Another Leg */}
-            <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
               <div>
                 <h4 className="text-2xl font-black text-slate-100 font-mono">
                   {anotherLegVolume.toFixed(2)}

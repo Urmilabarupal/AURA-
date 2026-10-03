@@ -27,7 +27,7 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({ isOpen, onClose })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md rounded-2xl bg-[#141829] border border-amber-500/30 shadow-2xl shadow-amber-950/40 overflow-hidden">
+      <div className="relative w-full max-w-md rounded-2xl bg-[#08080a] border border-amber-500/30 shadow-2xl shadow-amber-950/40 overflow-hidden">
         {/* Banner Top */}
         <div className="bg-gradient-to-r from-red-600 via-amber-600 to-orange-600 p-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">

@@ -33,7 +33,7 @@ export const JackpotWallet: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveRoute('jackpot')}
-            className="p-2 rounded-xl bg-[#141829] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-[#08080a] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
@@ -47,12 +47,12 @@ export const JackpotWallet: React.FC = () => {
       </div>
 
       {/* Jackpot Wallet Card (Screenshot 42) */}
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-6">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-6">
         <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide">
           Jackpot Wallet
         </h3>
 
-        <div className="p-5 rounded-2xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xl shadow-inner">
               ₮
@@ -83,13 +83,13 @@ export const JackpotWallet: React.FC = () => {
             className="p-4 rounded-xl bg-[#171d32] border border-[#232c4a] hover:border-purple-500/40 text-left transition-all group flex items-center justify-between cursor-pointer"
           >
             <div>
-              <div className="flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <div className="flex items-center gap-2 text-[#00e699] text-xs font-bold uppercase tracking-wider mb-1">
                 <CreditCard size={14} />
                 <span>Deposit More to Jackpot</span>
               </div>
               <p className="text-xs text-slate-300">Fund your balance to qualify for upcoming drawings</p>
             </div>
-            <ArrowRight size={18} className="text-slate-500 group-hover:text-purple-400 transition-colors" />
+            <ArrowRight size={18} className="text-slate-500 group-hover:text-[#00e699] transition-colors" />
           </button>
 
           <button

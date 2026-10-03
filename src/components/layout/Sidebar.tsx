@@ -312,7 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
             </div>
 
             {/* Additional Categorized Sections from Specifications & PDF */}
-            <div className="border-t border-[#1b2030] my-2 pt-1">
+            <div className="border-t border-[#18181c] my-2 pt-1">
               {renderNavGroup('Staking & Farming', 'invest', investNavItems)}
               {renderNavGroup('Exchange & Convert', 'convert', convertNavItems)}
               {renderNavGroup('Jackpot & Games', 'jackpot', jackpotNavItems)}

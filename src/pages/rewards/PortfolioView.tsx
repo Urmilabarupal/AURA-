@@ -67,7 +67,7 @@ export const PortfolioView: React.FC = () => {
       {/* Top Row: Share Card & Circular Balance Gauge (Screenshot 18) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         {/* Equity Share Card (Screenshot 18 Left) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg flex items-center justify-between">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-600 to-blue-500 p-0.5 flex items-center justify-center shadow-lg">
               <div className="w-full h-full bg-[#0d101d] rounded-[14px] flex items-center justify-center font-bold text-xs text-white">
@@ -76,20 +76,20 @@ export const PortfolioView: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-100">{BRAND.name} Share</h3>
-              <p className="text-xs text-purple-400 font-medium">Equity · Technology · Direct growth</p>
+              <p className="text-xs text-[#00e699] font-medium">Equity · Technology · Direct growth</p>
             </div>
           </div>
 
           <div className="text-right">
             <p className="text-[11px] text-slate-500 font-medium">Invested amount</p>
             <h4 className="text-lg font-black text-slate-100 font-mono">
-              {investedShares.toFixed(2)} <span className="text-xs text-purple-400">AXS</span>
+              {investedShares.toFixed(2)} <span className="text-xs text-[#00e699]">AXS</span>
             </h4>
           </div>
         </div>
 
         {/* Circular Balance Gauge (Screenshot 18 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg flex flex-col items-center justify-center text-center">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg flex flex-col items-center justify-center text-center">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Balance</p>
           {/* Circular Rainbow Ring */}
           <div className="relative w-36 h-36 rounded-full p-2 bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-950/40">
@@ -105,8 +105,8 @@ export const PortfolioView: React.FC = () => {
       </div>
 
       {/* Main Section: Transactions / Data State (Screenshot 18) */}
-      <section className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-4">
-        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide border-b border-[#1b2238] pb-3">
+      <section className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
+        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide border-b border-[#18181c] pb-3">
           Portfolio Activity & Dividends
         </h3>
 
@@ -120,7 +120,7 @@ export const PortfolioView: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                 <tr>
                   <th className="py-2.5 px-3">Type</th>
                   <th className="py-2.5 px-3">Reference ID</th>
@@ -133,7 +133,7 @@ export const PortfolioView: React.FC = () => {
                 {transactions.map((tx) => (
                   <tr key={tx.id} className="hover:bg-[#151a2d]">
                     <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-purple-400">
+                    <td className="py-3 px-3 font-mono text-[11px] text-[#00e699]">
                       {tx.referenceId}
                     </td>
                     <td className="py-3 px-3 text-slate-400">{tx.description}</td>

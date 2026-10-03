@@ -66,14 +66,14 @@ export const RoyaltySlot: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Transactions / Data Not Found (Screenshot 22 Left) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1b2238] pb-3">
+        <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200">
               Transaction ({transactions.length})
             </h3>
 
             <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-300">
+              <select className="px-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-300">
                 <option value="newest">Sort By: Newest</option>
                 <option value="highest">Sort By: Amount</option>
               </select>
@@ -84,7 +84,7 @@ export const RoyaltySlot: React.FC = () => {
                   placeholder="Search Transaction"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none"
+                  className="pl-7 pr-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none"
                 />
               </div>
             </div>
@@ -100,7 +100,7 @@ export const RoyaltySlot: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                   <tr>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Reference ID</th>
@@ -112,7 +112,7 @@ export const RoyaltySlot: React.FC = () => {
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-[#151a2d]">
                       <td className="py-3 px-3 font-semibold text-slate-200">{tx.typeLabel}</td>
-                      <td className="py-3 px-3 font-mono text-purple-400">{tx.referenceId}</td>
+                      <td className="py-3 px-3 font-mono text-[#00e699]">{tx.referenceId}</td>
                       <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
                         +${tx.amountUSD.toFixed(2)} USDT
                       </td>
@@ -137,9 +137,9 @@ export const RoyaltySlot: React.FC = () => {
         </div>
 
         {/* Right Column: Earnings & Progress Card (Screenshot 22 Right) */}
-        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
+        <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+            <div className="p-2 rounded-xl bg-purple-500/20 text-[#00e699] border border-purple-500/30">
               <Crown size={20} />
             </div>
             <div>
@@ -149,14 +149,14 @@ export const RoyaltySlot: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+            <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
               <p className="text-xs text-slate-400 font-medium">From Royalty Slot You Will Earn:</p>
               <h4 className="text-xl font-black text-slate-100 font-mono">
                 ${willEarnUSD.toFixed(4)}
               </h4>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-1">
+            <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
               <p className="text-xs text-slate-400 font-medium">You Earned From The Royalty Slot:</p>
               <h4 className="text-xl font-black text-emerald-400 font-mono">
                 ${earnedUSD.toFixed(4)}
@@ -167,9 +167,9 @@ export const RoyaltySlot: React.FC = () => {
             <div className="space-y-1.5 pt-2">
               <div className="flex justify-between text-xs text-slate-400">
                 <span>Pool Progress</span>
-                <span className="font-mono text-purple-400 font-bold">{progressPercent.toFixed(1)}%</span>
+                <span className="font-mono text-[#00e699] font-bold">{progressPercent.toFixed(1)}%</span>
               </div>
-              <div className="w-full bg-[#0c0f1a] h-3 rounded-full overflow-hidden border border-[#1d243b]">
+              <div className="w-full bg-[#020204] h-3 rounded-full overflow-hidden border border-[#1d243b]">
                 <div
                   className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}

@@ -2,19 +2,13 @@
  FILE: src/App.tsx
 
  PURPOSE:
- Root Application Component & Top-Level State Orchestrator.
+ Root Application Component & Strict Authentication Gatekeeper.
  Coordinates authentication stages, security gating, and layout transitions.
 
- RESPONSIBILITIES:
- - Provide AuthProvider context wrapper
- - Orchestrate Step 1 through Step 13 of Master Authentication Flow:
-   1. Unauthenticated -> Wallet Connect & Sign Up (Screenshot 1)
-   2. Setup Passcode -> Create & Confirm PIN (Screenshot 2)
-   3. Locked -> Enter PIN Keypad (Screenshot 3)
-   4. Authenticated -> MainLayout with Security Advisory Modal & Dashboard (Screenshots 4 - 46)
-
- NOTE:
- Developer documentation only. Never expose sensitive information.
+ SECURITY ENFORCEMENT:
+ - Without login, the dashboard CANNOT open under any circumstances.
+ - Bottom navigation dock is strictly hidden on unauthenticated screens.
+ - Only verified, passcode-authenticated sessions are admitted into the MainLayout shell.
 */
 
 import React from 'react';
@@ -29,17 +23,22 @@ import { MainLayout } from './components/layout/MainLayout';
 import { Loader2 } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { authStage, isLoading } = useAuth();
+  const { authStage, user, isLoading, setAuthStage } = useAuth();
 
   if (isLoading) {
     return (
       <div className="min-h-screen w-full bg-[#000000] dark:bg-[#000000] light:bg-[#f8fafc] flex flex-col items-center justify-center text-slate-300 space-y-3">
-        <Loader2 size={32} className="animate-spin text-emerald-400" />
+        <Loader2 size={32} className="animate-spin text-[#00e699]" />
         <span className="text-xs font-mono font-medium text-slate-400">
-          Initializing Secure Session...
+          Initializing Secure Protocol Session...
         </span>
       </div>
     );
+  }
+
+  // Hard Security Gate: Without authenticated user session, Dashboard (MainLayout) MUST NOT open!
+  if (authStage === 'AUTHENTICATED' && !user) {
+    return <LandingPage />;
   }
 
   switch (authStage) {
@@ -52,8 +51,9 @@ const AppContent: React.FC = () => {
     case 'LOCKED':
       return <EnterPasscode />;
     case 'AUTHENTICATED':
-    default:
       return <MainLayout />;
+    default:
+      return <LandingPage />;
   }
 };
 

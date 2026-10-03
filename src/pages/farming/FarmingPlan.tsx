@@ -81,7 +81,7 @@ export const FarmingPlanView: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveRoute('farming')}
-            className="p-2 rounded-xl bg-[#141829] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-[#08080a] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
@@ -98,7 +98,7 @@ export const FarmingPlanView: React.FC = () => {
         {plans.map((p) => (
           <div
             key={p.id}
-            className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-xl space-y-5 flex flex-col justify-between"
+            className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-xl space-y-5 flex flex-col justify-between"
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -108,10 +108,10 @@ export const FarmingPlanView: React.FC = () => {
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#0c0f1a] border border-[#1b2238] space-y-2 text-xs font-mono">
+              <div className="p-4 rounded-xl bg-[#020204] border border-[#18181c] space-y-2 text-xs font-mono">
                 <div className="flex justify-between text-slate-400">
                   <span>Multiplier:</span>
-                  <span className="text-purple-400 font-bold">{p.multiplier}</span>
+                  <span className="text-[#00e699] font-bold">{p.multiplier}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>Lock Period:</span>
@@ -129,7 +129,7 @@ export const FarmingPlanView: React.FC = () => {
                 setSelectedPlan(p);
                 setFeedback(null);
               }}
-              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <Zap size={14} />
               <span>Stake LP Tokens</span>
@@ -140,7 +140,7 @@ export const FarmingPlanView: React.FC = () => {
 
       {selectedPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-[#141829] border border-[#202740] shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#1d243b] pb-3">
               <h3 className="text-sm font-bold text-slate-100">
                 Stake {selectedPlan.poolPair}
@@ -165,11 +165,11 @@ export const FarmingPlanView: React.FC = () => {
                   step="0.1"
                   value={lpAmount}
                   onChange={(e) => setLpAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-sm font-mono text-slate-100 focus:outline-none focus:border-purple-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-sm font-mono text-slate-100 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-[#0c0f1a] border border-[#1b2238] flex items-center justify-between text-xs font-mono">
+              <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between text-xs font-mono">
                 <span className="text-slate-400">Estimated Annual APY:</span>
                 <span className="font-bold text-emerald-400">+{selectedPlan.apyPercent}%</span>
               </div>
@@ -177,7 +177,7 @@ export const FarmingPlanView: React.FC = () => {
               <button
                 type="submit"
                 disabled={isStaking}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
                 {isStaking ? <Loader2 size={14} className="animate-spin" /> : <span>Confirm LP Stake</span>}
               </button>

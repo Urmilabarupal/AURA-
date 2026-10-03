@@ -62,8 +62,8 @@ export const JackpotWinners: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-6 rounded-2xl bg-[#131728] border border-[#202740] shadow-lg space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1b2238] pb-3">
+      <div className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18181c] pb-3">
           <div className="flex items-center gap-2">
             <Trophy size={18} className="text-amber-400" />
             <h3 className="text-sm font-bold text-slate-200">
@@ -78,7 +78,7 @@ export const JackpotWinners: React.FC = () => {
               placeholder="Search Ticket / User ID"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#0c0f1a] border border-[#202740] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-purple-500"
             />
           </div>
         </div>
@@ -93,7 +93,7 @@ export const JackpotWinners: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#1f263d]">
+              <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                 <tr>
                   <th className="py-2.5 px-3">Draw ID</th>
                   <th className="py-2.5 px-3">Ticket Number</th>
@@ -105,7 +105,7 @@ export const JackpotWinners: React.FC = () => {
               <tbody className="divide-y divide-[#171d30]">
                 {filtered.map((w) => (
                   <tr key={w.id} className="hover:bg-[#151a2d]">
-                    <td className="py-3 px-3 font-bold text-purple-400">{w.drawId}</td>
+                    <td className="py-3 px-3 font-bold text-[#00e699]">{w.drawId}</td>
                     <td className="py-3 px-3 text-slate-200 font-bold">#{w.ticketNumber}</td>
                     <td className="py-3 px-3 text-slate-400">{w.userIdMasked}</td>
                     <td className="py-3 px-3 text-right font-bold text-emerald-400">

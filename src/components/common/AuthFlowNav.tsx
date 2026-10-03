@@ -40,7 +40,7 @@ export const AuthFlowNav: React.FC = () => {
 
   return (
     <div className="w-full max-w-2xl mx-auto mb-6 px-3">
-      <div className="p-2 rounded-2xl bg-[#131728]/90 backdrop-blur-md border border-[#232b45] shadow-xl flex items-center justify-between gap-1 overflow-x-auto">
+      <div className="p-2 rounded-2xl bg-[#08080a]/90 backdrop-blur-md border border-[#232b45] shadow-xl flex items-center justify-between gap-1 overflow-x-auto">
         {steps.map((s) => {
           const Icon = s.icon;
           const isActive = authStage === s.stage;
@@ -56,7 +56,7 @@ export const AuthFlowNav: React.FC = () => {
               }`}
             >
               <div className="flex items-center gap-1.5">
-                <Icon size={14} className={isActive ? 'text-purple-400' : 'text-slate-500'} />
+                <Icon size={14} className={isActive ? 'text-[#00e699]' : 'text-slate-500'} />
                 <span className="text-[11px] font-bold tracking-tight">{s.label}</span>
               </div>
               <span className="text-[9px] text-slate-400 font-medium truncate max-w-[120px]">
