@@ -36,9 +36,16 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Hard Security Gate: Without authenticated user session, Dashboard (MainLayout) MUST NOT open!
+  // Hard Security Gate: Dashboard only mounts for authenticated sessions
   if (authStage === 'AUTHENTICATED' && !user) {
-    return <LandingPage />;
+    return (
+      <div className="min-h-screen w-full bg-[#000000] flex flex-col items-center justify-center text-slate-300 space-y-3">
+        <Loader2 size={32} className="animate-spin text-[#00e699]" />
+        <span className="text-xs font-sans font-medium text-slate-400">
+          Entering Money X Dashboard...
+        </span>
+      </div>
+    );
   }
 
   switch (authStage) {

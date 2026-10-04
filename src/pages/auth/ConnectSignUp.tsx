@@ -5,10 +5,12 @@
  "Connect Wallet" Screen matching Screen 3 from Money X Design PDF:
  - Pitch black OLED canvas (#000000)
  - High-craft card (#08080a) with hairline border (#18181c)
- - Replaces traditional sign-up with direct Web3 Wallet Connection:
-   * Connect Real MetaMask button
-   * Web3 WalletConnect / Trust Wallet / Mobile Web3 Session
- - Once connected with real MetaMask/wallet, automatically transitions to Screen 4 (Set Your 6 Digit Passcode).
+ - Authentic Money X Original Brand Emblem & Typography
+ - Real MetaMask EIP-1193 Injected Provider Integration:
+   * Real window.ethereum.request({ method: 'eth_requestAccounts' })
+   * Direct transition to Screen 4 (Set Your 6 Digit Passcode)
+ - Direct Mobile Web3 Wallet option
+ - Clean, uncluttered layout matching the original design
 */
 
 import React, { useEffect, useState } from 'react';
@@ -20,16 +22,11 @@ import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowRight,
-  Check,
   ChevronLeft,
-  Copy,
   ExternalLink,
   Loader2,
-  Lock,
-  QrCode,
   Shield,
   Smartphone,
-  Wallet,
 } from 'lucide-react';
 
 export const ConnectSignUp: React.FC = () => {
@@ -38,18 +35,12 @@ export const ConnectSignUp: React.FC = () => {
     setAuthStage,
     connectRealMetaMask,
     connectMobileWallet,
-    walletAddress: contextAddress,
   } = useAuth();
-  const { copyToClipboard } = useToast();
+  const { showToast } = useToast();
 
   const [isConnectingMetaMask, setIsConnectingMetaMask] = useState<boolean>(false);
   const [isConnectingMobile, setIsConnectingMobile] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [metaMaskAvailable, setMetaMaskAvailable] = useState<boolean>(false);
-
-  useEffect(() => {
-    setMetaMaskAvailable(web3Wallet.isMetaMaskAvailable());
-  }, []);
 
   const handleConnectMetaMask = async () => {
     setIsConnectingMetaMask(true);
@@ -58,14 +49,17 @@ export const ConnectSignUp: React.FC = () => {
     try {
       const res = await connectRealMetaMask();
       if (res.success && res.address) {
-        // Automatically register/initialize session with real connected wallet address
+        showToast(`MetaMask Connected: ${res.address.slice(0, 6)}...${res.address.slice(-4)}`, 'success');
+        
+        // Register session with authentic connected wallet address
         await register({
           walletAddress: res.address,
           name: `Trader ${res.address.slice(2, 6).toUpperCase()}`,
           country: 'Global',
           mobile: '',
         });
-        // Transition directly to Screen 4: Set Your 6 Digit Passcode
+
+        // Advance directly to Screen 4: Set Your 6 Digit Passcode
         setAuthStage('SETUP_PASSCODE');
       } else {
         setErrorMsg(res.error || 'MetaMask connection request rejected or not available.');
@@ -84,13 +78,16 @@ export const ConnectSignUp: React.FC = () => {
     try {
       const res = await connectMobileWallet();
       if (res.success && res.address) {
+        showToast(`Web3 Session Connected: ${res.address.slice(0, 6)}...${res.address.slice(-4)}`, 'success');
+        
         await register({
           walletAddress: res.address,
           name: `Mobile ${res.address.slice(2, 6).toUpperCase()}`,
           country: 'Global',
           mobile: '',
         });
-        // Transition directly to Screen 4: Set Your 6 Digit Passcode
+
+        // Advance directly to Screen 4: Set Your 6 Digit Passcode
         setAuthStage('SETUP_PASSCODE');
       }
     } catch (err: any) {
@@ -137,9 +134,22 @@ export const ConnectSignUp: React.FC = () => {
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-800/50 flex items-start gap-2.5 text-xs text-[#ff3b5c] animate-shake">
-              <AlertCircle size={16} className="shrink-0 mt-0.5" />
-              <span>{errorMsg}</span>
+            <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-800/50 flex flex-col gap-2 text-xs text-[#ff3b5c] animate-shake">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                <span>{errorMsg}</span>
+              </div>
+              {errorMsg.toLowerCase().includes('not detected') && (
+                <a
+                  href="https://metamask.io/download/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] text-[#00e699] hover:underline font-bold"
+                >
+                  <span>Install MetaMask Extension</span>
+                  <ExternalLink size={11} />
+                </a>
+              )}
             </div>
           )}
 

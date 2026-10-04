@@ -52,13 +52,10 @@ export const LandingPage: React.FC = () => {
   const [subscribeEmail, setSubscribeEmail] = useState<string>('');
   const [subscribed, setSubscribed] = useState<boolean>(false);
 
-  // Authentication gatekeeper: ALWAYS routes to real Web3 wallet connect flow
+  // User clicks Connect Wallet: ALWAYS route to the Connect Wallet screen (UNAUTHENTICATED)
+  // Ensures wallet connects first, then passcode is created, then screen lock verifies it.
   const handleStartApp = () => {
-    if (!user) {
-      setAuthStage('UNAUTHENTICATED');
-    } else {
-      setAuthStage('LOCKED');
-    }
+    setAuthStage('UNAUTHENTICATED');
   };
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -153,7 +150,7 @@ export const LandingPage: React.FC = () => {
               onClick={handleStartApp}
               className="px-4 sm:px-5 py-2.5 rounded-xl bg-[#00e699] hover:bg-[#00ffa3] active:scale-[0.98] text-black font-extrabold text-xs sm:text-sm tracking-tight transition-all shadow-lg shadow-[#00e699]/30 flex items-center gap-2 cursor-pointer"
             >
-              <CreditCard size={15} className="stroke-[2.5]" />
+              <Wallet size={15} className="stroke-[2.5]" />
               <span>Connect Wallet</span>
             </button>
 
@@ -218,7 +215,7 @@ export const LandingPage: React.FC = () => {
               }}
               className="w-full py-3 rounded-xl bg-[#00e699] text-black font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg"
             >
-              <CreditCard size={15} />
+              <Wallet size={15} />
               <span>Connect Wallet</span>
             </button>
           </div>
@@ -267,7 +264,7 @@ export const LandingPage: React.FC = () => {
                   onClick={handleStartApp}
                   className="px-8 py-4 rounded-xl bg-[#00e699] hover:bg-[#00ffa3] active:scale-[0.98] text-black font-extrabold text-sm sm:text-base tracking-tight transition-all shadow-xl shadow-[#00e699]/30 flex items-center gap-2.5 cursor-pointer"
                 >
-                  <CreditCard size={18} className="stroke-[2.5]" />
+                  <Wallet size={18} className="stroke-[2.5]" />
                   <span>Connect Wallet</span>
                 </button>
               </div>

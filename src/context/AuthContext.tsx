@@ -13,6 +13,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
 import { web3Wallet } from '../services/web3Wallet';
 import { realMarketApi } from '../services/realMarketApi';
+import { cookieService } from '../services/cookieService';
 import { UserProfile, UserWallets } from '../types';
 
 export type AuthStage = 'LANDING' | 'UNAUTHENTICATED' | 'SETUP_PASSCODE' | 'LOCKED' | 'AUTHENTICATED';
@@ -250,17 +251,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const targetPass = createdPasscode || (typeof localStorage !== 'undefined' ? localStorage.getItem('xah_custom_passcode') : '');
       if (targetPass && pin === targetPass) {
+        await refreshUserData();
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
-        await refreshUserData();
+
+        // Save authentic frontend session cookies
+        const activeAddr = walletAddress || user?.walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
+        const activeUserId = user?.id || `MX-${Date.now().toString().slice(-6)}`;
+        cookieService.saveAuthSession({
+          token: `moneyx_sec_${Date.now()}`,
+          walletAddress: activeAddr,
+          passcodeConfigured: true,
+          userId: activeUserId,
+        });
+
         return { success: true };
       }
 
       const res = await ApiService.verifyPasscode(pin);
       if (res.success && res.data?.verified) {
+        await refreshUserData();
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
-        await refreshUserData();
+
+        // Save authentic frontend session cookies
+        const activeAddr = walletAddress || user?.walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
+        const activeUserId = user?.id || `MX-${Date.now().toString().slice(-6)}`;
+        cookieService.saveAuthSession({
+          token: `moneyx_sec_${Date.now()}`,
+          walletAddress: activeAddr,
+          passcodeConfigured: true,
+          userId: activeUserId,
+        });
+
         return { success: true };
       }
       return { success: false, message: res.error?.message || 'Incorrect passcode. Please try again.' };
@@ -270,12 +293,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    // Strictly clear session and return to Landing page without bottom menu
+    // Strictly clear session cookies and return to Landing page without bottom menu
+    cookieService.clearAuthSession();
     setAuthStage('LANDING');
     setActiveRoute('home');
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('aura_session_token');
+      localStorage.removeItem('xah_custom_passcode');
     }
+    setCreatedPasscode('');
   };
 
   const lockApp = () => {

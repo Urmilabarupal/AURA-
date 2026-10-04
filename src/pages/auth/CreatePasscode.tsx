@@ -4,11 +4,13 @@
  PURPOSE:
  "Set Your 6 Digit Passcode" screen matching Screen 4 from the Money X Design PDF:
  - Pitch black OLED canvas (#000000)
- - Glowing green lock emblem inside circular halo
+ - Authentic Money X Original Brand Emblem & Typography
+ - Glowing lock emblem with security badge
  - Title: "Set Your 6 Digit Passcode"
- - 6 individual square box digit inputs
- - Signature Money X emerald green "Continue" button
- - Seamless transition to Screen 5 (Enter Passcode / Screen Lock)
+ - 6 individual square box digit inputs with auto-advance and numeric paste
+ - Connected wallet address badge
+ - Signature Money X emerald green "Continue" button (#00e699)
+ - Seamless transition to Screen Lock (Enter Passcode)
 */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -89,9 +91,9 @@ export const CreatePasscode: React.FC = () => {
       if (res.success) {
         setIsSuccess(true);
         setTimeout(() => {
-          // Transition directly to Screen 5: Enter Your Passcode / Screen Lock
+          // Transition directly to Screen Lock: Enter Passcode
           setAuthStage('LOCKED');
-        }, 600);
+        }, 500);
       } else {
         setErrorMsg(res.message || 'Failed to configure passcode.');
         setIsSubmitting(false);
@@ -107,11 +109,11 @@ export const CreatePasscode: React.FC = () => {
       <div className="w-full max-w-[420px] flex flex-col items-center text-center space-y-7">
         
         {/* Money X Original Brand Header */}
-        <MoneyXLogo size="md" glow />
+        <MoneyXLogo size="lg" glow layout="horizontal" />
 
         {/* Lock Graphic Circle matching PDF Screen 4 */}
         <div className="relative">
-          <div className="w-20 h-20 rounded-full bg-[#00e699]/10 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shadow-[0_0_40px_rgba(0,230,153,0.2)]">
+          <div className="w-20 h-20 rounded-full bg-[#00e699]/10 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shadow-[0_0_40px_rgba(0,230,153,0.25)]">
             <Lock size={36} className="stroke-[2.5]" />
           </div>
           <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#00e699] text-black flex items-center justify-center shadow-md">
@@ -129,7 +131,7 @@ export const CreatePasscode: React.FC = () => {
           </p>
           {walletAddress && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#08080a] border border-[#18181c] text-[11px] text-slate-300 font-medium">
-              <span className="w-2 h-2 rounded-full bg-[#00e699]" />
+              <span className="w-2 h-2 rounded-full bg-[#00e699] animate-pulse" />
               <span>Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
             </div>
           )}
@@ -144,7 +146,7 @@ export const CreatePasscode: React.FC = () => {
         )}
 
         {/* 6 Square Input Boxes matching Screen 4 in PDF */}
-        <div className="flex items-center justify-center gap-2.5 sm:gap-3 w-full" onPaste={handlePaste}>
+        <div className="flex items-center justify-center gap-2 sm:gap-3 w-full" onPaste={handlePaste}>
           {digits.map((digit, idx) => (
             <input
               key={idx}

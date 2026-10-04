@@ -4,25 +4,32 @@
  PURPOSE:
  "Enter Your Passcode" screen matching Screen 5 from Money X Design PDF:
  - Pitch black OLED canvas (#000000)
- - Money X Brand Logo & Emblem
+ - Authentic Money X Original Brand Emblem & Typography (vertical layout with glowing halo)
  - Headline: "Enter Your Passcode"
- - 6 indicator dots for entered PIN
+ - 6 indicator dots for entered PIN with emerald glow
  - Connected 3x4 tactile keypad with numbers 1-9, 0, backspace, and the checkmark button ("गुड का साइन" ✓)
+ - Physical keyboard listener (digits 0-9, Backspace, Enter triggers the checkmark ✓)
  - User enters 6-digit PIN and clicks the checkmark button to unlock session and open the Dashboard!
+ - Failsafe button: Allows user to connect wallet / set new passcode if none exists yet.
 */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { MoneyXLogo } from '../../components/common/MoneyXLogo';
-import { Check, Loader2, X } from 'lucide-react';
+import { Check, Loader2, Wallet, X } from 'lucide-react';
 import { BRAND } from '../../config/brand';
 
 export const EnterPasscode: React.FC = () => {
-  const { verifyPasscode, setAuthStage, refreshUserData } = useAuth();
+  const { verifyPasscode, setAuthStage, refreshUserData, createdPasscode } = useAuth();
   const [pin, setPin] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+
+  const hasConfiguredPasscode = Boolean(
+    createdPasscode ||
+    (typeof localStorage !== 'undefined' && localStorage.getItem('xah_custom_passcode'))
+  );
 
   const handleKeyPress = (num: string) => {
     if (pin.length < 6) {
@@ -57,7 +64,7 @@ export const EnterPasscode: React.FC = () => {
           await refreshUserData();
           // Open Dashboard!
           setAuthStage('AUTHENTICATED');
-        }, 500);
+        }, 450);
       } else {
         setErrorMsg(res.message || 'Incorrect passcode. Please try again.');
         setPin('');
@@ -70,22 +77,39 @@ export const EnterPasscode: React.FC = () => {
     }
   };
 
+  // Keyboard accessibility: physical keyboard typing (0-9, Backspace, Enter)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (isVerifying || isSuccess) return;
+
+      if (/^[0-9]$/.test(e.key)) {
+        handleKeyPress(e.key);
+      } else if (e.key === 'Backspace') {
+        handleDelete();
+      } else if (e.key === 'Enter') {
+        if (pin.length === 6) {
+          attemptVerify(pin);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [pin, isVerifying, isSuccess]);
+
   return (
     <div className="min-h-screen w-full bg-[#000000] text-slate-100 flex flex-col items-center justify-between p-4 py-8 select-none font-sans">
       
       {/* Centered Main Lock Card matching PDF Screen 5 */}
-      <div className="w-full max-w-[370px] flex flex-col items-center text-center my-auto space-y-7">
+      <div className="w-full max-w-[370px] flex flex-col items-center text-center my-auto space-y-6">
         
-        {/* Money X Original Brand Logo & Emblem */}
-        <div className="flex flex-col items-center gap-3">
-          <MoneyXLogo size="xl" glow showText={false} />
-          <span className="text-2xl font-black tracking-tight text-white font-sans">
-            Money <span className="text-white">X</span>
-          </span>
+        {/* Money X Original Brand Emblem & Typography */}
+        <div className="pt-2">
+          <MoneyXLogo size="xl" glow layout="vertical" />
         </div>
 
         {/* Title & Subtitle */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <h1 className="text-2xl font-black text-white tracking-tight leading-tight">
             Enter Your Passcode
           </h1>
@@ -93,6 +117,21 @@ export const EnterPasscode: React.FC = () => {
             Enter your 6-digit security PIN and press ✓ to unlock
           </p>
         </div>
+
+        {/* Warning if no passcode exists in storage yet */}
+        {!hasConfiguredPasscode && (
+          <div className="w-full p-3.5 rounded-2xl bg-amber-950/40 border border-amber-600/40 text-amber-300 text-xs text-center space-y-2">
+            <p className="leading-snug">No passcode has been configured yet. Connect your wallet to create your 6-digit PIN.</p>
+            <button
+              type="button"
+              onClick={() => setAuthStage('UNAUTHENTICATED')}
+              className="w-full py-2.5 px-3 rounded-xl bg-[#00e699] text-black font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:bg-[#00ffa3] transition-all"
+            >
+              <Wallet size={14} className="stroke-[2.5]" />
+              <span>Connect Wallet & Set PIN</span>
+            </button>
+          </div>
+        )}
 
         {/* 6 Dots PIN Feedback Indicator */}
         <div className="h-7 flex items-center justify-center">
@@ -112,7 +151,7 @@ export const EnterPasscode: React.FC = () => {
                   key={idx}
                   className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
                     pin.length > idx
-                      ? 'bg-[#00e699] scale-110 shadow-[0_0_12px_rgba(0,230,153,0.6)]'
+                      ? 'bg-[#00e699] scale-110 shadow-[0_0_14px_rgba(0,230,153,0.7)]'
                       : 'bg-[#18181c] border border-[#27272e]'
                   }`}
                 />
@@ -207,7 +246,7 @@ export const EnterPasscode: React.FC = () => {
               disabled={isVerifying || isSuccess || pin.length !== 6}
               className={`h-[62px] flex items-center justify-center transition-all cursor-pointer select-none ${
                 pin.length === 6
-                  ? 'bg-[#00e699]/15 text-[#00e699] hover:bg-[#00e699]/25 active:scale-95 shadow-[inset_0_0_15px_rgba(0,230,153,0.2)]'
+                  ? 'bg-[#00e699]/15 text-[#00e699] hover:bg-[#00e699]/25 active:scale-95 shadow-[inset_0_0_15px_rgba(0,230,153,0.25)]'
                   : 'text-slate-600 hover:text-slate-400 hover:bg-[#121217] opacity-40 cursor-not-allowed'
               }`}
               aria-label="Confirm passcode and open dashboard"
@@ -215,9 +254,13 @@ export const EnterPasscode: React.FC = () => {
               {isVerifying ? (
                 <Loader2 size={20} className="animate-spin text-[#00e699]" />
               ) : (
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  pin.length === 6 ? 'bg-[#00e699] text-black shadow-lg shadow-[#00e699]/40 scale-105' : 'text-slate-500'
-                }`}>
+                <div
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                    pin.length === 6
+                      ? 'bg-[#00e699] text-black shadow-lg shadow-[#00e699]/50 scale-105'
+                      : 'text-slate-500'
+                  }`}
+                >
                   <Check size={18} className="stroke-[3]" />
                 </div>
               )}
@@ -225,6 +268,16 @@ export const EnterPasscode: React.FC = () => {
           </div>
 
         </div>
+
+        {/* Option to reconnect wallet or set new passcode */}
+        <button
+          type="button"
+          onClick={() => setAuthStage('UNAUTHENTICATED')}
+          className="text-xs text-slate-400 hover:text-[#00e699] flex items-center justify-center gap-1.5 transition-colors cursor-pointer py-1"
+        >
+          <Wallet size={13} />
+          <span>Connect Different Wallet / Set New Passcode</span>
+        </button>
 
       </div>
 

@@ -34,9 +34,11 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpen }) => {
-  const { user, lockApp, logout, walletAddress, setActiveRoute } = useAuth();
+  const { user, lockApp, logout, walletAddress, setActiveRoute, activeRoute } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+
+  const isHome = activeRoute === 'home' || activeRoute === '';
 
   const displayAddress = walletAddress
     ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
@@ -51,52 +53,58 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#000000]/90 backdrop-blur-xl border-b border-[#141816] px-4 sm:px-6 py-3.5 select-none font-sans">
+    <header
+      className={`sticky top-0 z-40 w-full bg-[#000000]/90 backdrop-blur-xl border-b border-[#141816] px-4 sm:px-6 py-3.5 select-none font-sans ${
+        isHome ? 'block' : 'hidden lg:block'
+      }`}
+    >
       
-      {/* ----------------- MOBILE HEADER VIEW (< lg:hidden) ----------------- */}
-      <div className="flex lg:hidden items-center justify-between">
-        
-        {/* Left: Hamburger menu */}
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-xl bg-[#080d0a] border border-[#18261e] text-slate-300 hover:text-white cursor-pointer"
-          aria-label="Toggle menu"
-        >
-          <Menu size={20} />
-        </button>
-
-        {/* Center: Money X Logo */}
-        <div onClick={() => setActiveRoute('home')} className="cursor-pointer">
-          <MoneyXLogo size="sm" glow />
-        </div>
-
-        {/* Right: Notifications & Wallet Pill */}
-        <div className="flex items-center gap-2">
-          {/* Bell Icon with Red Dot */}
+      {/* ----------------- MOBILE HEADER VIEW (Only on Home Page for < lg) ----------------- */}
+      {isHome && (
+        <div className="flex lg:hidden items-center justify-between">
+          
+          {/* Left: Hamburger menu */}
           <button
             type="button"
-            className="p-2 rounded-xl bg-[#080d0a] border border-[#18261e] text-slate-300 hover:text-white cursor-pointer relative"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-xl bg-[#080d0a] border border-[#18261e] text-slate-300 hover:text-white cursor-pointer"
+            aria-label="Toggle menu"
           >
-            <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-black" />
+            <Menu size={20} />
           </button>
 
-          {/* User Wallet Pill */}
-          <button
-            type="button"
-            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#080d0a] border border-[#18261e] text-[11px] font-semibold text-white cursor-pointer"
-          >
-            <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[10px] font-bold">
-              <User size={12} />
-            </div>
-            <span>{displayAddress}</span>
-            <ChevronDown size={12} className="text-slate-400" />
-          </button>
+          {/* Center: Money X Logo */}
+          <div onClick={() => setActiveRoute('home')} className="cursor-pointer">
+            <MoneyXLogo size="sm" glow />
+          </div>
+
+          {/* Right: Notifications & Wallet Pill */}
+          <div className="flex items-center gap-2">
+            {/* Bell Icon with Red Dot */}
+            <button
+              type="button"
+              className="p-2 rounded-xl bg-[#080d0a] border border-[#18261e] text-slate-300 hover:text-white cursor-pointer relative"
+            >
+              <Bell size={16} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-black" />
+            </button>
+
+            {/* User Wallet Pill */}
+            <button
+              type="button"
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#080d0a] border border-[#18261e] text-[11px] font-semibold text-white cursor-pointer"
+            >
+              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[10px] font-bold">
+                <User size={12} />
+              </div>
+              <span>{displayAddress}</span>
+              <ChevronDown size={12} className="text-slate-400" />
+            </button>
+          </div>
+
         </div>
-
-      </div>
+      )}
 
       {/* ----------------- DESKTOP HEADER VIEW (hidden lg:flex) ----------------- */}
       <div className="hidden lg:flex items-center justify-between">

@@ -25,7 +25,7 @@ export const AuthFlowNav: React.FC = () => {
   const { authStage, setAuthStage, refreshUserData } = useAuth();
 
   const steps: { stage: AuthStage; label: string; icon: React.ElementType; sub: string }[] = [
-    { stage: 'UNAUTHENTICATED', label: '1. Wallet Connect', icon: Wallet, sub: 'Connect & Sign Up' },
+    { stage: 'UNAUTHENTICATED', label: '1. Wallet Connect', icon: Wallet, sub: 'Connect Web3 Wallet' },
     { stage: 'SETUP_PASSCODE', label: '2. Create Passcode', icon: KeyRound, sub: 'Set 4-6 Digit PIN' },
     { stage: 'LOCKED', label: '3. Screen Lock', icon: Lock, sub: 'Keypad PIN Unlock' },
     { stage: 'AUTHENTICATED', label: '4. Dashboard', icon: LayoutDashboard, sub: 'Financial Portal' },

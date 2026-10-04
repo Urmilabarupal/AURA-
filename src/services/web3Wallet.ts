@@ -70,6 +70,15 @@ class Web3WalletService {
     return this.initProvider();
   }
 
+  public isInIframe(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  }
+
   public isMetaMaskInstalled(): boolean {
     const provider = this.getEthereumProvider();
     return Boolean(provider && (provider.isMetaMask || provider.providers?.some((p: any) => p.isMetaMask)));
@@ -109,11 +118,11 @@ class Web3WalletService {
       return existing;
     }
 
-    // Deterministic or authentic crypto random address
-    const hexChars = '0123456789abcdefABCDEF';
+    const hexChars = '0123456789abcdef';
     let addr = '0x';
-    // Use standard decentralized demo address prefix
-    addr += '7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
+    for (let i = 0; i < 40; i++) {
+      addr += hexChars[Math.floor(Math.random() * hexChars.length)];
+    }
     localStorage.setItem(key, addr);
     return addr;
   }
@@ -180,34 +189,8 @@ class Web3WalletService {
   }
 
   /**
-   * Generates or retrieves a persistent real Web3 non-custodial address
-   */
-  public generateDeterministicWeb3Wallet(): { address: string; privateKeyPreview: string } {
-    if (typeof window === 'undefined') {
-      return {
-        address: '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8',
-        privateKeyPreview: '0x8f4c...3e1a',
-      };
-    }
-    const key = 'xah_web3_noncustodial_addr';
-    let existing = localStorage.getItem(key);
-    if (!existing) {
-      const chars = '0123456789abcdefABCDEF';
-      let rand = '0x';
-      for (let i = 0; i < 40; i++) {
-        rand += chars[Math.floor(Math.random() * chars.length)];
-      }
-      localStorage.setItem(key, rand);
-      existing = rand;
-    }
-    return {
-      address: existing,
-      privateKeyPreview: '0x' + existing.slice(2, 6) + '...' + existing.slice(-4),
-    };
-  }
-
-  /**
-   * Connects to MetaMask or initiates Mobile Web3 connection
+   * Connects to REAL MetaMask EIP-1193 provider.
+   * Prompts eth_requestAccounts directly with the user's real browser extension.
    */
   public async connectMetaMask(): Promise<{
     success: boolean;
@@ -222,7 +205,7 @@ class Web3WalletService {
   }> {
     const provider = this.getEthereumProvider();
 
-    // 1. If inside an in-app browser or desktop extension is present:
+    // 1. If MetaMask / Injected Web3 extension is present in browser:
     if (provider && typeof provider.request === 'function') {
       try {
         const accounts: string[] = await provider.request({
@@ -264,7 +247,7 @@ class Web3WalletService {
           return {
             success: false,
             isRealMetaMask: true,
-            error: 'Connection rejected. Please approve the MetaMask connection request.',
+            error: 'Connection rejected. Please approve the MetaMask connection request in your extension.',
             message: 'Connection rejected in MetaMask.',
           };
         }
@@ -272,7 +255,7 @@ class Web3WalletService {
           return {
             success: false,
             isRealMetaMask: true,
-            error: 'MetaMask is already open with a pending request. Please open your extension and approve.',
+            error: 'MetaMask is already open with a pending request. Please click the MetaMask extension icon to approve.',
             message: 'Request already pending in MetaMask.',
           };
         }
@@ -285,27 +268,23 @@ class Web3WalletService {
       }
     }
 
-    // 2. If provider is missing on mobile devices (e.g. mobile Chrome / Safari)
+    // 2. If provider is missing on mobile devices:
     if (this.isMobile()) {
       return {
         success: false,
         isRealMetaMask: false,
         isMobile: true,
-        error: 'MOBILE_BROWSER_NO_EXTENSION',
-        message: 'No Web3 extension in mobile browser. Choose to open in MetaMask app or connect instant mobile wallet.',
+        error: 'METAMASK_NOT_INSTALLED',
+        message: 'No Web3 extension found in mobile browser. Tap to open directly in the MetaMask app.',
       };
     }
 
-    // 3. Desktop browser without extension - fallback to deterministic Web3 wallet
-    const fallback = this.generateDeterministicWeb3Wallet();
+    // 3. Desktop browser without extension installed:
     return {
-      success: true,
-      address: fallback.address,
-      chainId: '0x1',
-      networkName: 'Ethereum Mainnet (Web3 Key)',
-      balance: '1.4850',
+      success: false,
       isRealMetaMask: false,
-      message: `Web3 Session Connected: ${fallback.address.slice(0, 6)}...${fallback.address.slice(-4)}`,
+      error: 'METAMASK_NOT_INSTALLED',
+      message: 'MetaMask extension not detected in this browser. Please install MetaMask or scan QR with mobile app.',
     };
   }
 
