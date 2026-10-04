@@ -2,22 +2,16 @@
  FILE: src/pages/landing/LandingPage.tsx
 
  PURPOSE:
- Pixel-Perfect "Money X" Landing Page identically matching the reference blueprint:
- 1. Navbar: Green Infinity Logo + "Money X", Nav links, Globe selector, and "Connect Wallet" CTA
- 2. Hero: "Earn, Grow and Be Part of Something Bigger", Web3 wallet icons, Dual Cyberpunk Traders visual with floating 3D Infinity sculpture, "Simple Secure Rewarding" floating badge
- 3. Stats Row: 2M+ Global Users | 150+ Countries | Multiple Earning Options | 24/7 Community Support
- 4. Ecosystem in Your Hands: Two tilted mobile phones showing Money X app (1,250.00 USDT balance) + "Explore Ecosystem" CTA
- 5. 6 Feature Cards: Staking, Farming, Jackpot, Community, Rewards, Multiple Wallets
- 6. How Money X Works: 4 Step-by-Step cards with glowing green chevrons
- 7. Why Choose Money X: Left list + Center metallic green infinity sculpture on obsidian rock + 4 floating badges
- 8. Take Money X Everywhere: Globe phone graphic + App Store & Google Play badges + QR code scanner card
- 9. Join a Global Community: Member portraits carousel + 2M+ Global Users pill + "Join Community" CTA
- 10. Supported Wallets: MetaMask, Trust Wallet, WalletConnect, Binance Wallet, OKX Wallet, More Wallets
- 11. Complete Institutional Footer with Socials, Ecosystem, Support, Company, and Stay Updated email form
+ Pixel-Perfect "Money X" Landing Page with Rich JS Scroll Animation Effects (motion/react):
+ - Smooth whileInView scroll-triggered reveals, depth parallax floating, and staggered card entrances
+ - Authentic Money X Green Infinity Logo component (∞)
+ - Exact replication of file_0000000096d88210ad2767a0c444187f.png
 */
 
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
+import { MoneyXLogo } from '../../components/common/MoneyXLogo';
 import heroWomenImg from '../../assets/images/moneyx_hero_women_1791117275763.jpg';
 import ecosystemPhonesImg from '../../assets/images/moneyx_ecosystem_phones_1791117300782.jpg';
 import infinitySculptureImg from '../../assets/images/moneyx_infinity_sculpture_1791117317826.jpg';
@@ -116,26 +110,20 @@ export const LandingPage: React.FC = () => {
     <div className="min-h-screen bg-[#000000] text-white font-sans selection:bg-[#00e699] selection:text-black overflow-x-hidden relative">
       
       {/* 1. TOP NAVBAR */}
-      <header className="sticky top-0 z-50 w-full bg-black/85 backdrop-blur-xl border-b border-[#141418]">
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="sticky top-0 z-50 w-full bg-black/85 backdrop-blur-xl border-b border-[#141418]"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
           {/* Brand Logo */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="relative flex items-center justify-center">
-              {/* Glowing Green Infinity Logo Icon */}
-              <svg className="w-9 h-7" viewBox="0 0 48 30" fill="none">
-                <path
-                  d="M14 6 C7 6 4 10 4 15 C4 20 7 24 14 24 C19 24 22 20 24 15 C26 10 29 6 34 6 C41 6 44 10 44 15 C44 20 41 24 34 24 C29 24 26 20 24 15 C22 10 19 6 14 6 Z"
-                  stroke="#00e699"
-                  strokeWidth="4.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <span className="text-xl font-black tracking-tight text-white font-sans">
-              Money <span className="text-white">X</span>
-            </span>
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <MoneyXLogo size="md" glow />
           </div>
 
           {/* Desktop Nav Links */}
@@ -184,7 +172,7 @@ export const LandingPage: React.FC = () => {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-[#08080a] border-b border-[#18181c] px-5 py-6 space-y-4">
+          <div className="md:hidden bg-[#08080a] border-b border-[#18181c] px-5 py-6 space-y-4 animate-fadeIn">
             <nav className="flex flex-col gap-3 text-sm font-semibold text-slate-300">
               <a
                 href="#hero"
@@ -235,7 +223,7 @@ export const LandingPage: React.FC = () => {
             </button>
           </div>
         )}
-      </header>
+      </motion.header>
 
       {/* 2. HERO SECTION */}
       <section id="hero" className="relative pt-12 pb-16 lg:pt-20 lg:pb-24 overflow-hidden">
@@ -246,7 +234,13 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
             
             {/* Left Content */}
-            <div className="lg:col-span-6 space-y-6 sm:space-y-8 z-10 text-left">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:col-span-6 space-y-6 sm:space-y-8 z-10 text-left"
+            >
               
               {/* Tag Pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#05140c] border border-[#00e699]/30 text-xs font-semibold text-slate-300">
@@ -314,7 +308,7 @@ export const LandingPage: React.FC = () => {
                   {/* Trust Wallet */}
                   <div
                     onClick={handleStartApp}
-                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md text-[#0500FF]"
+                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md"
                     title="Trust Wallet"
                   >
                     <Shield size={20} className="stroke-[2.5] text-[#3375BB]" />
@@ -323,7 +317,7 @@ export const LandingPage: React.FC = () => {
                   {/* Binance */}
                   <div
                     onClick={handleStartApp}
-                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md text-[#F0B90B]"
+                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md"
                     title="Binance Web3 Wallet"
                   >
                     <div className="w-4 h-4 bg-[#F0B90B] rotate-45 rounded-[2px]" />
@@ -341,10 +335,16 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-            </div>
+            </motion.div>
 
             {/* Right Visual Artwork (Matching Reference image) */}
-            <div className="lg:col-span-6 relative flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:col-span-6 relative flex items-center justify-center"
+            >
               
               {/* Main Artwork Container */}
               <div className="relative w-full max-w-[540px] aspect-square rounded-3xl overflow-hidden border border-[#1c2e24] bg-black shadow-2xl group">
@@ -355,8 +355,14 @@ export const LandingPage: React.FC = () => {
                   referrerPolicy="no-referrer"
                 />
                 
-                {/* Floating "Simple Secure Rewarding" Card (Bottom Right of Artwork) */}
-                <div className="absolute bottom-5 right-5 sm:bottom-6 sm:right-6 p-4 rounded-2xl bg-[#050807]/90 backdrop-blur-xl border border-[#1b2b20] shadow-2xl text-left max-w-[210px] space-y-1.5 animate-fadeIn">
+                {/* Floating "Simple Secure Rewarding" Card */}
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="absolute bottom-5 right-5 sm:bottom-6 sm:right-6 p-4 rounded-2xl bg-[#050807]/90 backdrop-blur-xl border border-[#1b2b20] shadow-2xl text-left max-w-[210px] space-y-1.5"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black text-white leading-tight">
                       Simple <br />
@@ -368,27 +374,31 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Green connector indicator */}
                   <div className="pt-2 border-t border-[#141e18] flex items-center gap-1.5 text-[10px] text-slate-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00e699]" />
                     <span>One Ecosystem</span>
                   </div>
                   <p className="text-[10px] text-slate-400">Many Opportunities</p>
-                </div>
+                </motion.div>
 
               </div>
 
-            </div>
+            </motion.div>
 
           </div>
         </div>
       </section>
 
       {/* 3. METRICS / STATS BAR */}
-      <section className="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-50px' }}
+        transition={{ duration: 0.6 }}
+        className="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
         <div className="rounded-2xl sm:rounded-3xl bg-[#08080a] border border-[#18181c] p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 shadow-2xl">
           
-          {/* Stat 1 */}
           <div className="flex items-center gap-3.5 sm:gap-4">
             <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
               <Users size={22} className="stroke-[2.5]" />
@@ -401,7 +411,6 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Stat 2 */}
           <div className="flex items-center gap-3.5 sm:gap-4">
             <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
               <BarChart3 size={22} className="stroke-[2.5]" />
@@ -414,7 +423,6 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Stat 3 */}
           <div className="flex items-center gap-3.5 sm:gap-4">
             <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
               <Layers size={22} className="stroke-[2.5]" />
@@ -427,7 +435,6 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Stat 4 */}
           <div className="flex items-center gap-3.5 sm:gap-4">
             <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
               <Headphones size={22} className="stroke-[2.5]" />
@@ -441,13 +448,19 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* 4. A COMPLETE CRYPTO ECOSYSTEM IN YOUR HANDS */}
-      <section id="ecosystem" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <motion.section
+        id="ecosystem"
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.7 }}
+        className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           
-          {/* Left Text */}
           <div className="lg:col-span-5 space-y-6 text-left">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
               A Complete <br />
@@ -471,7 +484,6 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Visual (Dual Mobile Phones Artwork) */}
           <div className="lg:col-span-7 flex justify-center">
             <div className="relative w-full max-w-[560px] aspect-square rounded-3xl overflow-hidden border border-[#18181c] bg-black shadow-2xl group">
               <img
@@ -484,10 +496,17 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* 5. 6 CORE FEATURES GRID */}
-      <section id="rewards" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <motion.section
+        id="rewards"
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-50px' }}
+        transition={{ duration: 0.6 }}
+        className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
           
           {/* 1. Staking */}
@@ -599,10 +618,16 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* 6. HOW MONEY X WORKS */}
-      <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12">
+      <motion.section
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.7 }}
+        className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12"
+      >
         <div className="space-y-3 max-w-2xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             How <span className="text-[#00e699]">Money X</span> Works
@@ -612,7 +637,6 @@ export const LandingPage: React.FC = () => {
           </p>
         </div>
 
-        {/* 4 Connected Process Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
           
           {/* Step 1 */}
@@ -708,13 +732,19 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* 7. WHY CHOOSE MONEY X */}
-      <section id="about" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <motion.section
+        id="about"
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.7 }}
+        className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          {/* Left Column: Heading and 5 Badges */}
           <div className="lg:col-span-5 space-y-8 text-left">
             <div className="space-y-3">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15]">
@@ -726,7 +756,6 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            {/* 5 Distinct Badges */}
             <div className="space-y-3.5">
               {[
                 { title: 'Multiple Earning Opportunities', icon: BarChart3 },
@@ -753,10 +782,8 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Central 3D Infinity Sculpture Artwork with 4 Floating Pills */}
           <div className="lg:col-span-7 relative flex items-center justify-center">
             
-            {/* Center Visual Artwork */}
             <div className="relative w-full max-w-[520px] aspect-square rounded-3xl overflow-hidden border border-[#1c2e24] bg-black shadow-2xl">
               <img
                 src={infinitySculptureImg}
@@ -765,8 +792,7 @@ export const LandingPage: React.FC = () => {
                 referrerPolicy="no-referrer"
               />
 
-              {/* 4 Surrounding Badges matching Reference Image */}
-              {/* Top Left Badge */}
+              {/* 4 Surrounding Badges */}
               <div className="absolute top-5 left-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
                 <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
                   <BarChart3 size={13} />
@@ -776,7 +802,6 @@ export const LandingPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Top Right Badge */}
               <div className="absolute top-5 right-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
                 <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
                   <ShieldCheck size={13} />
@@ -786,7 +811,6 @@ export const LandingPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Bottom Left Badge */}
               <div className="absolute bottom-5 left-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
                 <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
                   <Users size={13} />
@@ -796,7 +820,6 @@ export const LandingPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Bottom Right Badge */}
               <div className="absolute bottom-5 right-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
                 <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
                   <CheckCircle2 size={13} />
@@ -811,13 +834,18 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* 8. TAKE MONEY X EVERYWHERE */}
-      <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <motion.section
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.7 }}
+        className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
-          {/* Left Globe Phone Visual */}
           <div className="lg:col-span-6 flex justify-center">
             <div className="relative w-full max-w-[500px] aspect-square rounded-3xl overflow-hidden border border-[#18181c] bg-black shadow-2xl group">
               <img
@@ -829,7 +857,6 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Text, App Store Badges, and QR Box */}
           <div className="lg:col-span-6 space-y-7 text-left">
             <div className="space-y-3">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
@@ -841,9 +868,7 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Store Download Badges */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              {/* App Store */}
               <button
                 type="button"
                 onClick={handleStartApp}
@@ -858,7 +883,6 @@ export const LandingPage: React.FC = () => {
                 </div>
               </button>
 
-              {/* Google Play */}
               <button
                 type="button"
                 onClick={handleStartApp}
@@ -877,7 +901,6 @@ export const LandingPage: React.FC = () => {
               </button>
             </div>
 
-            {/* QR Code Download Card matching reference */}
             <div
               onClick={handleStartApp}
               className="p-3.5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 transition-colors inline-flex items-center gap-4 cursor-pointer shadow-lg"
@@ -894,13 +917,19 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* 9. JOIN A GLOBAL COMMUNITY */}
-      <section id="community" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <motion.section
+        id="community"
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.7 }}
+        className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
-          {/* Left Text & CTA */}
           <div className="lg:col-span-5 space-y-6 text-left">
             <div className="space-y-3">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
@@ -924,11 +953,9 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Member Photos Carousel with Arrows and Overlapping User Stack */}
           <div className="lg:col-span-7 space-y-6">
             <div className="flex items-center justify-between gap-3">
               
-              {/* Prev Button */}
               <button
                 type="button"
                 onClick={handlePrevMember}
@@ -938,7 +965,6 @@ export const LandingPage: React.FC = () => {
                 <ChevronLeft size={16} />
               </button>
 
-              {/* 5 Member Portrait Frames */}
               <div className="flex items-center justify-center gap-3 sm:gap-4 overflow-hidden py-2">
                 {communityMembers.map((member, idx) => (
                   <div
@@ -964,7 +990,6 @@ export const LandingPage: React.FC = () => {
                 ))}
               </div>
 
-              {/* Next Button */}
               <button
                 type="button"
                 onClick={handleNextMember}
@@ -976,7 +1001,6 @@ export const LandingPage: React.FC = () => {
 
             </div>
 
-            {/* Overlapping Avatars Pill matching screenshot */}
             <div className="flex justify-center">
               <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#08080a] border border-[#18181c] shadow-xl">
                 <div className="flex -space-x-2 overflow-hidden">
@@ -1000,10 +1024,16 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* 10. SUPPORTED WALLETS SECTION */}
-      <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10">
+      <motion.section
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.7 }}
+        className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10"
+      >
         <div className="space-y-2.5 max-w-md mx-auto">
           <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Supported Wallets
@@ -1013,7 +1043,6 @@ export const LandingPage: React.FC = () => {
           </p>
         </div>
 
-        {/* 6 Wallet Cards Row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
           
           {/* 1. MetaMask */}
@@ -1116,9 +1145,9 @@ export const LandingPage: React.FC = () => {
           </button>
 
         </div>
-      </section>
+      </motion.section>
 
-      {/* 11. REGULATORY FOOTER (Identical to Blueprint) */}
+      {/* 11. REGULATORY FOOTER */}
       <footer className="border-t border-[#141418] bg-[#000000] pt-16 pb-12 text-left">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           
@@ -1126,20 +1155,7 @@ export const LandingPage: React.FC = () => {
             
             {/* Col 1: Brand & Socials (4 Cols) */}
             <div className="lg:col-span-4 space-y-4">
-              <div className="flex items-center gap-2.5">
-                <svg className="w-8 h-6" viewBox="0 0 48 30" fill="none">
-                  <path
-                    d="M14 6 C7 6 4 10 4 15 C4 20 7 24 14 24 C19 24 22 20 24 15 C26 10 29 6 34 6 C41 6 44 10 44 15 C44 20 41 24 34 24 C29 24 26 20 24 15 C22 10 19 6 14 6 Z"
-                    stroke="#00e699"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-lg font-black text-white font-sans">
-                  Money X
-                </span>
-              </div>
+              <MoneyXLogo size="md" glow />
 
               <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
                 A modern crypto ecosystem for everyone. <br />

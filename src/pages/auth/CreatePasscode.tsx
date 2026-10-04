@@ -13,6 +13,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { MoneyXLogo } from '../../components/common/MoneyXLogo';
 import { AlertCircle, Check, Loader2, Lock, ShieldCheck } from 'lucide-react';
 import { BRAND } from '../../config/brand';
 
@@ -105,15 +106,8 @@ export const CreatePasscode: React.FC = () => {
     <div className="min-h-screen w-full bg-[#000000] flex flex-col items-center justify-center p-4 py-8 select-none font-sans text-white">
       <div className="w-full max-w-[420px] flex flex-col items-center text-center space-y-7">
         
-        {/* Money X Brand Header */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-[#00e699] flex items-center justify-center text-black font-black text-xs shadow-lg shadow-[#00e699]/30">
-            MX
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-white">
-            {BRAND.name}
-          </span>
-        </div>
+        {/* Money X Original Brand Header */}
+        <MoneyXLogo size="md" glow />
 
         {/* Lock Graphic Circle matching PDF Screen 4 */}
         <div className="relative">

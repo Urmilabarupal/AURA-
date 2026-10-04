@@ -14,6 +14,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
+import { MoneyXLogo } from '../../components/common/MoneyXLogo';
 import { web3Wallet } from '../../services/web3Wallet';
 import { BRAND } from '../../config/brand';
 import {
@@ -118,14 +119,7 @@ export const ConnectSignUp: React.FC = () => {
           
           {/* Top Brand Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-[#00e699] flex items-center justify-center text-black font-black text-sm shadow-lg shadow-[#00e699]/30">
-                MX
-              </div>
-              <span className="font-extrabold text-base tracking-tight text-white font-sans">
-                {BRAND.name}
-              </span>
-            </div>
+            <MoneyXLogo size="md" glow />
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/30 text-[#00e699]">
               WEB3 ACCESS
             </span>

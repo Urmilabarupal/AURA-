@@ -13,6 +13,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { MoneyXLogo } from '../../components/common/MoneyXLogo';
 import { Check, Loader2, X } from 'lucide-react';
 import { BRAND } from '../../config/brand';
 
@@ -75,13 +76,11 @@ export const EnterPasscode: React.FC = () => {
       {/* Centered Main Lock Card matching PDF Screen 5 */}
       <div className="w-full max-w-[370px] flex flex-col items-center text-center my-auto space-y-7">
         
-        {/* Money X Brand Logo & Emblem */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-[#00e699] flex items-center justify-center text-black font-black text-lg shadow-[0_0_30px_rgba(0,230,153,0.3)]">
-            MX
-          </div>
-          <span className="text-xl font-black tracking-tight text-white">
-            {BRAND.name}
+        {/* Money X Original Brand Logo & Emblem */}
+        <div className="flex flex-col items-center gap-3">
+          <MoneyXLogo size="xl" glow showText={false} />
+          <span className="text-2xl font-black tracking-tight text-white font-sans">
+            Money <span className="text-white">X</span>
           </span>
         </div>
 
