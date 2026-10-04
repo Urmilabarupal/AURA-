@@ -2,396 +2,178 @@
  FILE: src/pages/landing/LandingPage.tsx
 
  PURPOSE:
- Bespoke, Handcrafted Trading & Financial Platform Landing Page.
- Engineered specifically to banish all AI-generated clichés:
- 1. Canvas: True Pitch Black OLED background (#000000) with ultra-fine hairline borders (#18181c).
- 2. Live Interactive Trading Terminal:
-    - Real-time mouse-tracking crosshair with dynamic price & timestamp axis tags
-    - Live Candlestick & Volume Histogram bars (Green/Red volume depth)
-    - Ticking Order Book with live bids and asks updating in real time
-    - Indicator toggles: SMA(20), RSI, Volume
-    - Interactive 1-click UP (Call) / DOWN (Put) simulated trading with live countdown & payout settlement
- 3. Scroll-Driven Micro-interactions:
-    - Glowing top scroll progress bar with live % readout
-    - Glass sticky header with blur compression on scroll
-    - Floating section quick-nav dock
-    - Smooth marquee ticker with live bid/ask quotes
- 4. High-End Fintech Bento Grid:
-    - Asymmetric structural hierarchy (no generic clone cards)
-    - Real quantitative proof metrics adjacent to features
-    - Interactive Profit & Staking Yield simulator
- 5. Zero-Pill discipline, strict typography hierarchy (Poppins + JetBrains Mono), WCAG AA contrast.
+ Pixel-Perfect "Money X" Landing Page identically matching the reference blueprint:
+ 1. Navbar: Green Infinity Logo + "Money X", Nav links, Globe selector, and "Connect Wallet" CTA
+ 2. Hero: "Earn, Grow and Be Part of Something Bigger", Web3 wallet icons, Dual Cyberpunk Traders visual with floating 3D Infinity sculpture, "Simple Secure Rewarding" floating badge
+ 3. Stats Row: 2M+ Global Users | 150+ Countries | Multiple Earning Options | 24/7 Community Support
+ 4. Ecosystem in Your Hands: Two tilted mobile phones showing Money X app (1,250.00 USDT balance) + "Explore Ecosystem" CTA
+ 5. 6 Feature Cards: Staking, Farming, Jackpot, Community, Rewards, Multiple Wallets
+ 6. How Money X Works: 4 Step-by-Step cards with glowing green chevrons
+ 7. Why Choose Money X: Left list + Center metallic green infinity sculpture on obsidian rock + 4 floating badges
+ 8. Take Money X Everywhere: Globe phone graphic + App Store & Google Play badges + QR code scanner card
+ 9. Join a Global Community: Member portraits carousel + 2M+ Global Users pill + "Join Community" CTA
+ 10. Supported Wallets: MetaMask, Trust Wallet, WalletConnect, Binance Wallet, OKX Wallet, More Wallets
+ 11. Complete Institutional Footer with Socials, Ecosystem, Support, Company, and Stay Updated email form
 */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
-import { BRAND } from '../../config/brand';
-import { ThemeToggle } from '../../components/common/ThemeToggle';
-import { realMarketApi, LiveMarketPair, LiveCandle, LiveOrderBookRow } from '../../services/realMarketApi';
-import heroTerminalImg from '../../assets/images/olymptrade_hero_terminal_1790946814485.jpg';
-import mobilePlatformImg from '../../assets/images/olymptrade_mobile_platform_1790946827477.jpg';
-import assetsShowcaseImg from '../../assets/images/olymptrade_assets_showcase_1790946842771.jpg';
+import heroWomenImg from '../../assets/images/moneyx_hero_women_1791117275763.jpg';
+import ecosystemPhonesImg from '../../assets/images/moneyx_ecosystem_phones_1791117300782.jpg';
+import infinitySculptureImg from '../../assets/images/moneyx_infinity_sculpture_1791117317826.jpg';
+import globePhoneImg from '../../assets/images/moneyx_globe_phone_1791117332362.jpg';
 import {
-  Activity,
-  ArrowDown,
-  ArrowDownRight,
   ArrowRight,
-  ArrowUp,
   ArrowUpRight,
-  Award,
-  BarChart2,
+  BarChart3,
   CheckCircle2,
-  ChevronDown,
-  Clock,
-  Coins,
-  Compass,
-  Cpu,
-  DollarSign,
-  Download,
-  ExternalLink,
-  Flame,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Gift,
   Globe,
+  Grid,
+  Headphones,
   Layers,
-  LineChart,
-  Lock,
+  LayoutGrid,
   Menu,
-  MousePointer2,
-  Percent,
-  Play,
-  RefreshCw,
-  Repeat,
+  QrCode,
+  Send,
   Shield,
   ShieldCheck,
   Smartphone,
   Sparkles,
-  TrendingDown,
-  TrendingUp,
+  Sprout,
+  Trophy,
   Users,
   Wallet,
   X,
   Zap,
 } from 'lucide-react';
 
-interface SimulatedTrade {
-  id: string;
-  asset: string;
-  direction: 'UP' | 'DOWN';
-  amount: number;
-  entryPrice: number;
-  payoutPercent: number;
-  secondsRemaining: number;
-}
-
-interface OrderBookRow {
-  price: number;
-  size: number;
-  total: number;
-}
-
 export const LandingPage: React.FC = () => {
-  const { user, wallets, setAuthStage, setActiveRoute } = useAuth();
-  const { isDark } = useTheme();
+  const { user, setAuthStage, setActiveRoute } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [activeCommunityIndex, setActiveCommunityIndex] = useState<number>(0);
+  const [subscribeEmail, setSubscribeEmail] = useState<string>('');
+  const [subscribed, setSubscribed] = useState<boolean>(false);
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeFaq, setActiveFaq] = useState<number | null>(0);
-  const [scrollProgress, setScrollProgress] = useState<number>(0);
-  const [scrollY, setScrollY] = useState<number>(0);
-
-  // Active section for floating dock
-  const [activeSection, setActiveSection] = useState<string>('terminal');
-
-  // Unified Security Gate: Without login, dashboard CANNOT open!
+  // Authentication gatekeeper: ALWAYS routes to real Web3 wallet connect flow
   const handleStartApp = () => {
-    const savedPass = typeof localStorage !== 'undefined' ? localStorage.getItem('xah_custom_passcode') : '';
-    if (user && savedPass) {
-      setAuthStage('LOCKED');
-    } else {
+    if (!user) {
       setAuthStage('UNAUTHENTICATED');
+    } else {
+      setAuthStage('LOCKED');
     }
   };
 
-  // Interactive Terminal State
-  const [accountMode, setAccountMode] = useState<'demo' | 'real'>('demo');
-  const [demoBalance, setDemoBalance] = useState<number>(10000.0);
-  const [selectedAssetId, setSelectedAssetId] = useState<string>('ETHUSDT');
-  const [tradeDuration, setTradeDuration] = useState<number>(5);
-  const [tradeAmount, setTradeAmount] = useState<number>(50);
-  const [activeIndicator, setActiveIndicator] = useState<'VOL' | 'SMA' | 'RSI'>('VOL');
-  const [chartType, setChartType] = useState<'candle' | 'area'>('candle');
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (subscribeEmail.trim()) {
+      setSubscribed(true);
+      setTimeout(() => setSubscribed(false), 3000);
+      setSubscribeEmail('');
+    }
+  };
 
-  // Crosshair Mouse State for high-fidelity trading feel
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
-  const [hoveredPrice, setHoveredPrice] = useState<number | null>(null);
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-
-  // Real Market Data Feed
-  const [livePairs, setLivePairs] = useState<LiveMarketPair[]>([]);
-  const [livePrice, setLivePrice] = useState<number>(2840.50);
-  const [candles, setCandles] = useState<LiveCandle[]>([]);
-  const [orderBookAsks, setOrderBookAsks] = useState<LiveOrderBookRow[]>([]);
-  const [orderBookBids, setOrderBookBids] = useState<LiveOrderBookRow[]>([]);
-
-  // Default Pairs fallback before first network tick
-  const DEFAULT_PAIRS = [
-    { id: 'ETHUSDT', symbol: 'ETHUSDT', name: 'ETH / USDT', payout: 92, price: 2840.5, delta: '+2.45%', up: true, type: 'Crypto' },
-    { id: 'BTCUSDT', symbol: 'BTCUSDT', name: 'BTC / USDT', payout: 95, price: 84650.0, delta: '+3.12%', up: true, type: 'Crypto' },
-    { id: 'BNBUSDT', symbol: 'BNBUSDT', name: 'BNB / USDT', payout: 88, price: 624.1, delta: '+1.80%', up: true, type: 'Crypto' },
-    { id: 'SOLUSDT', symbol: 'SOLUSDT', name: 'SOL / USDT', payout: 90, price: 178.4, delta: '+5.40%', up: true, type: 'Crypto' },
-    { id: 'XRPUSDT', symbol: 'XRPUSDT', name: 'XRP / USDT', payout: 86, price: 0.584, delta: '-0.32%', up: false, type: 'Crypto' },
+  const communityMembers = [
+    {
+      name: 'Alex R.',
+      role: 'Core Contributor',
+      img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    },
+    {
+      name: 'Elena K.',
+      role: 'VIP Staker',
+      img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    },
+    {
+      name: 'Marcus Chen',
+      role: 'Liquidity Provider',
+      img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+    },
+    {
+      name: 'David S.',
+      role: 'Global Node',
+      img: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80',
+    },
+    {
+      name: 'Sarah M.',
+      role: 'Ecosystem Lead',
+      img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
+    },
   ];
 
-  const currentPairMeta = livePairs.find((p) => p.symbol === selectedAssetId);
-  const currentPair = {
-    id: selectedAssetId,
-    name: currentPairMeta ? currentPairMeta.name : (DEFAULT_PAIRS.find((p) => p.id === selectedAssetId)?.name || 'ETH / USDT'),
-    payout: currentPairMeta ? currentPairMeta.payout : 92,
-    price: currentPairMeta ? currentPairMeta.price : livePrice,
-    delta: currentPairMeta ? `${currentPairMeta.change24h >= 0 ? '+' : ''}${currentPairMeta.change24h.toFixed(2)}%` : '+2.45%',
-    up: currentPairMeta ? currentPairMeta.change24h >= 0 : true,
-    high24h: currentPairMeta ? currentPairMeta.high24h : livePrice * 1.02,
-    low24h: currentPairMeta ? currentPairMeta.low24h : livePrice * 0.98,
+  const handlePrevMember = () => {
+    setActiveCommunityIndex((prev) => (prev === 0 ? communityMembers.length - 1 : prev - 1));
   };
 
-  // Subscribe to real live ticker feed
-  useEffect(() => {
-    const unsub = realMarketApi.subscribe((pairs) => {
-      if (pairs && pairs.length > 0) {
-        setLivePairs(pairs);
-        const match = pairs.find((p) => p.symbol === selectedAssetId);
-        if (match) {
-          setLivePrice(match.price);
-        }
-      }
-    });
-
-    return () => unsub();
-  }, [selectedAssetId]);
-
-  // Load real Candlesticks and Order Book from Binance API
-  useEffect(() => {
-    let isMounted = true;
-    async function loadRealChartData() {
-      const [cList, ob] = await Promise.all([
-        realMarketApi.fetchRealCandlesticks(selectedAssetId, '1m', 24),
-        realMarketApi.fetchRealOrderBook(selectedAssetId, 6),
-      ]);
-
-      if (isMounted) {
-        if (cList && cList.length > 0) {
-          setCandles(cList);
-          setLivePrice(cList[cList.length - 1].close);
-        }
-        if (ob && ob.asks.length > 0) setOrderBookAsks(ob.asks);
-        if (ob && ob.bids.length > 0) setOrderBookBids(ob.bids);
-      }
-    }
-
-    loadRealChartData();
-    const interval = setInterval(loadRealChartData, 4000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [selectedAssetId]);
-
-  // Active simulated positions
-  const [activeTrades, setActiveTrades] = useState<SimulatedTrade[]>([]);
-  const [winToast, setWinToast] = useState<{ amount: number; profit: number } | null>(null);
-
-  // Profit Calculator State
-  const [calcStakeVal, setCalcStakeVal] = useState<number>(1000);
-  const [calcTradesPerDay, setCalcTradesPerDay] = useState<number>(12);
-  const [calcPlan, setCalcPlan] = useState<'quick' | 'staking' | 'hybrid'>('quick');
-
-  const TRADING_PAIRS = livePairs.length > 0
-    ? livePairs.slice(0, 5).map((lp) => ({
-        id: lp.symbol,
-        name: lp.name,
-        payout: lp.payout,
-        price: lp.price,
-        delta: `${lp.change24h >= 0 ? '+' : ''}${lp.change24h.toFixed(2)}%`,
-        up: lp.change24h >= 0,
-        type: 'Crypto',
-      }))
-    : DEFAULT_PAIRS;
-
-  const expectedProfit = +(tradeAmount * (currentPair.payout / 100)).toFixed(2);
-
-  // Trade resolution countdown
-  useEffect(() => {
-    if (activeTrades.length === 0) return;
-
-    const interval = setInterval(() => {
-      setActiveTrades((prev) =>
-        prev
-          .map((trade) => {
-            if (trade.secondsRemaining <= 1) {
-              const won = Math.random() > 0.35;
-              const profit = won ? +(trade.amount * (trade.payoutPercent / 100)).toFixed(2) : -trade.amount;
-              if (won) {
-                setDemoBalance((b) => +(b + trade.amount + profit).toFixed(2));
-                setWinToast({ amount: trade.amount, profit });
-                setTimeout(() => setWinToast(null), 4500);
-              }
-              return null;
-            }
-            return { ...trade, secondsRemaining: trade.secondsRemaining - 1 };
-          })
-          .filter(Boolean) as SimulatedTrade[]
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [activeTrades]);
-
-  // Scroll listeners for progress bar and active section dock
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const currentScroll = window.scrollY;
-      setScrollY(currentScroll);
-      if (totalScroll > 0) {
-        setScrollProgress((currentScroll / totalScroll) * 100);
-      }
-
-      // Check active section
-      const sections = ['terminal', 'markets', 'execution', 'calculator', 'ecosystem', 'faq'];
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 250 && rect.bottom >= 250) {
-            setActiveSection(sectionId);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleExecuteTrade = (direction: 'UP' | 'DOWN') => {
-    if (demoBalance < tradeAmount) {
-      setDemoBalance(10000.0);
-    }
-    setDemoBalance((b) => Math.max(0, +(b - tradeAmount).toFixed(2)));
-
-    const trade: SimulatedTrade = {
-      id: `trade_${Date.now()}`,
-      asset: currentPair.name,
-      direction,
-      amount: tradeAmount,
-      entryPrice: livePrice,
-      payoutPercent: currentPair.payout,
-      secondsRemaining: tradeDuration,
-    };
-    setActiveTrades((prev) => [trade, ...prev]);
-  };
-
-  const handleChartMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!chartContainerRef.current) return;
-    const rect = chartContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setMousePos({ x, y });
-
-    // Derive approximate price from cursor Y
-    const minVal = 334.0;
-    const maxVal = 339.0;
-    const price = maxVal - (y / rect.height) * (maxVal - minVal);
-    setHoveredPrice(+price.toFixed(2));
-  };
-
-  const handleChartMouseLeave = () => {
-    setMousePos(null);
-    setHoveredPrice(null);
+  const handleNextMember = () => {
+    setActiveCommunityIndex((prev) => (prev === communityMembers.length - 1 ? 0 : prev + 1));
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] dark:bg-[#000000] light:bg-[#f8fafc] text-white dark:text-white light:text-slate-900 font-sans transition-colors selection:bg-[#00e699] selection:text-black">
+    <div className="min-h-screen bg-[#000000] text-white font-sans selection:bg-[#00e699] selection:text-black overflow-x-hidden relative">
       
-      {/* 1. Ultra-Slim Dynamic Neon Top Scroll Indicator */}
-      <div
-        className="fixed top-0 left-0 h-[2.5px] bg-gradient-to-r from-[#00b875] via-[#00e699] to-[#00d2d3] z-50 transition-all duration-100 shadow-[0_0_10px_rgba(0,230,153,0.8)]"
-        style={{ width: `${scrollProgress}%` }}
-      />
-
-      {/* 2. Top Navigation Bar (Strict 1-Row 3-Zone Contract with Glass Compression) */}
-      <header
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-          scrollY > 20
-            ? 'bg-[#000000]/95 dark:bg-[#000000]/95 light:bg-white/95 backdrop-blur-xl border-b border-[#18181c] dark:border-[#18181c] light:border-slate-200 py-3 shadow-2xl shadow-black'
-            : 'bg-transparent py-4 sm:py-5 border-b border-transparent'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+      {/* 1. TOP NAVBAR */}
+      <header className="sticky top-0 z-50 w-full bg-black/85 backdrop-blur-xl border-b border-[#141418]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* Zone 1: Single Text Element Wordmark */}
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2.5 text-left group cursor-pointer"
-          >
-            <div className="w-9 h-9 rounded-xl bg-[#00e699] flex items-center justify-center text-black font-black text-sm shadow-lg shadow-[#00e699]/30 group-hover:scale-105 transition-transform">
-              MX
+          {/* Brand Logo */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div className="relative flex items-center justify-center">
+              {/* Glowing Green Infinity Logo Icon */}
+              <svg className="w-9 h-7" viewBox="0 0 48 30" fill="none">
+                <path
+                  d="M14 6 C7 6 4 10 4 15 C4 20 7 24 14 24 C19 24 22 20 24 15 C26 10 29 6 34 6 C41 6 44 10 44 15 C44 20 41 24 34 24 C29 24 26 20 24 15 C22 10 19 6 14 6 Z"
+                  stroke="#00e699"
+                  strokeWidth="4.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-black tracking-tight text-white dark:text-white light:text-slate-950 font-sans">
-                {BRAND.name}
-              </span>
-            </div>
-          </button>
+            <span className="text-xl font-black tracking-tight text-white font-sans">
+              Money <span className="text-white">X</span>
+            </span>
+          </div>
 
-          {/* Zone 2: Navigation Links matching PDF Screen 1 */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-slate-300 dark:text-slate-300 light:text-slate-600">
-            <a href="#terminal" className="hover:text-[#00e699] transition-colors">
-              Trade
-            </a>
-            <a href="#calculator" className="hover:text-[#00e699] transition-colors">
-              Earn
-            </a>
-            <a href="#calculator" className="hover:text-[#00e699] transition-colors">
-              Staking
-            </a>
-            <a href="#ecosystem" className="hover:text-[#00e699] transition-colors">
-              Farming
-            </a>
-            <a href="#ecosystem" className="hover:text-[#00e699] transition-colors">
-              Jackpot
-            </a>
-            <a href="#faq" className="hover:text-[#00e699] transition-colors">
-              Community
-            </a>
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-300">
+            <a href="#hero" className="text-white hover:text-[#00e699] transition-colors">Home</a>
+            <a href="#ecosystem" className="hover:text-[#00e699] transition-colors">Ecosystem</a>
+            <a href="#rewards" className="hover:text-[#00e699] transition-colors">Rewards</a>
+            <a href="#community" className="hover:text-[#00e699] transition-colors">Community</a>
+            <a href="#about" className="hover:text-[#00e699] transition-colors">About</a>
           </nav>
 
-          {/* Zone 3: Actions + ThemeToggle (Replaces Sign Up with Connect Wallet) */}
+          {/* Right Actions */}
           <div className="flex items-center gap-3">
-            <ThemeToggle />
-
+            {/* Globe Language Selector Pill */}
             <button
               type="button"
-              onClick={handleStartApp}
-              className="hidden sm:inline-flex px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white rounded-xl hover:bg-[#121217] transition-colors cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#08080a] border border-[#18181c] text-slate-300 text-xs font-bold hover:text-white hover:border-[#26262e] transition-colors cursor-pointer"
+              aria-label="Language Selector"
             >
-              Login
+              <Globe size={14} className="text-slate-400" />
+              <span className="text-[10px] text-slate-500">•</span>
             </button>
 
+            {/* Primary Connect Wallet Button */}
             <button
               type="button"
               onClick={handleStartApp}
-              className="px-5 py-2.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-xs tracking-tight shadow-lg shadow-[#00e699]/30 hover:shadow-[#00e699]/50 active:scale-[0.97] transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap"
+              className="px-4 sm:px-5 py-2.5 rounded-xl bg-[#00e699] hover:bg-[#00ffa3] active:scale-[0.98] text-black font-extrabold text-xs sm:text-sm tracking-tight transition-all shadow-lg shadow-[#00e699]/30 flex items-center gap-2 cursor-pointer"
             >
-              <Wallet size={14} className="stroke-[2.5]" />
+              <CreditCard size={15} className="stroke-[2.5]" />
               <span>Connect Wallet</span>
             </button>
 
-            {/* Mobile Hamburger */}
+            {/* Mobile Hamburger Button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-300 bg-[#121216] border border-[#222228] cursor-pointer"
+              className="md:hidden p-2 rounded-xl bg-[#08080a] border border-[#18181c] text-slate-300 hover:text-white cursor-pointer"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -400,861 +182,200 @@ export const LandingPage: React.FC = () => {
 
         </div>
 
-        {/* Mobile Dropdown Drawer */}
+        {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden px-4 pt-3 pb-6 bg-[#000000] border-b border-[#18181c] space-y-3 animate-fadeIn">
-            <a
-              href="#terminal"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
-            >
-              Trade
-            </a>
-            <a
-              href="#calculator"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
-            >
-              Earn & Staking
-            </a>
-            <a
-              href="#ecosystem"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
-            >
-              Farming & Ecosystem
-            </a>
-            <a
-              href="#faq"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
-            >
-              Community & FAQ
-            </a>
-            <div className="pt-2 border-t border-[#18181c] flex flex-col gap-2">
-              <button
-                onClick={handleStartApp}
-                className="w-full py-2.5 rounded-xl border border-[#222228] text-xs font-bold text-slate-200 cursor-pointer"
+          <div className="md:hidden bg-[#08080a] border-b border-[#18181c] px-5 py-6 space-y-4">
+            <nav className="flex flex-col gap-3 text-sm font-semibold text-slate-300">
+              <a
+                href="#hero"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 text-white hover:text-[#00e699]"
               >
-                Login
-              </button>
-              <button
-                onClick={handleStartApp}
-                className="w-full py-2.5 rounded-xl bg-[#00e699] text-black font-extrabold text-xs cursor-pointer flex items-center justify-center gap-2"
+                Home
+              </a>
+              <a
+                href="#ecosystem"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#00e699]"
               >
-                <Wallet size={14} className="stroke-[2.5]" />
-                <span>Connect Wallet</span>
-              </button>
-            </div>
+                Ecosystem
+              </a>
+              <a
+                href="#rewards"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#00e699]"
+              >
+                Rewards
+              </a>
+              <a
+                href="#community"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#00e699]"
+              >
+                Community
+              </a>
+              <a
+                href="#about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#00e699]"
+              >
+                About
+              </a>
+            </nav>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleStartApp();
+              }}
+              className="w-full py-3 rounded-xl bg-[#00e699] text-black font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg"
+            >
+              <CreditCard size={15} />
+              <span>Connect Wallet</span>
+            </button>
           </div>
         )}
       </header>
 
-      {/* 3. Floating Section Quick-Jump Dock (Desktop only) */}
-      <aside className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-30 flex-col gap-2.5 p-2 rounded-2xl bg-[#08080a]/90 backdrop-blur-md border border-[#18181c] shadow-2xl">
-        {[
-          { id: 'hero', label: 'Home' },
-          { id: 'terminal', label: 'Terminal' },
-          { id: 'markets', label: 'Markets' },
-          { id: 'execution', label: 'Execution' },
-          { id: 'calculator', label: 'Calculator' },
-          { id: 'ecosystem', label: 'Mobile' },
-          { id: 'faq', label: 'FAQ' },
-        ].map((item) => (
-          <a
-            key={item.id}
-            href={`#${item.id}`}
-            title={item.label}
-            className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
-              activeSection === item.id
-                ? 'bg-[#00e699] scale-150 shadow-md shadow-[#00e699]'
-                : 'bg-slate-700 hover:bg-slate-400'
-            }`}
-          />
-        ))}
-      </aside>
+      {/* 2. HERO SECTION */}
+      <section id="hero" className="relative pt-12 pb-16 lg:pt-20 lg:pb-24 overflow-hidden">
+        {/* Subtle Ambient Emerald Glow */}
+        <div className="absolute top-1/4 right-1/4 w-[450px] h-[450px] bg-[#00e699]/15 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* 4. HERO SECTION matching PDF Screen 1 EXACTLY */}
-      <section id="hero" className="relative pt-8 sm:pt-14 pb-14 sm:pb-20 overflow-hidden">
-        {/* Subtle Ambient Radial Lighting */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#00e699]/[0.06] rounded-full blur-[160px] pointer-events-none -z-10" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
             
-            {/* Left Column: Headline, CTAs, Stats Strip matching PDF Screen 1 */}
-            <div className="lg:col-span-7 space-y-7 text-left">
+            {/* Left Content */}
+            <div className="lg:col-span-6 space-y-6 sm:space-y-8 z-10 text-left">
               
-              <div className="space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-black tracking-tight leading-[1.08] text-white">
-                  Build confidence with every single trade
-                </h1>
-
-                <div className="space-y-1">
-                  <p className="text-base sm:text-lg font-bold text-[#00e699]">
-                    Trade · Stake · Earn · Grow Together
-                  </p>
-                  <p className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed">
-                    A modern crypto platform for everyone. Non-custodial trading, real-time APY staking, and cross-chain execution with institutional liquidity.
-                  </p>
-                </div>
+              {/* Tag Pill */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#05140c] border border-[#00e699]/30 text-xs font-semibold text-slate-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00e699] animate-pulse" />
+                <span className="text-[11px] sm:text-xs">Next-Gen Crypto Ecosystem</span>
               </div>
 
-              {/* Action Buttons matching PDF Screen 1 */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-1">
-                <button
-                  type="button"
-                  onClick={handleStartApp}
-                  className="px-8 py-3.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-sm tracking-tight shadow-xl shadow-[#00e699]/30 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
-                >
-                  <span>Get Started</span>
-                  <ArrowRight size={15} className="stroke-[3]" />
-                </button>
+              {/* Main Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.08]">
+                Earn, Grow <br />
+                and Be Part of <br />
+                <span className="text-[#00e699]">Something Bigger</span>
+              </h1>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById('terminal');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="px-6 py-3.5 rounded-xl bg-[#0c0c10] hover:bg-[#15151c] text-slate-200 border border-[#222228] font-bold text-sm tracking-tight transition-all cursor-pointer flex items-center gap-2"
-                >
-                  <Play size={14} className="fill-slate-300 text-slate-300" />
-                  <span>Watch Video</span>
-                </button>
-              </div>
+              {/* Description */}
+              <p className="text-sm sm:text-base text-slate-400 max-w-lg leading-relaxed font-normal">
+                Money X is a crypto-based ecosystem designed for everyone. Explore multiple ways to earn — Staking, Farming, Rewards, Jackpot and more.
+              </p>
 
-              {/* 4 Stats Strip matching PDF Screen 1 */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#18181c]">
-                <div>
-                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    12+
-                  </div>
-                  <div className="text-xs text-slate-400 mt-0.5">
-                    Years of Innovation
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    2M+
-                  </div>
-                  <div className="text-xs text-slate-400 mt-0.5">
-                    Global Users
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    150+
-                  </div>
-                  <div className="text-xs text-slate-400 mt-0.5">
-                    Trading Pairs
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-2xl sm:text-3xl font-black text-[#00e699] tracking-tight">
-                    24/7
-                  </div>
-                  <div className="text-xs text-slate-400 mt-0.5">
-                    Customer Support
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right Column: Visual Artwork matching PDF Screen 1 */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-[420px] aspect-[4/5] rounded-3xl overflow-hidden border border-[#18181c] bg-[#08080a] shadow-2xl group">
-                <img
-                  src={mobilePlatformImg}
-                  alt="Money X Trading Platform"
-                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-6 space-y-2">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00e699]/15 border border-[#00e699]/30 text-[#00e699] text-[11px] font-bold self-start">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00e699] animate-pulse" />
-                    <span>Real-Time Execution</span>
-                  </div>
-                  <h3 className="text-lg font-black text-white">
-                    Non-Custodial Money X Mobile App
-                  </h3>
-                  <p className="text-xs text-slate-300">
-                    Trade, stake, and monitor live portfolios anywhere with cryptographic safety.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 5. INTERACTIVE LIVE TRADING TERMINAL */}
-      <section id="terminal" className="relative pt-4 pb-16 sm:pb-24 overflow-hidden grid-bg-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
-          
-          {/* Section Header */}
-          <div className="max-w-3xl space-y-2">
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-              <span className="inline-flex items-center gap-1.5 text-[#00e699] font-bold">
-                <span className="w-2 h-2 rounded-full bg-[#00e699] animate-pulse" />
-                BINANCE LIVE FEED
-              </span>
-              <span>·</span>
-              <span>Sub-millisecond Settlement</span>
-              <span>·</span>
-              <span>Up to 95% Return</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              Institutional Fast Trading Terminal
-            </h2>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
-              Execute fast 5-second to 5-minute trades on digital assets and multi-currency indices. Zero deposit fees, transparent payout rates, and decentralized settlement.
-            </p>
-          </div>
-
-          {/* Master Trading Terminal Console (Pure Dark Black Casing) */}
-          <div className="rounded-3xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/30 shadow-2xl shadow-black overflow-hidden relative transition-all duration-300">
-            
-            {/* Top Bar of the Console: Asset Selector & Live Status Bar */}
-            <div className="p-3 sm:p-4 bg-[#030305] border-b border-[#18181c] flex flex-wrap items-center justify-between gap-3">
-              
-              {/* Asset Tabs */}
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                {TRADING_PAIRS.map((pair) => (
-                  <button
-                    key={pair.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedAssetId(pair.id);
-                      setLivePrice(pair.price);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
-                      selectedAssetId === pair.id
-                        ? 'bg-[#18181c] text-white border border-[#00e699]/40 shadow-sm'
-                        : 'text-slate-400 hover:text-white hover:bg-[#0e0e12]'
-                    }`}
-                  >
-                    <span>{pair.name}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#00e699]/15 text-[#00e699] font-black">
-                      {pair.payout}%
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Mode Switcher (Demo vs Real) */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center p-1 rounded-xl bg-[#000000] border border-[#18181c]">
-                  <button
-                    type="button"
-                    onClick={() => setAccountMode('demo')}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      accountMode === 'demo' ? 'bg-[#0084ff] text-white' : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Demo ($10K)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!user) {
-                        handleStartApp();
-                      } else {
-                        setAccountMode('real');
-                      }
-                    }}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      accountMode === 'real' ? 'bg-[#00e699] text-black font-extrabold' : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Real
-                  </button>
-                </div>
-
-                <div className="hidden sm:flex items-center gap-2 text-xs font-mono">
-                  <span className="text-slate-400">Balance:</span>
-                  <span className="font-extrabold text-[#00e699]">
-                    ${accountMode === 'demo'
-                      ? demoBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                      : (wallets ? wallets.mainBalanceUSDT.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00')}
-                  </span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Central Terminal Body: Chart on Left (8 Cols), Order Book & Fast Execution on Right (4 Cols) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#18181c]">
-              
-              {/* Left 8 Cols: Interactive Candlestick & Volume Chart with Crosshairs */}
-              <div className="lg:col-span-8 p-4 sm:p-5 flex flex-col justify-between space-y-4">
-                
-                {/* Chart Header Tools */}
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-                  <div className="flex items-center gap-3">
-                    <span className="text-base sm:text-lg font-black text-white">
-                      ${livePrice.toFixed(2)}
-                    </span>
-                    <span className="text-[#00e699] font-bold flex items-center gap-0.5">
-                      <ArrowUpRight size={14} />
-                      {currentPair.delta}
-                    </span>
-                    <span className="text-slate-500 hidden sm:inline">24h High: 338.20 · 24h Low: 334.80</span>
-                  </div>
-
-                  {/* Indicator Selectors */}
-                  <div className="flex items-center gap-1.5">
-                    {(['VOL', 'SMA', 'RSI'] as const).map((ind) => (
-                      <button
-                        key={ind}
-                        type="button"
-                        onClick={() => setActiveIndicator(ind)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
-                          activeIndicator === ind
-                            ? 'bg-[#18181c] text-[#00e699] border border-[#00e699]/30'
-                            : 'text-slate-500 hover:text-slate-300'
-                        }`}
-                      >
-                        {ind}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* SVG Candlestick & Volume Canvas with Mouse-Following Crosshair */}
-                <div
-                  ref={chartContainerRef}
-                  onMouseMove={handleChartMouseMove}
-                  onMouseLeave={handleChartMouseLeave}
-                  className="relative w-full h-64 sm:h-72 bg-[#000000] rounded-2xl border border-[#141418] overflow-hidden p-3 select-none cursor-crosshair flex flex-col justify-between"
-                >
-                  {/* Background Grid Lines */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-3 pointer-events-none opacity-20">
-                    <div className="border-b border-dashed border-slate-700 w-full" />
-                    <div className="border-b border-dashed border-slate-700 w-full" />
-                    <div className="border-b border-dashed border-slate-700 w-full" />
-                    <div className="border-b border-dashed border-slate-700 w-full" />
-                  </div>
-
-                  {/* Simulated Moving Average Wave (Gold/Amber line) */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <path
-                      d="M 0,65 Q 25,60 50,45 T 100,38"
-                      fill="none"
-                      stroke="#f59e0b"
-                      strokeWidth="1.2"
-                      strokeDasharray="2 1"
-                      opacity="0.75"
-                    />
-                  </svg>
-
-                  {/* Candlestick Bars */}
-                  <div className="relative z-10 w-full h-44 flex items-end justify-between px-3 gap-1">
-                    {candles.map((candle, idx) => {
-                      const heightPercent = Math.max(12, Math.min(80, Math.abs(candle.close - candle.open) * 45));
-                      const isUp = candle.close >= candle.open;
-                      return (
-                        <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full">
-                          {/* Upper Wick */}
-                          <div
-                            className={`w-[1px] h-3 ${isUp ? 'bg-[#00e699]' : 'bg-[#ff3b5c]'}`}
-                          />
-                          {/* Body */}
-                          <div
-                            style={{ height: `${heightPercent}%` }}
-                            className={`w-full max-w-[18px] rounded-xs transition-all ${
-                              isUp
-                                ? 'bg-[#00e699] shadow-sm shadow-[#00e699]/30'
-                                : 'bg-[#ff3b5c] shadow-sm shadow-[#ff3b5c]/30'
-                            }`}
-                          />
-                          {/* Lower Wick */}
-                          <div
-                            className={`w-[1px] h-2.5 ${isUp ? 'bg-[#00e699]' : 'bg-[#ff3b5c]'}`}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Volume Histogram Bars underneath */}
-                  <div className="relative z-10 w-full h-10 border-t border-[#141418] flex items-end justify-between px-3 gap-1 pt-1">
-                    {candles.map((candle, idx) => {
-                      const vH = Math.min(100, (candle.volume / 220) * 100);
-                      return (
-                        <div
-                          key={idx}
-                          style={{ height: `${vH}%` }}
-                          className={`flex-1 max-w-[18px] rounded-xs opacity-40 transition-all ${
-                            candle.isUp ? 'bg-[#00e699]' : 'bg-[#ff3b5c]'
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Interactive Dynamic Crosshairs following cursor */}
-                  {mousePos && (
-                    <>
-                      <div
-                        style={{ left: mousePos.x }}
-                        className="absolute top-0 bottom-0 w-[1px] border-l border-dashed border-slate-400 pointer-events-none z-20"
-                      />
-                      <div
-                        style={{ top: mousePos.y }}
-                        className="absolute left-0 right-0 h-[1px] border-t border-dashed border-slate-400 pointer-events-none z-20"
-                      />
-                      <div
-                        style={{ top: mousePos.y - 10 }}
-                        className="absolute right-2 px-1.5 py-0.5 rounded bg-white text-black font-mono font-black text-[10px] pointer-events-none z-30"
-                      >
-                        ${hoveredPrice?.toFixed(2)}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Active Trade Banner */}
-                  {activeTrades.length > 0 && (
-                    <div className="absolute bottom-14 left-4 right-4 z-20 p-2 rounded-xl bg-[#08080a]/95 border border-[#00e699]/40 backdrop-blur-md flex items-center justify-between text-xs font-mono">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-1.5 py-0.5 rounded font-black text-[10px] ${
-                            activeTrades[0].direction === 'UP' ? 'bg-[#00e699] text-black' : 'bg-[#ff3b5c] text-white'
-                          }`}
-                        >
-                          {activeTrades[0].direction}
-                        </span>
-                        <span className="text-white">${activeTrades[0].amount}</span>
-                        <span className="text-slate-400">@ ${activeTrades[0].entryPrice}</span>
-                      </div>
-                      <div className="text-[#00e699] font-bold flex items-center gap-1.5">
-                        <Clock size={12} className="animate-spin" />
-                        <span>Closing in {activeTrades[0].secondsRemaining}s</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Win Payout Celebration Toast */}
-                  {winToast && (
-                    <div className="absolute top-8 inset-x-8 z-30 p-3 rounded-2xl bg-gradient-to-r from-[#00b875] to-[#00e699] text-black shadow-2xl flex items-center justify-between animate-fadeIn">
-                      <div className="flex items-center gap-2.5">
-                        <Sparkles size={20} className="fill-black shrink-0" />
-                        <div>
-                          <div className="text-xs font-black uppercase">Order Resolved: PROFIT!</div>
-                          <div className="text-[11px] font-semibold opacity-90">
-                            +${winToast.profit} USDT added to virtual balance!
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-xs font-mono font-black bg-black/20 px-2 py-1 rounded-lg">
-                        +{currentPair.payout}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Bottom Timeline Indicator */}
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-[#141418]">
-                  <span>14:00:00</span>
-                  <span>14:01:00</span>
-                  <span>14:02:00</span>
-                  <span>14:03:00</span>
-                  <span className="text-[#00e699] font-bold">14:04:12 (LIVE)</span>
-                </div>
-
-              </div>
-
-              {/* Right 4 Cols: Ticking Order Book & Fast Trade Controls */}
-              <div className="lg:col-span-4 p-4 sm:p-5 flex flex-col justify-between space-y-4 bg-[#030305]">
-                
-                {/* Order Book Depth Box */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-slate-400 border-b border-[#18181c] pb-1.5">
-                    <span>Price (USDT)</span>
-                    <span>Size</span>
-                    <span>Total</span>
-                  </div>
-
-                  {/* Asks (Red) */}
-                  <div className="space-y-1 font-mono text-xs">
-                    {orderBookAsks.map((ask, i) => (
-                      <div key={i} className="flex items-center justify-between text-slate-300 relative py-0.5">
-                        <div
-                          style={{ width: `${(ask.size / 15) * 100}%` }}
-                          className="absolute right-0 top-0 bottom-0 bg-[#ff3b5c]/10 -z-10 rounded-xs"
-                        />
-                        <span className="text-[#ff3b5c] font-bold">{ask.price.toFixed(2)}</span>
-                        <span>{ask.size}</span>
-                        <span className="text-slate-500">{ask.total}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Spread indicator */}
-                  <div className="py-1 px-2 rounded-lg bg-[#08080a] border border-[#18181c] flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-white font-bold">${livePrice.toFixed(2)}</span>
-                    <span className="text-slate-500">Spread: 0.10</span>
-                  </div>
-
-                  {/* Bids (Green) */}
-                  <div className="space-y-1 font-mono text-xs">
-                    {orderBookBids.map((bid, i) => (
-                      <div key={i} className="flex items-center justify-between text-slate-300 relative py-0.5">
-                        <div
-                          style={{ width: `${(bid.size / 20) * 100}%` }}
-                          className="absolute right-0 top-0 bottom-0 bg-[#00e699]/10 -z-10 rounded-xs"
-                        />
-                        <span className="text-[#00e699] font-bold">{bid.price.toFixed(2)}</span>
-                        <span>{bid.size}</span>
-                        <span className="text-slate-500">{bid.total}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Trade Execution Controls */}
-                <div className="space-y-3 pt-2 border-t border-[#18181c]">
-                  
-                  {/* Duration pills */}
-                  <div className="flex items-center justify-between gap-1">
-                    {[5, 15, 60, 300].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setTradeDuration(s)}
-                        className={`flex-1 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
-                          tradeDuration === s
-                            ? 'bg-[#18181c] text-[#00e699] border border-[#00e699]/40'
-                            : 'bg-[#08080a] text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        {s < 60 ? `${s}s` : `${s / 60}m`}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Amount Controls */}
-                  <div className="p-2.5 rounded-xl bg-[#08080a] border border-[#18181c] flex items-center justify-between font-mono">
-                    <button
-                      type="button"
-                      onClick={() => setTradeAmount((a) => Math.max(10, a - 25))}
-                      className="w-7 h-7 rounded-lg bg-[#141418] hover:bg-[#202028] text-white font-bold flex items-center justify-center cursor-pointer transition-colors"
-                    >
-                      -
-                    </button>
-                    <div className="text-center">
-                      <div className="text-[10px] text-slate-500">INVESTMENT</div>
-                      <div className="text-base font-black text-white">${tradeAmount} USDT</div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setTradeAmount((a) => Math.min(2000, a + 25))}
-                      className="w-7 h-7 rounded-lg bg-[#141418] hover:bg-[#202028] text-white font-bold flex items-center justify-center cursor-pointer transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* Return Readout */}
-                  <div className="flex items-center justify-between text-xs font-mono px-1">
-                    <span className="text-slate-400">Payout Return:</span>
-                    <span className="text-[#00e699] font-black">
-                      +${expectedProfit.toFixed(2)} (+{currentPair.payout}%)
-                    </span>
-                  </div>
-
-                  {/* Tactile UP / DOWN Execution Buttons */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleExecuteTrade('UP')}
-                      className="py-3 px-3 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] active:scale-[0.97] text-black font-black text-sm tracking-tight shadow-lg shadow-[#00e699]/30 hover:shadow-[#00e699]/50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <ArrowUp size={18} className="stroke-[3]" />
-                      <span>UP · CALL</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleExecuteTrade('DOWN')}
-                      className="py-3 px-3 rounded-xl bg-[#ff3b5c] hover:bg-[#ff5271] active:scale-[0.97] text-white font-black text-sm tracking-tight shadow-lg shadow-[#ff3b5c]/30 hover:shadow-[#ff3b5c]/50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <ArrowDown size={18} className="stroke-[3]" />
-                      <span>DOWN · PUT</span>
-                    </button>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 5. Smooth Marquee Ticker with Clean Typography */}
-      <section id="markets" className="py-3 bg-[#000000] border-y border-[#18181c] overflow-hidden">
-        <div className="animate-marquee whitespace-nowrap flex items-center gap-8 text-xs font-mono">
-          {[
-            { s: `${BRAND.tokenSymbol}/USDT`, p: '$337.20', d: '+8.74%', u: true },
-            { s: 'BTC/USDT', p: '$64,250.00', d: '+3.15%', u: true },
-            { s: 'ETH/USDT', p: '$3,480.50', d: '+2.80%', u: true },
-            { s: 'EUR/USD', p: '1.0845', d: '+0.32%', u: true },
-            { s: 'SOL/USDT', p: '$148.90', d: '+5.40%', u: true },
-            { s: 'Gold (XAU)', p: '$2,348.60', d: '-0.42%', u: false },
-            { s: 'S&P 500 Index', p: '5,460.20', d: '+0.88%', u: true },
-            { s: 'GBP/USD', p: '1.2710', d: '+0.15%', u: true },
-            { s: `${BRAND.secondaryTokenSymbol}/USDT`, p: '$0.85', d: '+4.20%', u: true },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 transition-colors"
-            >
-              <span className="font-bold text-white">{item.s}</span>
-              <span className="text-slate-300">{item.p}</span>
-              <span className={`font-bold flex items-center text-[11px] ${item.u ? 'text-[#00e699]' : 'text-[#ff3b5c]'}`}>
-                {item.u ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                {item.d}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 6. Asymmetric Bento Grid: Execution & Non-Custodial Core */}
-      <section id="execution" className="py-20 sm:py-28 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
-          
-          <div className="max-w-2xl space-y-3">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#00e699]">
-              Engineered Execution Architecture
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              Institutional Liquidity with Zero Bureaucracy.
-            </h2>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Every millisecond counts. Our order routing engine processes positions against segregated liquidity pools with automated settlement.
-            </p>
-          </div>
-
-          {/* Asymmetric Bento Architecture */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Bento 1: Large Featured Terminal Card (7 Cols) */}
-            <div className="lg:col-span-7 rounded-3xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xl transition-all duration-300 group hover:-translate-y-1">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-[#00e699]">01. HIGH-SPEED SETTLEMENT</span>
-                  <span className="text-xs font-mono text-slate-500">Latency &lt; 25ms</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  Automated Non-Custodial Payouts in 180 Seconds
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-xl">
-                  Unlike traditional brokers with manual approval queues, {BRAND.name} routes withdrawals directly through on-chain multi-signature smart contracts on {BRAND.chainName}.
-                </p>
-              </div>
-
-              <div className="rounded-2xl overflow-hidden border border-[#18181c] bg-black aspect-[16/9] relative">
-                <img
-                  src={heroTerminalImg}
-                  alt="Desktop Trading Terminal"
-                  className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-t border-[#18181c] pt-4">
-                <span>0% Commission on Deposits</span>
-                <span className="text-[#00e699] font-bold">24/7 Liquidity Depth</span>
-              </div>
-            </div>
-
-            {/* Bento 2: Mobile & Staking Right Column (5 Cols) */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
-              
-              {/* Card 2A: Mobile Power */}
-              <div className="rounded-3xl bg-[#08080a] border border-[#18181c] hover:border-[#0084ff]/40 p-6 shadow-2xl space-y-4 transition-all duration-300 group hover:-translate-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-[#0084ff]">02. MOBILE FIRST</span>
-                  <Smartphone size={16} className="text-[#0084ff]" />
-                </div>
-                <h4 className="text-lg font-black text-white tracking-tight">
-                  Trade Anywhere with Sub-second Haptic Feedback
-                </h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Real-time price push notifications, biometric passcode unlock, and 1-tap trade executions directly from iOS and Android.
-                </p>
-                <div className="rounded-xl overflow-hidden border border-[#18181c] aspect-[16/8] bg-black">
-                  <img
-                    src={mobilePlatformImg}
-                    alt="Mobile Platform"
-                    className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              </div>
-
-              {/* Card 2B: Passive Yield */}
-              <div className="rounded-3xl bg-[#08080a] border border-[#18181c] hover:border-purple-500/40 p-6 shadow-2xl space-y-3 transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-[#00e699]">03. SMART CONTRACT STAKING</span>
-                  <Percent size={16} className="text-[#00e699]" />
-                </div>
-                <h4 className="text-lg font-black text-white tracking-tight">
-                  Up to 124.5% APY Staking Pools
-                </h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Put idle capital to work. Stake {BRAND.tokenSymbol} tokens across 90 to 1,825-day lock tiers with daily algorithmic reward distributions.
-                </p>
-                <div className="pt-2 flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-500">Audited Security</span>
-                  <span className="text-[#00e699] font-bold">Daily Compound Yield</span>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 7. Interactive ROI & Liquidity Calculator */}
-      <section id="calculator" className="py-20 sm:py-28 bg-[#000000] border-y border-[#18181c] relative">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="rounded-3xl bg-[#08080a] border border-[#18181c] p-6 sm:p-10 shadow-2xl space-y-8">
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#18181c] pb-6">
+              {/* CTA Button */}
               <div>
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#00e699]">
-                  Quantitative Forecast
-                </span>
-                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  Trading Payout & Staking Calculator
-                </h3>
+                <button
+                  type="button"
+                  onClick={handleStartApp}
+                  className="px-8 py-4 rounded-xl bg-[#00e699] hover:bg-[#00ffa3] active:scale-[0.98] text-black font-extrabold text-sm sm:text-base tracking-tight transition-all shadow-xl shadow-[#00e699]/30 flex items-center gap-2.5 cursor-pointer"
+                >
+                  <CreditCard size={18} className="stroke-[2.5]" />
+                  <span>Connect Wallet</span>
+                </button>
               </div>
 
-              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#020204] border border-[#18181c]">
-                {(['quick', 'staking', 'hybrid'] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setCalcPlan(m)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
-                      calcPlan === m ? 'bg-[#00e699] text-black font-extrabold' : 'text-slate-400 hover:text-white'
-                    }`}
+              {/* Web3 Wallets Row */}
+              <div className="pt-2 space-y-2.5">
+                <p className="text-xs text-slate-400 font-medium">
+                  Connect with your Web3 Wallet
+                </p>
+                <div className="flex items-center gap-3">
+                  
+                  {/* MetaMask */}
+                  <div
+                    onClick={handleStartApp}
+                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md"
+                    title="MetaMask"
                   >
-                    {m} Plan
-                  </button>
-                ))}
+                    <svg className="w-full h-full" viewBox="0 0 318.6 318.6">
+                      <path fill="#E2761B" d="m274.1 35.5-99.5 73.9L194 65.4z"/>
+                      <path fill="#E4761B" d="m44.4 35.5 98.7 74.6-18.7-44.7z"/>
+                      <path fill="#E4751F" d="m214.7 252.9-33.6 16.3 3.6 28.5 63.9-19.1z"/>
+                      <path fill="#E4751F" d="m70 278.6 63.9 19.1 3.6-28.5-33.6-16.3z"/>
+                      <path fill="#F6851B" d="m137.5 297.7-3.6 28.5 25.4 7.4 25.4-7.4-3.6-28.5-21.8 15.3z"/>
+                    </svg>
+                  </div>
+
+                  {/* WalletConnect */}
+                  <div
+                    onClick={handleStartApp}
+                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md"
+                    title="WalletConnect"
+                  >
+                    <svg className="w-full h-full" viewBox="0 0 24 24" fill="#3B99FC">
+                      <path d="M5.5 8.5C9.1 4.9 14.9 4.9 18.5 8.5L19 9C19.2 9.2 19.2 9.6 19 9.8L17.6 11.2C17.4 11.4 17.1 11.4 16.9 11.2L16.2 10.5C13.9 8.2 10.1 8.2 7.8 10.5L7.1 11.2C6.9 11.4 6.6 11.4 6.4 11.2L5 9.8C4.8 9.6 4.8 9.2 5 9L5.5 8.5ZM21.3 11.3L22.6 12.6C22.8 12.8 22.8 13.2 22.6 13.4L17 19C16.8 19.2 16.4 19.2 16.2 19L12 14.8L7.8 19C7.6 19.2 7.2 19.2 7 19L1.4 13.4C1.2 13.2 1.2 12.8 1.4 12.6L2.7 11.3C2.9 11.1 3.3 11.1 3.5 11.3L7.7 15.5L11.9 11.3C12.1 11.1 12.5 11.1 12.7 11.3L16.3 14.9L20.5 10.7C20.7 10.5 21.1 10.5 21.3 10.7V11.3Z"/>
+                    </svg>
+                  </div>
+
+                  {/* Trust Wallet */}
+                  <div
+                    onClick={handleStartApp}
+                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md text-[#0500FF]"
+                    title="Trust Wallet"
+                  >
+                    <Shield size={20} className="stroke-[2.5] text-[#3375BB]" />
+                  </div>
+
+                  {/* Binance */}
+                  <div
+                    onClick={handleStartApp}
+                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center p-2 cursor-pointer transition-all hover:scale-110 shadow-md text-[#F0B90B]"
+                    title="Binance Web3 Wallet"
+                  >
+                    <div className="w-4 h-4 bg-[#F0B90B] rotate-45 rounded-[2px]" />
+                  </div>
+
+                  {/* More Wallets */}
+                  <div
+                    onClick={handleStartApp}
+                    className="w-9 h-9 rounded-xl bg-[#0d0d10] border border-[#1e1e24] hover:border-[#00e699]/50 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer transition-all hover:scale-110 shadow-md font-bold text-xs"
+                    title="More Wallets"
+                  >
+                    •••
+                  </div>
+
+                </div>
               </div>
+
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Right Visual Artwork (Matching Reference image) */}
+            <div className="lg:col-span-6 relative flex items-center justify-center">
               
-              {/* Sliders Input */}
-              <div className="space-y-6">
+              {/* Main Artwork Container */}
+              <div className="relative w-full max-w-[540px] aspect-square rounded-3xl overflow-hidden border border-[#1c2e24] bg-black shadow-2xl group">
+                <img
+                  src={heroWomenImg}
+                  alt="Money X Ecosystem Traders with Infinity Logo"
+                  className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
+                  referrerPolicy="no-referrer"
+                />
                 
-                {/* Capital Slider */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-300">Active Trade Capital</span>
-                    <span className="text-white font-mono font-bold text-sm">
-                      ${calcStakeVal} USDT
+                {/* Floating "Simple Secure Rewarding" Card (Bottom Right of Artwork) */}
+                <div className="absolute bottom-5 right-5 sm:bottom-6 sm:right-6 p-4 rounded-2xl bg-[#050807]/90 backdrop-blur-xl border border-[#1b2b20] shadow-2xl text-left max-w-[210px] space-y-1.5 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-white leading-tight">
+                      Simple <br />
+                      Secure <br />
+                      Rewarding
                     </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="50"
-                    max="5000"
-                    step="50"
-                    value={calcStakeVal}
-                    onChange={(e) => setCalcStakeVal(Number(e.target.value))}
-                    className="w-full accent-[#00e699] bg-[#18181c] h-2 rounded-lg cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>$50</span>
-                    <span>$2,500</span>
-                    <span>$5,000</span>
-                  </div>
-                </div>
-
-                {/* Daily Trades Slider */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-300">Trades per Day</span>
-                    <span className="text-white font-mono font-bold text-sm">
-                      {calcTradesPerDay} Positions
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="40"
-                    step="1"
-                    value={calcTradesPerDay}
-                    onChange={(e) => setCalcTradesPerDay(Number(e.target.value))}
-                    className="w-full accent-[#00e699] bg-[#18181c] h-2 rounded-lg cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>1</span>
-                    <span>20</span>
-                    <span>40</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs text-slate-400 space-y-1 leading-relaxed">
-                  <div className="flex items-center gap-2 text-white font-bold">
-                    <ShieldCheck size={14} className="text-[#00e699]" />
-                    <span>Algorithmic Risk Management</span>
-                  </div>
-                  <p className="text-[11px]">
-                    Projections assume a 78% win probability on fast trades with disciplined position sizing.
-                  </p>
-                </div>
-              </div>
-
-              {/* Forecast Output Summary */}
-              <div className="p-6 rounded-2xl bg-[#020204] border border-[#18181c] space-y-5 font-mono">
-                
-                <div className="border-b border-[#18181c] pb-4">
-                  <div className="text-[11px] text-slate-400 font-sans">Projected Weekly Net Gain</div>
-                  <div className="text-3xl font-black text-[#00e699] mt-0.5">
-                    +${(((calcStakeVal * 0.92 * (calcTradesPerDay * 0.78)) - (calcStakeVal * (calcTradesPerDay * 0.22))) * 7).toFixed(2)}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <div className="text-slate-400 font-sans">Monthly Payout</div>
-                    <div className="text-lg font-bold text-white mt-0.5">
-                      +${(((calcStakeVal * 0.92 * (calcTradesPerDay * 0.78)) - (calcStakeVal * (calcTradesPerDay * 0.22))) * 30).toFixed(2)}
+                    <div className="w-6 h-6 rounded-lg bg-[#00e699]/20 border border-[#00e699]/40 flex items-center justify-center text-[#00e699]">
+                      <Sparkles size={13} />
                     </div>
                   </div>
-                  <div>
-                    <div className="text-slate-400 font-sans">Staking APY Boost</div>
-                    <div className="text-lg font-bold text-[#00e699] mt-0.5">
-                      +${((calcStakeVal * 0.68) / 12).toFixed(2)} /mo
-                    </div>
+
+                  {/* Green connector indicator */}
+                  <div className="pt-2 border-t border-[#141e18] flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00e699]" />
+                    <span>One Ecosystem</span>
                   </div>
+                  <p className="text-[10px] text-slate-400">Many Opportunities</p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleStartApp}
-                  className="w-full py-3.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] active:scale-[0.98] text-black font-extrabold text-xs tracking-tight transition-all cursor-pointer font-sans shadow-lg shadow-[#00e699]/30"
-                >
-                  Start with Free $10,000 Virtual Demo
-                </button>
               </div>
 
             </div>
@@ -1263,221 +384,870 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 8. Global Multi-Asset Composition Showcase */}
-      <section id="ecosystem" className="py-20 sm:py-28 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
+      {/* 3. METRICS / STATS BAR */}
+      <section className="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl sm:rounded-3xl bg-[#08080a] border border-[#18181c] p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 shadow-2xl">
           
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#00e699]">
-              Multi-Asset Ecosystem
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              One Unified Liquidity Layer for Global Assets
-            </h2>
-            <p className="text-sm text-slate-400">
-              Cross-chain interoperability bridging {BRAND.chainName}, USDT, Ethereum, Tron, and Binance Smart Chain.
-            </p>
+          {/* Stat 1 */}
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
+              <Users size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight tabular-nums">
+                2M+
+              </div>
+              <div className="text-xs text-slate-400 font-medium">Global Users</div>
+            </div>
           </div>
 
-          <div className="rounded-3xl overflow-hidden border border-[#18181c] bg-black aspect-[16/8] shadow-2xl relative group">
-            <img
-              src={assetsShowcaseImg}
-              alt="Global Assets Liquidity Network"
-              className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-6 sm:p-10">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4">
-                <div>
-                  <h4 className="text-lg sm:text-xl font-black text-white font-mono">
-                    {BRAND.chainNetwork} Decentralized Liquidity Pool
-                  </h4>
-                  <p className="text-xs text-slate-300">Over $128M cumulative volume executed across verified smart contracts.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleStartApp}
-                  className="px-6 py-3 rounded-xl bg-white text-black font-extrabold text-xs tracking-tight hover:bg-[#00e699] transition-colors whitespace-nowrap cursor-pointer shadow-lg"
-                >
-                  Explore Pool Data →
-                </button>
+          {/* Stat 2 */}
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
+              <BarChart3 size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight tabular-nums">
+                150+
               </div>
+              <div className="text-xs text-slate-400 font-medium">Countries</div>
+            </div>
+          </div>
+
+          {/* Stat 3 */}
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
+              <Layers size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                Multiple
+              </div>
+              <div className="text-xs text-slate-400 font-medium">Earning Options</div>
+            </div>
+          </div>
+
+          {/* Stat 4 */}
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0 shadow-md">
+              <Headphones size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight tabular-nums">
+                24/7
+              </div>
+              <div className="text-xs text-slate-400 font-medium">Community Support</div>
             </div>
           </div>
 
         </div>
       </section>
 
-      {/* 9. FAQ Accordion (Clean, Human Editorial) */}
-      <section id="faq" className="py-16 sm:py-24 max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
-        <div className="text-center space-y-2">
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#00e699]">
-            Transparent Operations
-          </span>
-          <h2 className="text-3xl font-black text-white">
-            Frequently Asked Questions
-          </h2>
-        </div>
+      {/* 4. A COMPLETE CRYPTO ECOSYSTEM IN YOUR HANDS */}
+      <section id="ecosystem" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          
+          {/* Left Text */}
+          <div className="lg:col-span-5 space-y-6 text-left">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
+              A Complete <br />
+              Crypto Ecosystem <br />
+              <span className="text-[#00e699]">in Your Hands</span>
+            </h2>
 
-        <div className="space-y-3">
-          {[
-            {
-              q: 'How does the refillable $10,000 Demo Account function?',
-              a: 'The demo account operates in an identical live market environment with real-time price feeds. It provides $10,000 in virtual funds for risk-free strategy testing and can be refilled indefinitely with one click.',
-            },
-            {
-              q: 'What are the withdrawal processing times and fees?',
-              a: 'Withdrawals are processed automatically through decentralized protocol contracts within approximately 3 minutes. The platform charges 0% commission on deposits and withdrawals, requiring only nominal network blockchain gas.',
-            },
-            {
-              q: 'How are high payout returns (up to 95%) determined?',
-              a: 'Payout rates reflect asset volatility and market depth. Native trading pairs on Money X Chain provide high liquidity tiers that support up to 95% net return on successful positions.',
-            },
-            {
-              q: 'Is Money X non-custodial?',
-              a: 'Yes. Account passcodes are cryptographically hashed locally before authentication. Users retain full sovereignty over their private keys and wallet balances at all times.',
-            },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="rounded-2xl bg-[#08080a] border border-[#18181c] overflow-hidden transition-all hover:border-[#00e699]/30"
-            >
+            <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-md">
+              Money X brings together multiple earning systems in a single, secure and easy-to-use platform. Connect your wallet and start your journey today.
+            </p>
+
+            <div>
               <button
                 type="button"
-                onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white cursor-pointer"
+                onClick={handleStartApp}
+                className="px-6 py-3.5 rounded-xl bg-[#00e699] hover:bg-[#00ffa3] active:scale-[0.98] text-black font-extrabold text-sm tracking-tight transition-all shadow-lg shadow-[#00e699]/30 inline-flex items-center gap-2 cursor-pointer"
               >
-                <span>{item.q}</span>
-                <ChevronDown
-                  size={16}
-                  className={`text-[#00e699] transition-transform duration-200 ${activeFaq === idx ? 'rotate-180' : ''}`}
-                />
+                <span>Explore Ecosystem</span>
+                <ArrowUpRight size={18} className="stroke-[2.5]" />
               </button>
-              {activeFaq === idx && (
-                <div className="px-5 pb-5 text-xs text-slate-400 leading-relaxed border-t border-[#141418] pt-3 font-sans">
-                  {item.a}
-                </div>
-              )}
             </div>
-          ))}
+          </div>
+
+          {/* Right Visual (Dual Mobile Phones Artwork) */}
+          <div className="lg:col-span-7 flex justify-center">
+            <div className="relative w-full max-w-[560px] aspect-square rounded-3xl overflow-hidden border border-[#18181c] bg-black shadow-2xl group">
+              <img
+                src={ecosystemPhonesImg}
+                alt="Money X Mobile Platform Displaying 1,250 USDT Balance"
+                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+
         </div>
       </section>
 
-      {/* 10. Final Call to Action */}
-      <section className="py-16 sm:py-24 bg-[#000000] border-t border-[#18181c] text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] mx-auto shadow-xl">
-            <Zap size={28} />
-          </div>
-
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-            Start Trading in 30 Seconds.
-          </h2>
-
-          <p className="text-sm sm:text-base text-slate-400 max-w-lg mx-auto">
-            Experience high-performance trading on {BRAND.name}. Practice with virtual funds or connect your wallet for live decentralized execution.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
-            <button
-              type="button"
-              onClick={handleStartApp}
-              className="px-8 py-4 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-sm sm:text-base tracking-tight shadow-xl shadow-[#00e699]/30 transition-all cursor-pointer"
-            >
-              Open Free $10,000 Demo
-            </button>
-            <button
-              type="button"
-              onClick={handleStartApp}
-              className="px-8 py-4 rounded-xl bg-[#0a0a0e] hover:bg-[#121216] text-white border border-[#222228] font-bold text-sm tracking-tight transition-all cursor-pointer"
-            >
-              Deposit & Trade Real Funds
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 11. Regulatory Footer */}
-      <footer className="border-t border-[#18181c] bg-[#000000] py-12 text-xs text-slate-500 font-sans">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
+      {/* 5. 6 CORE FEATURES GRID */}
+      <section id="rewards" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
           
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-[#141418]">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#00e699] flex items-center justify-center text-black font-black text-xs">
-                MX
+          {/* 1. Staking */}
+          <div
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0d0d12] transition-all cursor-pointer space-y-3 group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] group-hover:scale-110 transition-transform">
+              <Layers size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Staking
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Stake and earn daily rewards
+              </p>
+            </div>
+          </div>
+
+          {/* 2. Farming */}
+          <div
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0d0d12] transition-all cursor-pointer space-y-3 group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] group-hover:scale-110 transition-transform">
+              <Sprout size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Farming
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Participate and earn more
+              </p>
+            </div>
+          </div>
+
+          {/* 3. Jackpot */}
+          <div
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0d0d12] transition-all cursor-pointer space-y-3 group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] group-hover:scale-110 transition-transform">
+              <Sparkles size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Jackpot
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Win big rewards daily
+              </p>
+            </div>
+          </div>
+
+          {/* 4. Community */}
+          <div
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0d0d12] transition-all cursor-pointer space-y-3 group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] group-hover:scale-110 transition-transform">
+              <Users size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Community
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Build your team and grow together
+              </p>
+            </div>
+          </div>
+
+          {/* 5. Rewards */}
+          <div
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0d0d12] transition-all cursor-pointer space-y-3 group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] group-hover:scale-110 transition-transform">
+              <Gift size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Rewards
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Daily, weekly and special rewards
+              </p>
+            </div>
+          </div>
+
+          {/* 6. Multiple Wallets */}
+          <div
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0d0d12] transition-all cursor-pointer space-y-3 group flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] group-hover:scale-110 transition-transform">
+              <CreditCard size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Multiple Wallets
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                Manage all in one place
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. HOW MONEY X WORKS */}
+      <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12">
+        <div className="space-y-3 max-w-2xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            How <span className="text-[#00e699]">Money X</span> Works
+          </h2>
+          <p className="text-sm text-slate-400">
+            Get started in just a few simple steps and begin your earning journey.
+          </p>
+        </div>
+
+        {/* 4 Connected Process Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+          
+          {/* Step 1 */}
+          <div
+            onClick={handleStartApp}
+            className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 hover:bg-[#0c0c10] transition-all text-left space-y-4 cursor-pointer relative group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-7 h-7 rounded-full bg-[#00e699] text-black font-black text-xs flex items-center justify-center">
+                1
               </div>
-              <span className="text-base font-extrabold text-white font-mono">
-                {BRAND.name}
-              </span>
+              <div className="w-9 h-9 rounded-xl bg-[#00e699]/15 text-[#00e699] flex items-center justify-center">
+                <Wallet size={18} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Connect Wallet
+              </h4>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Connect your crypto wallet and get secure access.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div
+            onClick={handleStartApp}
+            className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 hover:bg-[#0c0c10] transition-all text-left space-y-4 cursor-pointer relative group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-7 h-7 rounded-full bg-[#00e699] text-black font-black text-xs flex items-center justify-center">
+                2
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-[#00e699]/15 text-[#00e699] flex items-center justify-center">
+                <LayoutGrid size={18} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Explore Ecosystem
+              </h4>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Discover multiple earning features.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div
+            onClick={handleStartApp}
+            className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 hover:bg-[#0c0c10] transition-all text-left space-y-4 cursor-pointer relative group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-7 h-7 rounded-full bg-[#00e699] text-black font-black text-xs flex items-center justify-center">
+                3
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-[#00e699]/15 text-[#00e699] flex items-center justify-center">
+                <Zap size={18} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Participate & Earn
+              </h4>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Join Staking, Farming, Jackpot and more.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 4 */}
+          <div
+            onClick={handleStartApp}
+            className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 hover:bg-[#0c0c10] transition-all text-left space-y-4 cursor-pointer relative group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-7 h-7 rounded-full bg-[#00e699] text-black font-black text-xs flex items-center justify-center">
+                4
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-[#00e699]/15 text-[#00e699] flex items-center justify-center">
+                <Users size={18} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white group-hover:text-[#00e699] transition-colors">
+                Grow Together
+              </h4>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Invite, build your team and increase your rewards.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 7. WHY CHOOSE MONEY X */}
+      <section id="about" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Column: Heading and 5 Badges */}
+          <div className="lg:col-span-5 space-y-8 text-left">
+            <div className="space-y-3">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15]">
+                Why Choose <br />
+                <span className="text-[#00e699]">Money X?</span>
+              </h2>
+              <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-md">
+                A simple, secure and transparent ecosystem built for everyone.
+              </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 text-slate-400 text-xs">
+            {/* 5 Distinct Badges */}
+            <div className="space-y-3.5">
+              {[
+                { title: 'Multiple Earning Opportunities', icon: BarChart3 },
+                { title: 'Secure & Decentralized', icon: ShieldCheck },
+                { title: 'Global Community', icon: Users },
+                { title: 'Easy to Use', icon: Sparkles },
+                { title: 'Transparent System', icon: CheckCircle2 },
+              ].map((item, idx) => {
+                const ItemIcon = item.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3.5 p-3 rounded-xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shrink-0">
+                      <ItemIcon size={16} className="stroke-[2.5]" />
+                    </div>
+                    <span className="text-sm font-bold text-white">
+                      {item.title}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column: Central 3D Infinity Sculpture Artwork with 4 Floating Pills */}
+          <div className="lg:col-span-7 relative flex items-center justify-center">
+            
+            {/* Center Visual Artwork */}
+            <div className="relative w-full max-w-[520px] aspect-square rounded-3xl overflow-hidden border border-[#1c2e24] bg-black shadow-2xl">
+              <img
+                src={infinitySculptureImg}
+                alt="Glowing 3D Emerald Infinity Symbol on Obsidian Rock"
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+
+              {/* 4 Surrounding Badges matching Reference Image */}
+              {/* Top Left Badge */}
+              <div className="absolute top-5 left-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
+                  <BarChart3 size={13} />
+                </div>
+                <span className="text-[11px] font-bold text-white whitespace-nowrap">
+                  Multiple Earning Options
+                </span>
+              </div>
+
+              {/* Top Right Badge */}
+              <div className="absolute top-5 right-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
+                  <ShieldCheck size={13} />
+                </div>
+                <span className="text-[11px] font-bold text-white whitespace-nowrap">
+                  Secure & Decentralized
+                </span>
+              </div>
+
+              {/* Bottom Left Badge */}
+              <div className="absolute bottom-5 left-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
+                  <Users size={13} />
+                </div>
+                <span className="text-[11px] font-bold text-white whitespace-nowrap">
+                  Global Community
+                </span>
+              </div>
+
+              {/* Bottom Right Badge */}
+              <div className="absolute bottom-5 right-5 p-2.5 sm:p-3 rounded-xl bg-[#050807]/90 backdrop-blur-xl border border-[#18181c] shadow-2xl flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-[#00e699]/20 text-[#00e699] flex items-center justify-center">
+                  <CheckCircle2 size={13} />
+                </div>
+                <span className="text-[11px] font-bold text-white whitespace-nowrap">
+                  Transparent & Fair System
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 8. TAKE MONEY X EVERYWHERE */}
+      <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          
+          {/* Left Globe Phone Visual */}
+          <div className="lg:col-span-6 flex justify-center">
+            <div className="relative w-full max-w-[500px] aspect-square rounded-3xl overflow-hidden border border-[#18181c] bg-black shadow-2xl group">
+              <img
+                src={globePhoneImg}
+                alt="Money X Mobile App with Digital Earth Globe"
+                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+
+          {/* Right Text, App Store Badges, and QR Box */}
+          <div className="lg:col-span-6 space-y-7 text-left">
+            <div className="space-y-3">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
+                Take <span className="text-[#00e699]">Money X</span> <br />
+                Everywhere
+              </h2>
+              <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-md">
+                Access all features on the go. Manage your wallet, participate in earning programs and stay connected with the community — anytime, anywhere.
+              </p>
+            </div>
+
+            {/* Store Download Badges */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              {/* App Store */}
               <button
-                onClick={() => {
-                  if (!user) handleStartApp();
-                  else setActiveRoute('about');
-                }}
-                className="hover:text-white transition-colors cursor-pointer"
+                type="button"
+                onClick={handleStartApp}
+                className="px-4 py-2.5 rounded-xl bg-[#08080a] border border-[#222228] hover:border-[#00e699]/50 transition-all flex items-center gap-3 cursor-pointer shadow-lg group"
               >
-                About Protocol
+                <svg className="w-6 h-6 fill-white" viewBox="0 0 24 24">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.67-1.09 1.77-.95 2.83 1.04.08 2.07-.51 2.71-1.29Z"/>
+                </svg>
+                <div className="text-left leading-tight">
+                  <span className="text-[10px] text-slate-400 block">Download on the</span>
+                  <span className="text-xs font-bold text-white">App Store</span>
+                </div>
               </button>
+
+              {/* Google Play */}
               <button
-                onClick={() => {
-                  if (!user) handleStartApp();
-                  else setActiveRoute('trade');
-                }}
-                className="hover:text-white transition-colors cursor-pointer"
+                type="button"
+                onClick={handleStartApp}
+                className="px-4 py-2.5 rounded-xl bg-[#08080a] border border-[#222228] hover:border-[#00e699]/50 transition-all flex items-center gap-3 cursor-pointer shadow-lg group"
               >
-                Trading Terminal
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M3.6 2.5 13.1 12 3.6 21.5c-.3-.3-.6-.8-.6-1.4V3.9c0-.6.3-1.1.6-1.4z"/>
+                  <path fill="#FBBC04" d="m16.5 8.6-3.4 3.4 3.4 3.4 3.8-2.2c1.3-.7 1.3-1.9 0-2.6l-3.8-2z"/>
+                  <path fill="#4285F4" d="M13.1 12 3.6 2.5l9.5 9.5z"/>
+                  <path fill="#34A853" d="m3.6 21.5 9.5-9.5-9.5 9.5z"/>
+                </svg>
+                <div className="text-left leading-tight">
+                  <span className="text-[10px] text-slate-400 block">GET IT ON</span>
+                  <span className="text-xs font-bold text-white">Google Play</span>
+                </div>
               </button>
+            </div>
+
+            {/* QR Code Download Card matching reference */}
+            <div
+              onClick={handleStartApp}
+              className="p-3.5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 transition-colors inline-flex items-center gap-4 cursor-pointer shadow-lg"
+            >
+              <div className="w-12 h-12 bg-white rounded-xl p-1.5 flex items-center justify-center shrink-0">
+                <QrCode size={36} className="text-black" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-bold text-white block">Scan QR Code</span>
+                <span className="text-[11px] text-slate-400">Download App</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 9. JOIN A GLOBAL COMMUNITY */}
+      <section id="community" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          
+          {/* Left Text & CTA */}
+          <div className="lg:col-span-5 space-y-6 text-left">
+            <div className="space-y-3">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
+                Join a Global <br />
+                <span className="text-[#00e699]">Community</span>
+              </h2>
+              <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-md">
+                Be part of a growing community of users from around the world. Share ideas, learn and grow together with Money X.
+              </p>
+            </div>
+
+            <div>
               <button
-                onClick={() => {
-                  if (!user) handleStartApp();
-                  else setActiveRoute('staking');
-                }}
-                className="hover:text-white transition-colors cursor-pointer"
+                type="button"
+                onClick={handleStartApp}
+                className="px-6 py-3.5 rounded-xl bg-[#00e699] hover:bg-[#00ffa3] active:scale-[0.98] text-black font-extrabold text-sm tracking-tight transition-all shadow-lg shadow-[#00e699]/30 inline-flex items-center gap-2 cursor-pointer"
               >
-                Staking Plans
-              </button>
-              <button
-                onClick={() => {
-                  if (!user) handleStartApp();
-                  else setActiveRoute('legal');
-                }}
-                className="hover:text-white transition-colors cursor-pointer"
-              >
-                Regulatory Disclosures
-              </button>
-              <button
-                onClick={() => {
-                  if (!user) handleStartApp();
-                  else setActiveRoute('privacy');
-                }}
-                className="hover:text-white transition-colors cursor-pointer"
-              >
-                Privacy Policy
-              </button>
-              <button
-                onClick={() => {
-                  if (!user) handleStartApp();
-                  else setActiveRoute('contact');
-                }}
-                className="hover:text-white transition-colors cursor-pointer"
-              >
-                Help Desk
+                <span>Join Community</span>
+                <ArrowUpRight size={18} className="stroke-[2.5]" />
               </button>
             </div>
           </div>
 
-          <div className="space-y-3 leading-relaxed text-[11px] text-slate-500">
-            <p>
-              Risk Warning: Trading financial instruments, derivatives, and cryptocurrencies carries significant risk. Payout rates on fast trades vary from 80% to 95% depending on asset volatility. Never invest funds you cannot afford to lose.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-              <span>{BRAND.copyright}</span>
-              <span className="font-mono text-[10px]">
-                {BRAND.chainNetwork} · Non-Custodial Protocol {BRAND.version}
-              </span>
+          {/* Right Member Photos Carousel with Arrows and Overlapping User Stack */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="flex items-center justify-between gap-3">
+              
+              {/* Prev Button */}
+              <button
+                type="button"
+                onClick={handlePrevMember}
+                className="w-8 h-8 rounded-full bg-[#08080a] border border-[#18181c] text-slate-400 hover:text-white hover:border-[#00e699]/40 flex items-center justify-center cursor-pointer transition-colors"
+                aria-label="Previous Member"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              {/* 5 Member Portrait Frames */}
+              <div className="flex items-center justify-center gap-3 sm:gap-4 overflow-hidden py-2">
+                {communityMembers.map((member, idx) => (
+                  <div
+                    key={idx}
+                    className={`relative rounded-2xl overflow-hidden border-2 transition-all duration-300 w-16 h-20 sm:w-20 sm:h-26 shrink-0 ${
+                      activeCommunityIndex === idx
+                        ? 'border-[#00e699] scale-105 shadow-[0_0_20px_rgba(0,230,153,0.3)]'
+                        : 'border-[#18181c] opacity-75 hover:opacity-100 hover:border-[#00e699]/50'
+                    }`}
+                  >
+                    <img
+                      src={member.img}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-1">
+                      <span className="text-[9px] font-bold text-white truncate w-full text-center">
+                        {member.name}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Next Button */}
+              <button
+                type="button"
+                onClick={handleNextMember}
+                className="w-8 h-8 rounded-full bg-[#08080a] border border-[#18181c] text-slate-400 hover:text-white hover:border-[#00e699]/40 flex items-center justify-center cursor-pointer transition-colors"
+                aria-label="Next Member"
+              >
+                <ChevronRight size={16} />
+              </button>
+
+            </div>
+
+            {/* Overlapping Avatars Pill matching screenshot */}
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#08080a] border border-[#18181c] shadow-xl">
+                <div className="flex -space-x-2 overflow-hidden">
+                  {communityMembers.slice(0, 4).map((m, idx) => (
+                    <img
+                      key={idx}
+                      src={m.img}
+                      alt={m.name}
+                      className="inline-block h-6 w-6 rounded-full ring-2 ring-black object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                  <span>2M+ Global Users</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00e699]" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 10. SUPPORTED WALLETS SECTION */}
+      <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10">
+        <div className="space-y-2.5 max-w-md mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Supported Wallets
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400">
+            Connect with your preferred Web3 wallet.
+          </p>
+        </div>
+
+        {/* 6 Wallet Cards Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
+          
+          {/* 1. MetaMask */}
+          <button
+            type="button"
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0c0c10] active:scale-95 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group shadow-lg"
+          >
+            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <svg className="w-8 h-8" viewBox="0 0 318.6 318.6">
+                <path fill="#E2761B" d="m274.1 35.5-99.5 73.9L194 65.4z"/>
+                <path fill="#E4761B" d="m44.4 35.5 98.7 74.6-18.7-44.7z"/>
+                <path fill="#E4751F" d="m214.7 252.9-33.6 16.3 3.6 28.5 63.9-19.1z"/>
+                <path fill="#E4751F" d="m70 278.6 63.9 19.1 3.6-28.5-33.6-16.3z"/>
+                <path fill="#F6851B" d="m137.5 297.7-3.6 28.5 25.4 7.4 25.4-7.4-3.6-28.5-21.8 15.3z"/>
+              </svg>
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-[#00e699] transition-colors">
+              MetaMask
+            </span>
+          </button>
+
+          {/* 2. Trust Wallet */}
+          <button
+            type="button"
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0c0c10] active:scale-95 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group shadow-lg relative"
+          >
+            <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#00e699]" />
+            <div className="w-10 h-10 flex items-center justify-center text-[#3375BB] group-hover:scale-110 transition-transform">
+              <Shield size={32} className="stroke-[2.5]" />
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-[#00e699] transition-colors">
+              Trust Wallet
+            </span>
+          </button>
+
+          {/* 3. WalletConnect */}
+          <button
+            type="button"
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0c0c10] active:scale-95 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group shadow-lg"
+          >
+            <div className="w-10 h-10 flex items-center justify-center text-[#3B99FC] group-hover:scale-110 transition-transform">
+              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#3B99FC">
+                <path d="M5.5 8.5C9.1 4.9 14.9 4.9 18.5 8.5L19 9C19.2 9.2 19.2 9.6 19 9.8L17.6 11.2C17.4 11.4 17.1 11.4 16.9 11.2L16.2 10.5C13.9 8.2 10.1 8.2 7.8 10.5L7.1 11.2C6.9 11.4 6.6 11.4 6.4 11.2L5 9.8C4.8 9.6 4.8 9.2 5 9L5.5 8.5ZM21.3 11.3L22.6 12.6C22.8 12.8 22.8 13.2 22.6 13.4L17 19C16.8 19.2 16.4 19.2 16.2 19L12 14.8L7.8 19C7.6 19.2 7.2 19.2 7 19L1.4 13.4C1.2 13.2 1.2 12.8 1.4 12.6L2.7 11.3C2.9 11.1 3.3 11.1 3.5 11.3L7.7 15.5L11.9 11.3C12.1 11.1 12.5 11.1 12.7 11.3L16.3 14.9L20.5 10.7C20.7 10.5 21.1 10.5 21.3 10.7V11.3Z"/>
+              </svg>
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-[#00e699] transition-colors">
+              WalletConnect
+            </span>
+          </button>
+
+          {/* 4. Binance Wallet */}
+          <button
+            type="button"
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0c0c10] active:scale-95 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group shadow-lg"
+          >
+            <div className="w-10 h-10 flex items-center justify-center text-[#F0B90B] group-hover:scale-110 transition-transform">
+              <div className="w-6 h-6 bg-[#F0B90B] rotate-45 rounded-[3px]" />
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-[#00e699] transition-colors">
+              Binance Wallet
+            </span>
+          </button>
+
+          {/* 5. OKX Wallet */}
+          <button
+            type="button"
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0c0c10] active:scale-95 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group shadow-lg relative"
+          >
+            <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#00e699]" />
+            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="grid grid-cols-2 gap-1 w-6 h-6">
+                <div className="bg-white rounded-xs" />
+                <div className="bg-white rounded-xs" />
+                <div className="bg-white rounded-xs" />
+                <div className="bg-white rounded-xs" />
+              </div>
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-[#00e699] transition-colors">
+              OKX Wallet
+            </span>
+          </button>
+
+          {/* 6. More Wallets */}
+          <button
+            type="button"
+            onClick={handleStartApp}
+            className="p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/50 hover:bg-[#0c0c10] active:scale-95 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group shadow-lg"
+          >
+            <div className="w-10 h-10 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform font-bold text-lg">
+              •••
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-[#00e699] transition-colors">
+              More Wallets
+            </span>
+          </button>
+
+        </div>
+      </section>
+
+      {/* 11. REGULATORY FOOTER (Identical to Blueprint) */}
+      <footer className="border-t border-[#141418] bg-[#000000] pt-16 pb-12 text-left">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8">
+            
+            {/* Col 1: Brand & Socials (4 Cols) */}
+            <div className="lg:col-span-4 space-y-4">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-8 h-6" viewBox="0 0 48 30" fill="none">
+                  <path
+                    d="M14 6 C7 6 4 10 4 15 C4 20 7 24 14 24 C19 24 22 20 24 15 C26 10 29 6 34 6 C41 6 44 10 44 15 C44 20 41 24 34 24 C29 24 26 20 24 15 C22 10 19 6 14 6 Z"
+                    stroke="#00e699"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="text-lg font-black text-white font-sans">
+                  Money X
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
+                A modern crypto ecosystem for everyone. <br />
+                Earn • Stake • Farm • Jackpot • Grow Together.
+              </p>
+
+              {/* Social Icons */}
+              <div className="flex items-center gap-3 pt-2 text-slate-400">
+                <a href="#hero" className="w-8 h-8 rounded-lg bg-[#08080a] border border-[#18181c] flex items-center justify-center hover:text-white hover:border-[#00e699]/40 transition-colors">
+                  <span className="text-xs font-bold">𝕏</span>
+                </a>
+                <a href="#hero" className="w-8 h-8 rounded-lg bg-[#08080a] border border-[#18181c] flex items-center justify-center hover:text-white hover:border-[#00e699]/40 transition-colors">
+                  <Send size={13} />
+                </a>
+                <a href="#hero" className="w-8 h-8 rounded-lg bg-[#08080a] border border-[#18181c] flex items-center justify-center hover:text-white hover:border-[#00e699]/40 transition-colors">
+                  <Users size={13} />
+                </a>
+                <a href="#hero" className="w-8 h-8 rounded-lg bg-[#08080a] border border-[#18181c] flex items-center justify-center hover:text-white hover:border-[#00e699]/40 transition-colors">
+                  <Sparkles size={13} />
+                </a>
+              </div>
+            </div>
+
+            {/* Col 2: Ecosystem (2 Cols) */}
+            <div className="lg:col-span-2 space-y-3">
+              <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                Ecosystem
+              </h5>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li><a href="#rewards" className="hover:text-white transition-colors">Staking</a></li>
+                <li><a href="#rewards" className="hover:text-white transition-colors">Farming</a></li>
+                <li><a href="#rewards" className="hover:text-white transition-colors">Jackpot</a></li>
+                <li><a href="#rewards" className="hover:text-white transition-colors">Rewards</a></li>
+                <li><a href="#community" className="hover:text-white transition-colors">Community</a></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Support (2 Cols) */}
+            <div className="lg:col-span-2 space-y-3">
+              <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                Support
+              </h5>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li><a href="#about" className="hover:text-white transition-colors">Help Center</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors">System Status</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors">API Documentation</a></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Company (2 Cols) */}
+            <div className="lg:col-span-2 space-y-3">
+              <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                Company
+              </h5>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors">Terms of Service</a></li>
+              </ul>
+            </div>
+
+            {/* Col 5: Stay Updated Form (2 Cols) */}
+            <div className="lg:col-span-2 space-y-3">
+              <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                Stay Updated
+              </h5>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Subscribe to get the latest news, updates and ecosystem events.
+              </p>
+              
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <div className="relative flex items-center">
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your email"
+                    value={subscribeEmail}
+                    onChange={(e) => setSubscribeEmail(e.target.value)}
+                    className="w-full pl-3 pr-10 py-2.5 rounded-xl bg-[#08080a] border border-[#1e1e24] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00e699]"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-1 w-8 h-8 rounded-lg bg-[#00e699] hover:bg-[#00ffa3] text-black flex items-center justify-center cursor-pointer transition-colors shadow-sm"
+                    aria-label="Subscribe"
+                  >
+                    <ArrowUpRight size={16} className="stroke-[2.5]" />
+                  </button>
+                </div>
+                {subscribed && (
+                  <p className="text-[10px] text-[#00e699] font-semibold animate-fadeIn">
+                    ✓ Thank you for subscribing!
+                  </p>
+                )}
+              </form>
+            </div>
+
+          </div>
+
+          {/* Bottom Copyright & Language row */}
+          <div className="pt-8 border-t border-[#141418] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <span>© 2026 Money X. All rights reserved.</span>
+            
+            <div className="flex items-center gap-2 cursor-pointer hover:text-slate-300 transition-colors">
+              <Globe size={14} className="text-slate-400" />
+              <span>English</span>
+              <span className="text-[10px]">⌄</span>
             </div>
           </div>
 
