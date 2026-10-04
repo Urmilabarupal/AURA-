@@ -2,12 +2,13 @@
  FILE: src/pages/auth/EnterPasscode.tsx
 
  PURPOSE:
- High-security Screen Lock Keypad styled with Olymp Trade authentic OLED dark theme:
+ "Enter Your Passcode" screen matching Screen 5 from Money X Design PDF:
  - Pitch black OLED canvas (#000000)
- - Neon Emerald / Cyan ribbon logo
- - Connected 3x4 tactile keypad with hairline borders (#18181c)
- - Glowing emerald PIN feedback indicator
- - Sub-second biometric/PIN authentication
+ - Money X Brand Logo & Emblem
+ - Headline: "Enter Your Passcode"
+ - 6 indicator dots for entered PIN
+ - Connected 3x4 tactile keypad with numbers 1-9, 0, backspace, and the checkmark button ("गुड का साइन" ✓)
+ - User enters 6-digit PIN and clicks the checkmark button to unlock session and open the Dashboard!
 */
 
 import React, { useState } from 'react';
@@ -27,11 +28,6 @@ export const EnterPasscode: React.FC = () => {
       const newPin = pin + num;
       setPin(newPin);
       setErrorMsg(null);
-
-      // Auto submit when 6 digits are typed
-      if (newPin.length === 6) {
-        attemptVerify(newPin);
-      }
     }
   };
 
@@ -40,8 +36,9 @@ export const EnterPasscode: React.FC = () => {
     setErrorMsg(null);
   };
 
+  // User explicitly requested: PIN number lagate hi, laga ke jo good ka sign hai (✓), uspe click karega. Uske baad dashboard page open hona chahiye!
   const handleConfirm = () => {
-    if (pin.length >= 6) {
+    if (pin.length === 6) {
       attemptVerify(pin);
     } else {
       setErrorMsg('Please enter your 6-digit passcode');
@@ -57,6 +54,7 @@ export const EnterPasscode: React.FC = () => {
         setIsSuccess(true);
         setTimeout(async () => {
           await refreshUserData();
+          // Open Dashboard!
           setAuthStage('AUTHENTICATED');
         }, 500);
       } else {
@@ -74,81 +72,57 @@ export const EnterPasscode: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-[#000000] text-slate-100 flex flex-col items-center justify-between p-4 py-8 select-none font-sans">
       
-      {/* Centered Main Lock Card */}
+      {/* Centered Main Lock Card matching PDF Screen 5 */}
       <div className="w-full max-w-[370px] flex flex-col items-center text-center my-auto space-y-7">
         
-        {/* Olymp Trade Neon Ribbon Logo */}
-        <div className="relative w-16 h-14 flex items-center justify-center">
-          <svg className="w-16 h-14" viewBox="0 0 64 54" fill="none">
-            <defs>
-              <linearGradient id="olympRibbonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#00b875" />
-                <stop offset="50%" stopColor="#00e699" />
-                <stop offset="100%" stopColor="#00d2d3" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M 22 13 C 14 13, 10 20, 10 27 C 10 34, 14 41, 22 41 C 28 41, 32 36, 32 27 C 32 18, 36 13, 42 13 C 50 13, 54 20, 54 27 C 54 34, 50 41, 42 41 C 36 41, 32 36, 32 27"
-              stroke="url(#olympRibbonGrad)"
-              strokeWidth="4.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M 12 27 L 32 27 L 52 27"
-              stroke="url(#olympRibbonGrad)"
-              strokeWidth="4.5"
-              strokeLinecap="round"
-            />
-          </svg>
+        {/* Money X Brand Logo & Emblem */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-12 h-12 rounded-2xl bg-[#00e699] flex items-center justify-center text-black font-black text-lg shadow-[0_0_30px_rgba(0,230,153,0.3)]">
+            MX
+          </div>
+          <span className="text-xl font-black tracking-tight text-white">
+            {BRAND.name}
+          </span>
         </div>
 
         {/* Title & Subtitle */}
         <div className="space-y-1.5">
-          <h1 className="text-[24px] font-black text-white tracking-tight leading-tight">
-            Enter Passcode
+          <h1 className="text-2xl font-black text-white tracking-tight leading-tight">
+            Enter Your Passcode
           </h1>
-          <p className="text-[13px] text-slate-400 font-normal">
-            Access your {BRAND.name} trading terminal with your PIN
+          <p className="text-xs text-slate-400 font-normal">
+            Enter your 6-digit security PIN and press ✓ to unlock
           </p>
         </div>
 
-        {/* Typing indicator / Error message */}
-        <div className="h-6 flex items-center justify-center">
+        {/* 6 Dots PIN Feedback Indicator */}
+        <div className="h-7 flex items-center justify-center">
           {errorMsg ? (
             <p className="text-xs font-semibold text-[#ff3b5c] animate-shake">
               {errorMsg}
             </p>
           ) : isSuccess ? (
             <p className="text-xs font-bold text-[#00e699] flex items-center gap-1.5 animate-fadeIn">
-              <Check size={14} className="stroke-[3]" />
+              <Check size={16} className="stroke-[3]" />
               <span>Passcode Verified!</span>
             </p>
-          ) : pin.length > 0 ? (
-            <div className="flex items-center gap-2.5 animate-fadeIn">
+          ) : (
+            <div className="flex items-center gap-3">
               {[0, 1, 2, 3, 4, 5].map((idx) => (
                 <div
                   key={idx}
-                  className={`w-3 h-3 rounded-full transition-all duration-150 ${
+                  className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
                     pin.length > idx
-                      ? 'bg-[#00e699] scale-110 shadow-md shadow-[#00e699]/40'
-                      : 'bg-[#18181c]'
+                      ? 'bg-[#00e699] scale-110 shadow-[0_0_12px_rgba(0,230,153,0.6)]'
+                      : 'bg-[#18181c] border border-[#27272e]'
                   }`}
                 />
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 opacity-30">
-              {[0, 1, 2, 3, 4, 5].map((idx) => (
-                <div key={idx} className="w-2.5 h-2.5 rounded-full bg-[#27272e]" />
               ))}
             </div>
           )}
         </div>
 
-        {/* ========================================================= */}
-        {/* CONNECTED KEYPAD GRID (3 Columns x 4 Rows) */}
-        {/* ========================================================= */}
+        {/* Keypad Grid (3 Columns x 4 Rows) matching PDF Screen 5 */}
         <div className="w-full rounded-2xl border border-[#18181c] overflow-hidden bg-[#08080a] shadow-2xl">
           
           {/* Row 1: 1, 2, 3 */}
@@ -202,7 +176,7 @@ export const EnterPasscode: React.FC = () => {
             ))}
           </div>
 
-          {/* Row 4: [ ✕ ] Backspace | 0 | [ ✓ ] Confirm */}
+          {/* Row 4: [ ✕ ] Backspace | 0 | [ ✓ ] Confirm Checkmark Button */}
           <div className="grid grid-cols-3">
             {/* Col 1: Delete button */}
             <button
@@ -212,8 +186,8 @@ export const EnterPasscode: React.FC = () => {
               className="h-[62px] border-r border-[#18181c] flex items-center justify-center hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-30"
               aria-label="Delete last digit"
             >
-              <div className="w-[34px] h-[22px] rounded-[5px] bg-[#18181c] hover:bg-[#25252c] text-slate-300 flex items-center justify-center shadow-sm">
-                <X size={13} className="stroke-[3]" />
+              <div className="w-[34px] h-[24px] rounded-md bg-[#141418] hover:bg-[#202028] text-slate-300 flex items-center justify-center shadow-sm">
+                <X size={14} className="stroke-[3]" />
               </div>
             </button>
 
@@ -227,33 +201,37 @@ export const EnterPasscode: React.FC = () => {
               0
             </button>
 
-            {/* Col 3: Confirm button with glowing emerald status */}
+            {/* Col 3: Confirm Button ("गुड का साइन" ✓) with glowing emerald state */}
             <button
               type="button"
               onClick={handleConfirm}
-              disabled={isVerifying || isSuccess || pin.length === 0}
-              className={`h-[62px] flex items-center justify-center transition-colors cursor-pointer select-none ${
-                pin.length >= 6
-                  ? 'text-[#00e699] hover:bg-[#121217] active:bg-[#18181c]'
-                  : 'text-slate-600 hover:text-slate-400 hover:bg-[#121217]'
+              disabled={isVerifying || isSuccess || pin.length !== 6}
+              className={`h-[62px] flex items-center justify-center transition-all cursor-pointer select-none ${
+                pin.length === 6
+                  ? 'bg-[#00e699]/15 text-[#00e699] hover:bg-[#00e699]/25 active:scale-95 shadow-[inset_0_0_15px_rgba(0,230,153,0.2)]'
+                  : 'text-slate-600 hover:text-slate-400 hover:bg-[#121217] opacity-40 cursor-not-allowed'
               }`}
-              aria-label="Confirm passcode"
+              aria-label="Confirm passcode and open dashboard"
             >
               {isVerifying ? (
-                <Loader2 size={18} className="animate-spin text-[#00e699]" />
+                <Loader2 size={20} className="animate-spin text-[#00e699]" />
               ) : (
-                <Check size={21} className="stroke-[2.8]" />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                  pin.length === 6 ? 'bg-[#00e699] text-black shadow-lg shadow-[#00e699]/40 scale-105' : 'text-slate-500'
+                }`}>
+                  <Check size={18} className="stroke-[3]" />
+                </div>
               )}
             </button>
           </div>
+
         </div>
+
       </div>
 
-      {/* Footer Security Footnote */}
-      <div className="text-center pt-6 pb-2">
-        <p className="text-[12px] text-slate-500 font-normal tracking-wide">
-          Passcode adds an extra layer of non-custodial cryptographic security
-        </p>
+      {/* Footer Info */}
+      <div className="text-[11px] text-slate-500 text-center">
+        {BRAND.chainNetwork} · Non-Custodial Hardware Security
       </div>
     </div>
   );

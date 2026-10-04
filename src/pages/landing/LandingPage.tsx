@@ -338,38 +338,35 @@ export const LandingPage: React.FC = () => {
               MX
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-black tracking-tight text-white dark:text-white light:text-slate-950 font-mono">
+              <span className="text-xl font-black tracking-tight text-white dark:text-white light:text-slate-950 font-sans">
                 {BRAND.name}
-              </span>
-              <span className="hidden sm:inline-block text-[10px] font-mono text-[#00e699] font-bold">
-                PRO TERMINAL
               </span>
             </div>
           </button>
 
-          {/* Zone 2: Text Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-8 text-xs font-semibold text-slate-300 dark:text-slate-300 light:text-slate-600">
+          {/* Zone 2: Navigation Links matching PDF Screen 1 */}
+          <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-slate-300 dark:text-slate-300 light:text-slate-600">
             <a href="#terminal" className="hover:text-[#00e699] transition-colors">
-              Trading Terminal
-            </a>
-            <a href="#markets" className="hover:text-[#00e699] transition-colors">
-              Asset Markets
-            </a>
-            <a href="#execution" className="hover:text-[#00e699] transition-colors">
-              Instant Execution
+              Trade
             </a>
             <a href="#calculator" className="hover:text-[#00e699] transition-colors">
-              ROI Calculator
+              Earn
+            </a>
+            <a href="#calculator" className="hover:text-[#00e699] transition-colors">
+              Staking
             </a>
             <a href="#ecosystem" className="hover:text-[#00e699] transition-colors">
-              Mobile App
+              Farming
+            </a>
+            <a href="#ecosystem" className="hover:text-[#00e699] transition-colors">
+              Jackpot
             </a>
             <a href="#faq" className="hover:text-[#00e699] transition-colors">
-              FAQ
+              Community
             </a>
           </nav>
 
-          {/* Zone 3: Actions + ThemeToggle */}
+          {/* Zone 3: Actions + ThemeToggle (Replaces Sign Up with Connect Wallet) */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
 
@@ -378,7 +375,7 @@ export const LandingPage: React.FC = () => {
               onClick={handleStartApp}
               className="hidden sm:inline-flex px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white rounded-xl hover:bg-[#121217] transition-colors cursor-pointer"
             >
-              Sign In
+              Login
             </button>
 
             <button
@@ -386,8 +383,8 @@ export const LandingPage: React.FC = () => {
               onClick={handleStartApp}
               className="px-5 py-2.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-xs tracking-tight shadow-lg shadow-[#00e699]/30 hover:shadow-[#00e699]/50 active:scale-[0.97] transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap"
             >
-              <span>Launch Platform</span>
-              <ArrowRight size={13} className="stroke-[3]" />
+              <Wallet size={14} className="stroke-[2.5]" />
+              <span>Connect Wallet</span>
             </button>
 
             {/* Mobile Hamburger */}
@@ -411,41 +408,42 @@ export const LandingPage: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
             >
-              Trading Terminal
-            </a>
-            <a
-              href="#markets"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
-            >
-              Asset Markets
-            </a>
-            <a
-              href="#execution"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
-            >
-              Instant Execution
+              Trade
             </a>
             <a
               href="#calculator"
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
             >
-              ROI Calculator
+              Earn & Staking
+            </a>
+            <a
+              href="#ecosystem"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
+            >
+              Farming & Ecosystem
+            </a>
+            <a
+              href="#faq"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-sm font-semibold text-slate-200 hover:text-[#00e699]"
+            >
+              Community & FAQ
             </a>
             <div className="pt-2 border-t border-[#18181c] flex flex-col gap-2">
               <button
                 onClick={handleStartApp}
                 className="w-full py-2.5 rounded-xl border border-[#222228] text-xs font-bold text-slate-200 cursor-pointer"
               >
-                Sign In
+                Login
               </button>
               <button
                 onClick={handleStartApp}
-                className="w-full py-2.5 rounded-xl bg-[#00e699] text-black font-extrabold text-xs cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-[#00e699] text-black font-extrabold text-xs cursor-pointer flex items-center justify-center gap-2"
               >
-                Launch Platform
+                <Wallet size={14} className="stroke-[2.5]" />
+                <span>Connect Wallet</span>
               </button>
             </div>
           </div>
@@ -455,6 +453,7 @@ export const LandingPage: React.FC = () => {
       {/* 3. Floating Section Quick-Jump Dock (Desktop only) */}
       <aside className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-30 flex-col gap-2.5 p-2 rounded-2xl bg-[#08080a]/90 backdrop-blur-md border border-[#18181c] shadow-2xl">
         {[
+          { id: 'hero', label: 'Home' },
           { id: 'terminal', label: 'Terminal' },
           { id: 'markets', label: 'Markets' },
           { id: 'execution', label: 'Execution' },
@@ -475,33 +474,146 @@ export const LandingPage: React.FC = () => {
         ))}
       </aside>
 
-      {/* 4. HERO SECTION: Full Pitch-Black Interactive Trading Console */}
-      <section id="terminal" className="relative pt-6 sm:pt-10 pb-16 sm:pb-24 overflow-hidden grid-bg-dark">
-        
+      {/* 4. HERO SECTION matching PDF Screen 1 EXACTLY */}
+      <section id="hero" className="relative pt-8 sm:pt-14 pb-14 sm:pb-20 overflow-hidden">
         {/* Subtle Ambient Radial Lighting */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#00e699]/[0.05] rounded-full blur-[160px] pointer-events-none -z-10" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#00e699]/[0.06] rounded-full blur-[160px] pointer-events-none -z-10" />
 
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+            
+            {/* Left Column: Headline, CTAs, Stats Strip matching PDF Screen 1 */}
+            <div className="lg:col-span-7 space-y-7 text-left">
+              
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-black tracking-tight leading-[1.08] text-white">
+                  Build confidence with every single trade
+                </h1>
+
+                <div className="space-y-1">
+                  <p className="text-base sm:text-lg font-bold text-[#00e699]">
+                    Trade · Stake · Earn · Grow Together
+                  </p>
+                  <p className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed">
+                    A modern crypto platform for everyone. Non-custodial trading, real-time APY staking, and cross-chain execution with institutional liquidity.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons matching PDF Screen 1 */}
+              <div className="flex flex-wrap items-center gap-3.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleStartApp}
+                  className="px-8 py-3.5 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold text-sm tracking-tight shadow-xl shadow-[#00e699]/30 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <span>Get Started</span>
+                  <ArrowRight size={15} className="stroke-[3]" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('terminal');
+                    el?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="px-6 py-3.5 rounded-xl bg-[#0c0c10] hover:bg-[#15151c] text-slate-200 border border-[#222228] font-bold text-sm tracking-tight transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <Play size={14} className="fill-slate-300 text-slate-300" />
+                  <span>Watch Video</span>
+                </button>
+              </div>
+
+              {/* 4 Stats Strip matching PDF Screen 1 */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#18181c]">
+                <div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    12+
+                  </div>
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    Years of Innovation
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    2M+
+                  </div>
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    Global Users
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    150+
+                  </div>
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    Trading Pairs
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-2xl sm:text-3xl font-black text-[#00e699] tracking-tight">
+                    24/7
+                  </div>
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    Customer Support
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Visual Artwork matching PDF Screen 1 */}
+            <div className="lg:col-span-5 relative flex items-center justify-center">
+              <div className="relative w-full max-w-[420px] aspect-[4/5] rounded-3xl overflow-hidden border border-[#18181c] bg-[#08080a] shadow-2xl group">
+                <img
+                  src={mobilePlatformImg}
+                  alt="Money X Trading Platform"
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-6 space-y-2">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00e699]/15 border border-[#00e699]/30 text-[#00e699] text-[11px] font-bold self-start">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00e699] animate-pulse" />
+                    <span>Real-Time Execution</span>
+                  </div>
+                  <h3 className="text-lg font-black text-white">
+                    Non-Custodial Money X Mobile App
+                  </h3>
+                  <p className="text-xs text-slate-300">
+                    Trade, stake, and monitor live portfolios anywhere with cryptographic safety.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 5. INTERACTIVE LIVE TRADING TERMINAL */}
+      <section id="terminal" className="relative pt-4 pb-16 sm:pb-24 overflow-hidden grid-bg-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
           
-          {/* Hero Header & Value Statement */}
-          <div className="max-w-3xl space-y-4">
+          {/* Section Header */}
+          <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
               <span className="inline-flex items-center gap-1.5 text-[#00e699] font-bold">
                 <span className="w-2 h-2 rounded-full bg-[#00e699] animate-pulse" />
-                ACTIVE MARKET FEED
+                BINANCE LIVE FEED
               </span>
               <span>·</span>
               <span>Sub-millisecond Settlement</span>
               <span>·</span>
               <span>Up to 95% Return</span>
             </div>
-
-            <h1 className="text-3xl sm:text-5xl lg:text-[56px] font-black tracking-tight leading-[1.08] text-white">
-              Professional Trading, Engineered for Precision.
-            </h1>
-
-            <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-2xl">
-              Execute fast 5-second to 5-minute trades on digital assets and multi-currency indices. Zero deposit fees, transparent payout rates, and non-custodial cryptographic settlement on {BRAND.chainName}.
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+              Institutional Fast Trading Terminal
+            </h2>
+            <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
+              Execute fast 5-second to 5-minute trades on digital assets and multi-currency indices. Zero deposit fees, transparent payout rates, and decentralized settlement.
             </p>
           </div>
 

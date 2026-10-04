@@ -2,12 +2,12 @@
  FILE: src/components/layout/MobileBottomNav.tsx
 
  PURPOSE:
- Universal Bottom Navigation Dock styled with authentic Olymp Trade pitch-black OLED theme.
- Rendered on ALL pages across desktop and mobile as explicitly requested:
- - Pure pitch-black OLED obsidian casing (#08080a/95) with hairline border (#18181c) and backdrop blur
- - Signature Olymp Trade neon emerald (#00e699) active indicators and center action button
- - 6 core institutional navigational nodes: Home, Trade, Staking (APY), Center Menu (Drawer), Convert, Wallets
- - Persistent across all pages with zero layout interference
+ Mobile-Only Bottom Navigation Bar styled with authentic pitch-black OLED theme.
+ STRICT DISPLAY RULES (Per user instructions):
+ - ONLY visible on mobile screen widths (< 1024px / lg:hidden)
+ - STRICTLY HIDDEN on desktop viewports
+ - STRICTLY HIDDEN if user is not authenticated
+ - Direct route navigation without dummy bypasses
 */
 
 import React from 'react';
@@ -19,34 +19,27 @@ interface MobileBottomNavProps {
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) => {
-  const { authStage, setAuthStage, activeRoute, setActiveRoute } = useAuth();
+  const { authStage, user, activeRoute, setActiveRoute } = useAuth();
+
+  // Without authenticated session, mobile bottom navigation is strictly not rendered!
+  if (authStage !== 'AUTHENTICATED' || !user) {
+    return null;
+  }
 
   const handleNav = (route: string) => {
-    if (authStage === 'LANDING' || authStage === 'UNAUTHENTICATED') {
-      if (route === 'home') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      if (route === 'trade' || route === 'staking' || route === 'wallets' || route === 'convert') {
-        setAuthStage('AUTHENTICATED');
-        setActiveRoute(route);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-    }
     setActiveRoute(route);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const isHome = activeRoute === 'home' || authStage === 'LANDING';
+  const isHome = activeRoute === 'home';
   const isTrade = activeRoute === 'trade';
   const isStaking = activeRoute === 'staking' || activeRoute === 'staking-plan';
   const isConvert = activeRoute === 'convert' || activeRoute === 'hxc-convert' || activeRoute === 'xah-convert';
   const isWallet = activeRoute === 'wallets' || activeRoute === 'wallet-detail' || activeRoute === 'deposit' || activeRoute === 'withdraw';
 
   return (
-    <nav className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-xl z-50 px-2 sm:px-0 pb-2 sm:pb-0 pointer-events-none select-none font-sans">
-      <div className="w-full rounded-2xl sm:rounded-3xl bg-[#08080a]/95 backdrop-blur-2xl border border-[#18181c] p-1.5 sm:p-2 flex items-center justify-around shadow-[0_10px_40px_rgba(0,0,0,0.85)] pointer-events-auto transition-all">
+    <nav className="block lg:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pb-3 pt-1 pointer-events-none select-none font-sans">
+      <div className="w-full max-w-md mx-auto rounded-2xl bg-[#08080a]/95 backdrop-blur-2xl border border-[#18181c] p-1.5 flex items-center justify-around shadow-[0_10px_40px_rgba(0,0,0,0.85)] pointer-events-auto transition-all">
         
         {/* 1. Home / Terminal */}
         <button
@@ -74,7 +67,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
           <span className={`text-[10px] ${isTrade ? 'font-black tracking-tight' : 'font-medium'}`}>Trade</span>
         </button>
 
-        {/* 3. Staking (Real-Time APY) */}
+        {/* 3. Staking */}
         <button
           type="button"
           onClick={() => handleNav('staking')}
@@ -87,14 +80,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
           <span className={`text-[10px] ${isStaking ? 'font-black tracking-tight' : 'font-medium'}`}>Staking</span>
         </button>
 
-        {/* 4. Center Elevated Action Menu (Opens Drawer or navigates) */}
+        {/* 4. Center Elevated Action Menu */}
         <button
           type="button"
           onClick={() => {
             if (onOpenMenu) {
               onOpenMenu();
             } else {
-              setAuthStage('AUTHENTICATED');
               setActiveRoute('home');
             }
           }}

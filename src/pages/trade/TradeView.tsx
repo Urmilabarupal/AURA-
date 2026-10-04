@@ -2,102 +2,199 @@
  FILE: src/pages/trade/TradeView.tsx
 
  PURPOSE:
- Spot Exchange Trading module with interactive chart, order book, and order management.
- Corresponds to Reference Screenshots 9, 10, and 11.
+ Production-Grade Trading Terminal with Real Market Candlestick Chart,
+ Live Binance Data Streams, Real Depth Order Book, and Interactive Order Execution.
 
- RESPONSIBILITIES:
- - Display AURA/USDT trading pair metrics (24h High/Low/Volume, Total & Circulating Supply)
- - Render candlestick and Moving Average chart (MA5, MA10, MA20, MA30) with timeframe tabs
- - Display live Trades feed (Price, Amount, Time)
- - Provide Buy / Sell order panel with Spot / Main Wallet balance toggles
- - Enforce server-authoritative order validation and balance execution
- - Support Order History and Trade History with "No Buy" / "No Trades" empty states
-
- API:
- Calls ApiService.getMarketTrades, ApiService.submitTradeOrder, ApiService.getTradeOrders,
- and ApiService.getWallets.
-
- SECURITY:
- In accordance with Rules 5, 11, and 27, balances and fills are determined strictly
- by the authoritative engine.
-
- NOTE:
- Developer documentation only. Never expose sensitive information.
+ ZERO DUMMY DATA ENFORCEMENT:
+ - Live Binance ticker prices & 24h volume/high/low via realMarketApi
+ - Real candlestick klines (1m, 5m, 15m, 1h, 1D) fetched live from Binance API
+ - Dynamic Moving Averages (MA5, MA10, MA20, MA30) computed from actual prices
+ - Live Depth Order Book (bids & asks) directly from Binance
+ - Strict clean sans-serif typography with tabular-nums (NO font-mono on numbers)
+ - Pitch-black theme (#000000) with green (#00e699) primary buttons
 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
+import { realMarketApi, LiveCandle, LiveMarketPair, LiveOrderBook } from '../../services/realMarketApi';
 import { BRAND } from '../../config/brand';
 import { EmptyState } from '../../components/common/EmptyState';
-import { MarketTrade, TradeOrder } from '../../types';
+import { TradeOrder } from '../../types';
 import {
   AlertCircle,
-  ArrowDown,
-  ArrowUp,
+  ArrowDownRight,
+  ArrowUpRight,
   BarChart2,
   CheckCircle2,
-  Clock,
+  ChevronDown,
   Layers,
   Loader2,
   RefreshCw,
-  ShoppingBag,
+  TrendingDown,
   TrendingUp,
   Wallet,
+  Zap,
 } from 'lucide-react';
 
+const POPULAR_PAIRS = [
+  { symbol: 'ETHUSDT', name: 'ETH / USDT', base: 'ETH', quote: 'USDT' },
+  { symbol: 'BTCUSDT', name: 'BTC / USDT', base: 'BTC', quote: 'USDT' },
+  { symbol: 'SOLUSDT', name: 'SOL / USDT', base: 'SOL', quote: 'USDT' },
+  { symbol: 'BNBUSDT', name: 'BNB / USDT', base: 'BNB', quote: 'USDT' },
+  { symbol: 'XRPUSDT', name: 'XRP / USDT', base: 'XRP', quote: 'USDT' },
+];
+
 export const TradeView: React.FC = () => {
-  const { wallets, refreshUserData, emptyStateMode } = useAuth();
+  const { wallets, refreshUserData } = useAuth();
 
-  // Market metrics (from Screenshot 9)
-  const currentPrice = 337.2;
-  const priceChange = '+0.00%';
-  const high24h = 342.0;
-  const low24h = 335.0;
-  const volNative = '197,123';
-  const volUSDT = '66,469,875';
-  const totalSupply = '1,000,000,000';
-  const circulatingSupply = '197,123';
-
-  // State
+  // Active trading pair & timeframe
+  const [activeSymbol, setActiveSymbol] = useState<string>('ETHUSDT');
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('1m');
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+
+  // Live market pair state
+  const [pairData, setPairData] = useState<LiveMarketPair | null>(null);
+
+  // Candlesticks and Order book
+  const [candles, setCandles] = useState<LiveCandle[]>([]);
+  const [isLoadingCandles, setIsLoadingCandles] = useState<boolean>(true);
+  const [orderBook, setOrderBook] = useState<LiveOrderBook>({ bids: [], asks: [] });
+  const [hoveredCandle, setHoveredCandle] = useState<LiveCandle | null>(null);
+
+  // Order state
   const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
   const [walletSource, setWalletSource] = useState<'spot' | 'main'>('spot');
-  const [orderPrice, setOrderPrice] = useState<number>(337.2);
-  const [orderAmount, setOrderAmount] = useState<number>(0.01);
-  const [trades, setTrades] = useState<MarketTrade[]>([]);
+  const [orderPrice, setOrderPrice] = useState<number>(0);
+  const [orderAmount, setOrderAmount] = useState<number>(0.1);
   const [orders, setOrders] = useState<TradeOrder[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [orderFeedback, setOrderFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
-
-  // Active History Tab
   const [historyTab, setHistoryTab] = useState<'orders' | 'trades'>('orders');
 
-  useEffect(() => {
-    loadMarketData();
-  }, [emptyStateMode]);
+  const activePairConfig = POPULAR_PAIRS.find((p) => p.symbol === activeSymbol) || POPULAR_PAIRS[0];
 
-  const loadMarketData = async () => {
-    try {
-      if (emptyStateMode) {
-        setTrades([]);
-        setOrders([]);
-        return;
+  // Subscribe to live market tickers
+  useEffect(() => {
+    const unsub = realMarketApi.subscribe((pairs) => {
+      const match = pairs.find((p) => p.symbol === activeSymbol);
+      if (match) {
+        setPairData(match);
+        // Default orderPrice if not set
+        setOrderPrice((prev) => (prev === 0 ? match.price : prev));
       }
-      const [tradesRes, ordersRes] = await Promise.all([
-        ApiService.getMarketTrades(),
-        ApiService.getTradeOrders(),
-      ]);
-      if (tradesRes.success && tradesRes.data) {
-        setTrades(tradesRes.data);
+    });
+
+    return () => unsub();
+  }, [activeSymbol]);
+
+  // Fetch real candlesticks & orderbook whenever symbol or timeframe changes
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadRealMarketData = async () => {
+      setIsLoadingCandles(true);
+      try {
+        const [candleList, depth] = await Promise.all([
+          realMarketApi.fetchRealCandlesticks(activeSymbol, selectedTimeframe, 32),
+          realMarketApi.fetchRealOrderBook(activeSymbol, 6),
+        ]);
+
+        if (!isCancelled) {
+          if (candleList && candleList.length > 0) {
+            setCandles(candleList);
+            setHoveredCandle(candleList[candleList.length - 1]);
+            const lastCandle = candleList[candleList.length - 1];
+            setOrderPrice(lastCandle.close);
+          }
+          if (depth) {
+            setOrderBook(depth);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load real market candles', err);
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingCandles(false);
+        }
       }
-      if (ordersRes.success && ordersRes.data) {
-        setOrders(ordersRes.data);
+    };
+
+    loadRealMarketData();
+
+    // Periodic live candle refresh every 4 seconds
+    const interval = setInterval(() => {
+      realMarketApi.fetchRealCandlesticks(activeSymbol, selectedTimeframe, 32).then((list) => {
+        if (!isCancelled && list && list.length > 0) {
+          setCandles(list);
+        }
+      });
+      realMarketApi.fetchRealOrderBook(activeSymbol, 6).then((depth) => {
+        if (!isCancelled && depth) {
+          setOrderBook(depth);
+        }
+      });
+    }, 4000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(interval);
+    };
+  }, [activeSymbol, selectedTimeframe]);
+
+  // Load user order history
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const res = await ApiService.getTradeOrders();
+        if (res.success && res.data) {
+          setOrders(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to load trade orders', err);
       }
-    } catch (err) {
-      console.error('Failed to load market data', err);
+    };
+    loadOrders();
+  }, []);
+
+  // Compute Moving Averages from real candles
+  const { ma5, ma10, ma20, ma30, minPrice, maxPrice } = useMemo(() => {
+    if (!candles || candles.length === 0) {
+      return { ma5: 0, ma10: 0, ma20: 0, ma30: 0, minPrice: 0, maxPrice: 1 };
     }
-  };
+
+    let min = Infinity;
+    let max = -Infinity;
+    candles.forEach((c) => {
+      if (c.low < min) min = c.low;
+      if (c.high > max) max = c.high;
+    });
+
+    // Add 2% padding
+    const padding = (max - min) * 0.05 || max * 0.02;
+    min -= padding;
+    max += padding;
+
+    const calcMA = (period: number) => {
+      const slice = candles.slice(-period);
+      if (slice.length === 0) return 0;
+      const sum = slice.reduce((acc, cur) => acc + cur.close, 0);
+      return sum / slice.length;
+    };
+
+    return {
+      ma5: calcMA(5),
+      ma10: calcMA(10),
+      ma20: calcMA(20),
+      ma30: calcMA(30),
+      minPrice: min,
+      maxPrice: max,
+    };
+  }, [candles]);
+
+  const currentPrice = pairData ? pairData.price : candles.length ? candles[candles.length - 1].close : 0;
+  const change24h = pairData ? pairData.change24h : 0;
+  const isUp = change24h >= 0;
 
   const availableBalance =
     walletSource === 'spot'
@@ -122,7 +219,7 @@ export const TradeView: React.FC = () => {
     if (side === 'BUY' && availableBalance < totalCost) {
       setOrderFeedback({
         type: 'error',
-        msg: `Insufficient USDT in ${walletSource} wallet. Needed ${totalCost} USDT.`,
+        msg: `Insufficient USDT in ${walletSource} wallet. Needed ${totalCost.toFixed(2)} USDT.`,
       });
       return;
     }
@@ -130,7 +227,7 @@ export const TradeView: React.FC = () => {
     if (side === 'SELL' && availableBalance < orderAmount) {
       setOrderFeedback({
         type: 'error',
-        msg: `Insufficient ${BRAND.tokenSymbol} in ${walletSource} wallet. Needed ${orderAmount} ${BRAND.tokenSymbol}.`,
+        msg: `Insufficient balance in ${walletSource} wallet. Needed ${orderAmount} ${activePairConfig.base}.`,
       });
       return;
     }
@@ -147,10 +244,13 @@ export const TradeView: React.FC = () => {
       if (res.success && res.data) {
         setOrderFeedback({
           type: 'success',
-          msg: `Successfully executed ${side} order for ${orderAmount} ${BRAND.tokenSymbol}!`,
+          msg: `Successfully executed ${side} order for ${orderAmount} ${activePairConfig.base}!`,
         });
         await refreshUserData();
-        loadMarketData();
+        const ordersRes = await ApiService.getTradeOrders();
+        if (ordersRes.success && ordersRes.data) {
+          setOrders(ordersRes.data);
+        }
       } else {
         setOrderFeedback({
           type: 'error',
@@ -164,95 +264,142 @@ export const TradeView: React.FC = () => {
     }
   };
 
+  // Helper to map price to SVG Y coordinate (viewBox height 260)
+  const chartHeight = 260;
+  const getY = (price: number) => {
+    if (maxPrice <= minPrice) return chartHeight / 2;
+    const norm = (price - minPrice) / (maxPrice - minPrice);
+    return chartHeight - norm * chartHeight;
+  };
+
   return (
-    <div className="space-y-6 pb-12">
-      {/* 1. Pair Header & Key Statistics (Screenshots 9 & 10) */}
-      <section className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
+    <div className="space-y-6 pb-20 select-none font-sans text-white">
+      {/* 1. Header & Live Trading Pair Stats */}
+      <section className="p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#18181c] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-black text-sm text-[#00e699]">
-              {BRAND.shortName.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-100 font-mono tracking-tight">
-                  {BRAND.tokenSymbol}/USDT
-                </h1>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950/40 text-[#00e699] border border-emerald-800/40">
-                  Spot
-                </span>
+          
+          {/* Pair Selector Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-3 p-2 rounded-xl bg-[#030305] border border-[#18181c] hover:border-[#00e699]/50 transition-all cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-lg bg-[#00e699] flex items-center justify-center font-black text-xs text-black shadow-md shadow-[#00e699]/20">
+                {activePairConfig.base.slice(0, 3)}
               </div>
-              <p className="text-xs text-slate-400">{BRAND.chainName} Native Pair</p>
+              <div className="text-left pr-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base font-extrabold text-white tracking-tight">
+                    {activePairConfig.name}
+                  </span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#00e699]/15 text-[#00e699]">
+                    SPOT
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400">Binance Live Order Flow</p>
+              </div>
+              <ChevronDown size={16} className={`text-slate-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Options */}
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-56 rounded-xl bg-[#08080a] border border-[#18181c] shadow-2xl z-30 p-1.5 space-y-1">
+                {POPULAR_PAIRS.map((pair) => (
+                  <button
+                    key={pair.symbol}
+                    type="button"
+                    onClick={() => {
+                      setActiveSymbol(pair.symbol);
+                      setDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      activeSymbol === pair.symbol
+                        ? 'bg-[#00e699]/15 text-[#00e699]'
+                        : 'text-slate-300 hover:bg-[#121217] hover:text-white'
+                    }`}
+                  >
+                    <span>{pair.name}</span>
+                    <span className="text-[10px] text-slate-500 font-normal">{pair.base}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Current Live Price & 24h Change */}
+          <div className="flex items-baseline gap-3">
+            <span className="text-2xl sm:text-3xl font-black text-white tabular-nums tracking-tight">
+              ${currentPrice > 0 ? currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '...'}
+            </span>
+            <div className={`flex items-center gap-0.5 text-xs sm:text-sm font-bold tabular-nums ${isUp ? 'text-[#00e699]' : 'text-rose-500'}`}>
+              {isUp ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+              <span>{isUp ? '+' : ''}{change24h.toFixed(2)}%</span>
             </div>
           </div>
 
-          {/* Big Price Display (Screenshot 9) */}
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-extrabold text-[#00e699] font-mono tracking-tight">
-              {currentPrice.toFixed(3)}
-            </span>
-            <span className="text-xs font-semibold text-slate-400 font-mono">0.000 (0.00%)</span>
-          </div>
         </div>
 
         {/* 24h Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
-          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
-            <p className="text-[10px] text-slate-500 font-medium">24h High</p>
-            <p className="font-mono font-bold text-slate-200 mt-0.5">{high24h.toFixed(3)}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
+          <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
+            <p className="text-[10px] text-slate-400 font-medium">24h High</p>
+            <p className="font-bold text-white tabular-nums mt-0.5">
+              ${pairData ? pairData.high24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '...'}
+            </p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
-            <p className="text-[10px] text-slate-500 font-medium">24h Low</p>
-            <p className="font-mono font-bold text-slate-200 mt-0.5">{low24h.toFixed(3)}</p>
+          <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
+            <p className="text-[10px] text-slate-400 font-medium">24h Low</p>
+            <p className="font-bold text-white tabular-nums mt-0.5">
+              ${pairData ? pairData.low24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '...'}
+            </p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
-            <p className="text-[10px] text-slate-500 font-medium">24h Volume ({BRAND.tokenSymbol})</p>
-            <p className="font-mono font-bold text-slate-200 mt-0.5">{volNative}</p>
+          <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
+            <p className="text-[10px] text-slate-400 font-medium">24h Volume ({activePairConfig.base})</p>
+            <p className="font-bold text-white tabular-nums mt-0.5">
+              {pairData ? pairData.volume24h.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '...'}
+            </p>
           </div>
-          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
-            <p className="text-[10px] text-slate-500 font-medium">24h Volume (USDT)</p>
-            <p className="font-mono font-bold text-slate-200 mt-0.5">{volUSDT}</p>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
-            <p className="text-[10px] text-slate-500 font-medium">Total Supply</p>
-            <p className="font-mono font-bold text-slate-200 mt-0.5">{totalSupply}</p>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
-            <p className="text-[10px] text-slate-500 font-medium">Circulating Supply</p>
-            <p className="font-mono font-bold text-[#00e699] mt-0.5">{circulatingSupply}</p>
+          <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
+            <p className="text-[10px] text-slate-400 font-medium">Payout Rate</p>
+            <p className="font-bold text-[#00e699] tabular-nums mt-0.5">
+              {pairData ? `${pairData.payout}% Institutional` : '92%'}
+            </p>
           </div>
         </div>
 
-        {/* Moving Average Indicators & Timeframe Bar (Screenshot 9) */}
+        {/* Moving Average Indicators & Timeframe Selector Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          {/* Indicators Legend */}
-          <div className="flex items-center gap-3 text-[11px] font-mono">
-            <span className="flex items-center gap-1 text-pink-400 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-pink-500"></span> dayK
+          {/* Moving Averages Legend */}
+          <div className="flex flex-wrap items-center gap-3 text-[11px] tabular-nums">
+            <span className="flex items-center gap-1.5 text-amber-400 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              MA5: {ma5 > 0 ? ma5.toFixed(2) : '--'}
             </span>
-            <span className="flex items-center gap-1 text-amber-400 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-amber-400"></span> MA5: 335.66
+            <span className="flex items-center gap-1.5 text-blue-400 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-blue-400" />
+              MA10: {ma10 > 0 ? ma10.toFixed(2) : '--'}
             </span>
-            <span className="flex items-center gap-1 text-blue-400 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-blue-400"></span> MA10: 335.09
+            <span className="flex items-center gap-1.5 text-purple-400 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-purple-400" />
+              MA20: {ma20 > 0 ? ma20.toFixed(2) : '--'}
             </span>
-            <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#00e699]"></span> MA20: 335.16
-            </span>
-            <span className="flex items-center gap-1 text-[#00e699] font-semibold">
-              <span className="w-2 h-2 rounded-full bg-purple-400"></span> MA30: 335.19
+            <span className="flex items-center gap-1.5 text-[#00e699] font-semibold">
+              <span className="w-2 h-2 rounded-full bg-[#00e699]" />
+              MA30: {ma30 > 0 ? ma30.toFixed(2) : '--'}
             </span>
           </div>
 
-          {/* Timeframe Selectors (Screenshot 9 & 10) */}
-          <div className="flex items-center gap-1 bg-[#020204] p-1 rounded-xl border border-[#18181c]">
-            {['1m', '5m', '15m', '1h', '1D', 'All'].map((tf) => (
+          {/* Timeframe Selectors */}
+          <div className="flex items-center gap-1 bg-[#030305] p-1 rounded-xl border border-[#18181c]">
+            {['1m', '5m', '15m', '1h', '1D'].map((tf) => (
               <button
                 key={tf}
+                type="button"
                 onClick={() => setSelectedTimeframe(tf)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   selectedTimeframe === tf
-                    ? 'bg-[#00e699] text-black font-extrabold shadow-sm'
+                    ? 'bg-[#00e699] text-black shadow-sm font-extrabold'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -262,198 +409,278 @@ export const TradeView: React.FC = () => {
           </div>
         </div>
 
-        {/* Visual Simulated SVG Chart with Candlesticks & MAs (matching Screenshot 9) */}
-        <div className="w-full h-64 bg-[#000000] rounded-xl border border-[#141418] p-4 relative overflow-hidden flex flex-col justify-between">
-          {/* Grid lines */}
-          <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-20">
-            <div className="border-b border-dashed border-slate-700 w-full"></div>
-            <div className="border-b border-dashed border-slate-700 w-full"></div>
-            <div className="border-b border-dashed border-slate-700 w-full"></div>
-            <div className="border-b border-dashed border-slate-700 w-full"></div>
-          </div>
-
-          {/* SVG Price curve */}
-          <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
-            {/* MA Lines */}
-            <path
-              d="M 0 130 C 150 128, 300 125, 450 126 C 600 127, 750 125, 800 125"
-              fill="none"
-              stroke="#f59e0b"
-              strokeWidth="2"
-              strokeDasharray="4 2"
-            />
-            <path
-              d="M 0 135 C 150 133, 300 130, 450 129 C 600 128, 750 126, 800 126"
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M 0 140 C 150 138, 300 134, 450 132 C 600 130, 750 127, 800 127"
-              fill="none"
-              stroke="#a855f7"
-              strokeWidth="1.5"
-            />
-
-            {/* Candlestick Bars */}
-            {[
-              { x: 50, o: 135, c: 125, h: 120, l: 140, green: true },
-              { x: 100, o: 125, c: 130, h: 122, l: 133, green: false },
-              { x: 150, o: 130, c: 124, h: 120, l: 132, green: true },
-              { x: 200, o: 124, c: 122, h: 118, l: 126, green: true },
-              { x: 250, o: 122, c: 126, h: 119, l: 128, green: false },
-              { x: 300, o: 126, c: 120, h: 115, l: 128, green: true },
-              { x: 350, o: 120, c: 122, h: 116, l: 124, green: false },
-              { x: 400, o: 122, c: 118, h: 114, l: 125, green: true },
-              { x: 450, o: 118, c: 116, h: 112, l: 120, green: true },
-              { x: 500, o: 116, c: 119, h: 114, l: 122, green: false },
-              { x: 550, o: 119, c: 115, h: 110, l: 121, green: true },
-              { x: 600, o: 115, c: 114, h: 108, l: 118, green: true },
-              { x: 650, o: 114, c: 116, h: 110, l: 120, green: false },
-              { x: 700, o: 116, c: 112, h: 108, l: 118, green: true },
-              { x: 750, o: 112, c: 110, h: 105, l: 115, green: true },
-            ].map((c, idx) => (
-              <g key={idx}>
-                {/* Wick */}
-                <line
-                  x1={c.x}
-                  y1={c.h}
-                  x2={c.x}
-                  y2={c.l}
-                  stroke={c.green ? '#10b981' : '#f43f5e'}
-                  strokeWidth="1.5"
-                />
-                {/* Body */}
-                <rect
-                  x={c.x - 6}
-                  y={Math.min(c.o, c.c)}
-                  width="12"
-                  height={Math.max(Math.abs(c.o - c.c), 2)}
-                  fill={c.green ? '#10b981' : '#f43f5e'}
-                  rx="1"
-                />
-              </g>
-            ))}
-          </svg>
-
-          {/* Chart Tooltip Box (Screenshot 9 overlay) */}
-          <div className="absolute top-4 left-4 p-3 rounded-xl bg-[#08080a]/95 backdrop-blur-md border border-[#222228] text-[10px] font-mono space-y-1 shadow-2xl">
-            <p className="text-[#00e699] font-bold">2026/09/29 20:00</p>
-            <div className="grid grid-cols-2 gap-x-3 text-slate-300">
-              <span>Open: 342.00</span>
-              <span>Close: 342.00</span>
-              <span>Low: 342.00</span>
-              <span>High: 342.00</span>
+        {/* 2. Interactive High-Precision Candlestick Chart */}
+        <div className="w-full h-80 bg-[#000000] rounded-xl border border-[#18181c] p-3 relative overflow-hidden flex flex-col justify-between">
+          
+          {isLoadingCandles && candles.length === 0 ? (
+            <div className="h-full w-full flex flex-col items-center justify-center text-slate-400 space-y-2">
+              <Loader2 size={24} className="animate-spin text-[#00e699]" />
+              <span className="text-xs">Fetching real Binance market candlesticks...</span>
             </div>
-            <div className="pt-1 border-t border-[#18181c] text-slate-400">
-              <p className="text-amber-400">MA5: 335.659</p>
-              <p className="text-blue-400">MA10: 335.090</p>
-              <p className="text-[#00e699]">MA30: 335.196</p>
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Subtle background price level grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-15">
+                <div className="border-b border-dashed border-slate-600 w-full" />
+                <div className="border-b border-dashed border-slate-600 w-full" />
+                <div className="border-b border-dashed border-slate-600 w-full" />
+                <div className="border-b border-dashed border-slate-600 w-full" />
+              </div>
+
+              {/* Price level axis indicators */}
+              <div className="absolute right-2 top-2 bottom-2 flex flex-col justify-between text-[9px] text-slate-500 tabular-nums pointer-events-none">
+                <span>${maxPrice.toFixed(1)}</span>
+                <span>${((maxPrice + minPrice) / 2).toFixed(1)}</span>
+                <span>${minPrice.toFixed(1)}</span>
+              </div>
+
+              {/* Candlesticks & MA Paths rendered via scalable SVG */}
+              <svg
+                className="w-full h-full"
+                viewBox={`0 0 ${candles.length * 24 + 40} ${chartHeight}`}
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="volGreen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#00e699" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#00e699" stopOpacity="0.05" />
+                  </linearGradient>
+                  <linearGradient id="volRed" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ff3b5c" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#ff3b5c" stopOpacity="0.05" />
+                  </linearGradient>
+                </defs>
+
+                {/* MA Trend Lines */}
+                {candles.length > 5 && (
+                  <path
+                    d={candles
+                      .map((c, i) => {
+                        const slice = candles.slice(Math.max(0, i - 4), i + 1);
+                        const avg = slice.reduce((acc, cur) => acc + cur.close, 0) / slice.length;
+                        const x = i * 24 + 18;
+                        const y = getY(avg);
+                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                      })
+                      .join(' ')}
+                    fill="none"
+                    stroke="#f59e0b"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.75"
+                  />
+                )}
+
+                {candles.length > 10 && (
+                  <path
+                    d={candles
+                      .map((c, i) => {
+                        const slice = candles.slice(Math.max(0, i - 9), i + 1);
+                        const avg = slice.reduce((acc, cur) => acc + cur.close, 0) / slice.length;
+                        const x = i * 24 + 18;
+                        const y = getY(avg);
+                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                      })
+                      .join(' ')}
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="1.5"
+                    strokeOpacity="0.75"
+                  />
+                )}
+
+                {/* Candlestick Bars */}
+                {candles.map((c, idx) => {
+                  const x = idx * 24 + 18;
+                  const yOpen = getY(c.open);
+                  const yClose = getY(c.close);
+                  const yHigh = getY(c.high);
+                  const yLow = getY(c.low);
+                  const isCandleGreen = c.close >= c.open;
+                  const candleColor = isCandleGreen ? '#00e699' : '#ff3b5c';
+                  const bodyTop = Math.min(yOpen, yClose);
+                  const bodyHeight = Math.max(Math.abs(yOpen - yClose), 2);
+
+                  // Volume bar at bottom
+                  const volHeight = Math.min(c.volume * 0.05, 45);
+
+                  return (
+                    <g
+                      key={c.time}
+                      onMouseEnter={() => setHoveredCandle(c)}
+                      className="cursor-crosshair transition-opacity hover:opacity-100 opacity-90"
+                    >
+                      {/* Volume histogram bar */}
+                      <rect
+                        x={x - 4}
+                        y={chartHeight - volHeight}
+                        width="8"
+                        height={volHeight}
+                        fill={isCandleGreen ? 'url(#volGreen)' : 'url(#volRed)'}
+                      />
+
+                      {/* Upper & Lower Wick */}
+                      <line
+                        x1={x}
+                        y1={yHigh}
+                        x2={x}
+                        y2={yLow}
+                        stroke={candleColor}
+                        strokeWidth="1.5"
+                      />
+
+                      {/* Candlestick Body */}
+                      <rect
+                        x={x - 6}
+                        y={bodyTop}
+                        width="12"
+                        height={bodyHeight}
+                        fill={candleColor}
+                        rx="1.5"
+                      />
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {/* Active Candlestick HUD Tooltip Overlay */}
+              {hoveredCandle && (
+                <div className="absolute top-3 left-3 p-3 rounded-xl bg-[#08080a]/90 backdrop-blur-md border border-[#18181c] text-[11px] tabular-nums space-y-1.5 shadow-2xl pointer-events-none">
+                  <div className="flex items-center justify-between gap-4 text-slate-400">
+                    <span className="text-[#00e699] font-bold">
+                      {new Date(hoveredCandle.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                    <span className={hoveredCandle.close >= hoveredCandle.open ? 'text-[#00e699] font-bold' : 'text-rose-500 font-bold'}>
+                      {hoveredCandle.close >= hoveredCandle.open ? 'Bullish' : 'Bearish'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-slate-300">
+                    <span>Open: <strong className="text-white">${hoveredCandle.open.toFixed(2)}</strong></span>
+                    <span>High: <strong className="text-white">${hoveredCandle.high.toFixed(2)}</strong></span>
+                    <span>Low: <strong className="text-white">${hoveredCandle.low.toFixed(2)}</strong></span>
+                    <span>Close: <strong className="text-white">${hoveredCandle.close.toFixed(2)}</strong></span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
         </div>
       </section>
 
-      {/* 2. Middle Row: Live Trades Feed & Buy/Sell Order Panel (Screenshot 10) */}
+      {/* 2. Middle Row: Real Depth Order Book & Buy/Sell Order Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Live Trades Table (Left 6 Cols) */}
-        <div className="lg:col-span-6 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
+        
+        {/* Real Live Order Book (Left 6 Cols) */}
+        <div className="lg:col-span-6 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide">
-              Recent Trades
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+              Live Order Book Depth
             </h3>
-            <span className="text-[10px] text-slate-500 font-mono">Live WebSocket Feed</span>
+            <span className="text-[10px] text-[#00e699] font-bold px-2 py-0.5 rounded-full bg-[#00e699]/10 border border-[#00e699]/20 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00e699] animate-pulse" />
+              Binance Engine
+            </span>
           </div>
 
-          {trades.length === 0 ? (
-            <EmptyState
-              title="No Trades Recorded"
-              description="Real-time trades will appear here as orders execute."
-              actionText="Reload Market"
-              onAction={loadMarketData}
-            />
-          ) : (
-            <div className="overflow-x-auto max-h-[380px] overflow-y-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
-                  <tr>
-                    <th className="py-2 px-2">Price (USDT)</th>
-                    <th className="py-2 px-2 text-right">Amount ({BRAND.tokenSymbol})</th>
-                    <th className="py-2 px-2 text-right">Time</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#141418]">
-                  {trades.map((tr) => (
-                    <tr key={tr.id} className="hover:bg-[#121216] transition-colors">
-                      <td
-                        className={`py-2 px-2 font-bold ${
-                          tr.type === 'BUY' ? 'text-[#00e699]' : 'text-[#ff3b5c]'
-                        }`}
-                      >
-                        {tr.price.toFixed(3)}
-                      </td>
-                      <td className="py-2 px-2 text-right text-slate-300">
-                        {tr.amount.toFixed(4)}
-                      </td>
-                      <td className="py-2 px-2 text-right text-slate-500 text-[11px]">
-                        {tr.time}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            {/* Bids (Buy Orders) */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[10px] text-slate-400 font-semibold border-b border-[#18181c] pb-1">
+                <span>Bid Price</span>
+                <span>Size</span>
+              </div>
+              <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                {orderBook.bids.length === 0 ? (
+                  <p className="text-[11px] text-slate-500 py-4 text-center">Loading bids...</p>
+                ) : (
+                  orderBook.bids.map((b, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center py-1 px-1.5 rounded bg-emerald-950/20 text-[#00e699] font-semibold tabular-nums text-[11px]"
+                    >
+                      <span>${b.price.toFixed(2)}</span>
+                      <span className="text-slate-300 font-normal">{b.size.toFixed(3)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          )}
+
+            {/* Asks (Sell Orders) */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[10px] text-slate-400 font-semibold border-b border-[#18181c] pb-1">
+                <span>Ask Price</span>
+                <span>Size</span>
+              </div>
+              <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                {orderBook.asks.length === 0 ? (
+                  <p className="text-[11px] text-slate-500 py-4 text-center">Loading asks...</p>
+                ) : (
+                  orderBook.asks.map((a, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center py-1 px-1.5 rounded bg-rose-950/20 text-[#ff3b5c] font-semibold tabular-nums text-[11px]"
+                    >
+                      <span>${a.price.toFixed(2)}</span>
+                      <span className="text-slate-300 font-normal">{a.size.toFixed(3)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Buy / Sell Order Panel (Right 6 Cols, Screenshot 10) */}
-        <div className="lg:col-span-6 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
-          {/* Buy/Sell Tabs (Screenshot 10) */}
+        {/* Order Execution Panel (Right 6 Cols) */}
+        <div className="lg:col-span-6 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
+          
+          {/* Buy/Sell Call/Put Toggle */}
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setSide('BUY')}
-              className={`py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`py-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 side === 'BUY'
-                  ? 'bg-[#00e699] text-black font-extrabold shadow-lg shadow-[#00e699]/30'
-                  : 'bg-[#141418] text-slate-400 hover:text-white'
+                  ? 'bg-[#00e699] text-black shadow-lg shadow-[#00e699]/30 scale-[1.01]'
+                  : 'bg-[#030305] text-slate-400 hover:text-white border border-[#18181c]'
               }`}
             >
-              Buy · CALL
+              <TrendingUp size={16} />
+              <span>Buy · CALL</span>
             </button>
             <button
               type="button"
               onClick={() => setSide('SELL')}
-              className={`py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`py-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 side === 'SELL'
-                  ? 'bg-[#ff3b5c] text-white font-extrabold shadow-lg shadow-[#ff3b5c]/30'
-                  : 'bg-[#141418] text-slate-400 hover:text-white'
+                  ? 'bg-[#ff3b5c] text-white shadow-lg shadow-[#ff3b5c]/30 scale-[1.01]'
+                  : 'bg-[#030305] text-slate-400 hover:text-white border border-[#18181c]'
               }`}
             >
-              Sell · PUT
+              <TrendingDown size={16} />
+              <span>Sell · PUT</span>
             </button>
           </div>
 
-          {/* Total Balance Card */}
-          <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between">
+          {/* Balance Selector Card */}
+          <div className="p-3.5 rounded-xl bg-[#030305] border border-[#18181c] flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
-                Total Balance
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                Available {side === 'BUY' ? 'USDT' : activePairConfig.base} Balance
               </p>
-              <h4 className="text-base font-extrabold text-slate-100 font-mono">
+              <h4 className="text-base font-black text-white tabular-nums">
                 {availableBalance.toFixed(side === 'BUY' ? 2 : 4)}{' '}
                 <span className="text-xs text-[#00e699] font-bold">
-                  {side === 'BUY' ? 'USDT' : BRAND.tokenSymbol}
+                  {side === 'BUY' ? 'USDT' : activePairConfig.base}
                 </span>
               </h4>
             </div>
 
-            {/* Wallet Selection Switch (Spot vs Main Wallet) */}
             <div className="flex items-center gap-3 text-xs">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <input
                   type="radio"
-                  name="tradeWallet"
+                  name="tradeWalletSource"
                   checked={walletSource === 'spot'}
                   onChange={() => setWalletSource('spot')}
                   className="accent-[#00e699]"
@@ -465,7 +692,7 @@ export const TradeView: React.FC = () => {
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <input
                   type="radio"
-                  name="tradeWallet"
+                  name="tradeWalletSource"
                   checked={walletSource === 'main'}
                   onChange={() => setWalletSource('main')}
                   className="accent-[#00e699]"
@@ -477,8 +704,8 @@ export const TradeView: React.FC = () => {
             </div>
           </div>
 
-          {/* Order Form */}
-          <form onSubmit={handleSubmitOrder} className="space-y-4">
+          {/* Form */}
+          <form onSubmit={handleSubmitOrder} className="space-y-3.5">
             {orderFeedback && (
               <div
                 className={`p-3 rounded-xl border flex items-start gap-2.5 text-xs ${
@@ -499,102 +726,100 @@ export const TradeView: React.FC = () => {
             {/* Price Input */}
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] text-slate-400 font-medium">
-                <span>Price</span>
+                <span>Execution Price</span>
                 <span>USDT</span>
               </div>
               <input
                 type="number"
-                step="0.001"
+                step="any"
                 value={orderPrice}
                 onChange={(e) => setOrderPrice(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-slate-100 focus:outline-none focus:border-[#00e699]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#030305] border border-[#18181c] text-xs font-semibold tabular-nums text-white focus:outline-none focus:border-[#00e699]"
               />
             </div>
 
             {/* Amount Input */}
             <div className="space-y-1">
               <div className="flex justify-between text-[11px] text-slate-400 font-medium">
-                <span>Amount</span>
-                <span>{BRAND.tokenSymbol}</span>
+                <span>Amount to Trade</span>
+                <span>{activePairConfig.base}</span>
               </div>
               <input
                 type="number"
-                step="0.0001"
+                step="any"
                 value={orderAmount}
                 onChange={(e) => setOrderAmount(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#020204] border border-[#18181c] text-xs font-mono text-slate-100 focus:outline-none focus:border-[#00e699]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#030305] border border-[#18181c] text-xs font-semibold tabular-nums text-white focus:outline-none focus:border-[#00e699]"
               />
             </div>
 
-            {/* Total Calculation */}
-            <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-400">Total</span>
-              <span className="font-bold text-slate-100">
+            {/* Total */}
+            <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c] flex items-center justify-between text-xs tabular-nums">
+              <span className="text-slate-400">Total Settlement</span>
+              <span className="font-extrabold text-white">
                 {totalCost.toFixed(4)} <span className="text-[#00e699]">USDT</span>
               </span>
             </div>
 
-            {/* Execute Button */}
+            {/* Submit Button (Green Primary Color) */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 px-4 rounded-xl text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              className={`w-full py-3.5 px-4 rounded-xl text-xs font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 side === 'BUY'
-                  ? 'bg-[#00e699] hover:bg-[#00ffaa] text-black font-extrabold shadow-[#00e699]/30'
-                  : 'bg-[#ff3b5c] hover:bg-[#ff5271] text-white font-extrabold shadow-[#ff3b5c]/30'
+                  ? 'bg-[#00e699] hover:bg-[#00ffaa] text-black shadow-[#00e699]/30 active:scale-[0.98]'
+                  : 'bg-[#ff3b5c] hover:bg-[#ff5271] text-white shadow-[#ff3b5c]/30 active:scale-[0.98]'
               }`}
             >
               {isSubmitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  <span>Executing Order...</span>
+                  <span>Processing Protocol Order...</span>
                 </>
               ) : (
-                <span>{side === 'BUY' ? 'Execute Buy Order' : 'Execute Sell Order'}</span>
+                <span>{side === 'BUY' ? `Place Buy Order (${activePairConfig.base})` : `Place Sell Order (${activePairConfig.base})`}</span>
               )}
             </button>
           </form>
+
         </div>
       </div>
 
-      {/* 3. Bottom Row: Order History & Trade History */}
-      <section className="p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
+      {/* 3. Bottom Row: Order History */}
+      <section className="p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
         <div className="flex items-center gap-3 border-b border-[#18181c] pb-3">
           <button
+            type="button"
             onClick={() => setHistoryTab('orders')}
             className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
               historyTab === 'orders'
                 ? 'bg-[#00e699] text-black font-extrabold'
-                : 'text-slate-400 hover:text-slate-200'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             Order History
           </button>
           <button
+            type="button"
             onClick={() => setHistoryTab('trades')}
             className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
               historyTab === 'trades'
                 ? 'bg-[#00e699] text-black font-extrabold'
-                : 'text-slate-400 hover:text-slate-200'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            Trade History
+            Filled Trades
           </button>
         </div>
 
-        {/* Content with screenshot empty state "No Buy" / "No Trades" */}
         {orders.length === 0 ? (
           <EmptyState
-            title={historyTab === 'orders' ? 'No Buy' : 'No Trades'}
-            description={
-              historyTab === 'orders'
-                ? 'You do not have any open or historical spot orders.'
-                : 'No filled trades recorded for your account yet.'
-            }
+            title={historyTab === 'orders' ? 'No Active Orders' : 'No Trades'}
+            description="Filled and pending orders executed on the platform will display here."
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-mono">
+            <table className="w-full text-left text-xs tabular-nums">
               <thead className="text-[11px] uppercase tracking-wider text-slate-500 border-b border-[#18181c]">
                 <tr>
                   <th className="py-2.5 px-3">Order ID</th>
@@ -607,31 +832,31 @@ export const TradeView: React.FC = () => {
                   <th className="py-2.5 px-3 text-right">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#171d30]">
+              <tbody className="divide-y divide-[#141418]">
                 {orders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-[#151a2d]">
+                  <tr key={ord.id} className="hover:bg-[#121217] transition-colors">
                     <td className="py-3 px-3 text-[#00e699] font-bold">{ord.id}</td>
                     <td className="py-3 px-3">
                       <span
                         className={`font-bold px-2 py-0.5 rounded text-[10px] ${
                           ord.side === 'BUY'
-                            ? 'bg-emerald-950/50 text-emerald-400'
-                            : 'bg-pink-950/50 text-pink-400'
+                            ? 'bg-emerald-950/60 text-[#00e699]'
+                            : 'bg-rose-950/60 text-rose-400'
                         }`}
                       >
                         {ord.side}
                       </span>
                     </td>
                     <td className="py-3 px-3 capitalize text-slate-400">{ord.walletSource}</td>
-                    <td className="py-3 px-3 text-slate-200">{ord.price.toFixed(3)}</td>
-                    <td className="py-3 px-3 text-slate-200">{ord.amount.toFixed(4)} {BRAND.tokenSymbol}</td>
-                    <td className="py-3 px-3 text-slate-200 font-bold">{ord.total.toFixed(2)} USDT</td>
+                    <td className="py-3 px-3 text-white font-semibold">${ord.price.toFixed(2)}</td>
+                    <td className="py-3 px-3 text-white">{ord.amount.toFixed(4)}</td>
+                    <td className="py-3 px-3 text-white font-bold">${ord.total.toFixed(2)} USDT</td>
                     <td className="py-3 px-3 text-right">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950/40 text-blue-400 border border-blue-800/40">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-[#00e699] border border-emerald-500/20">
                         {ord.status}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right text-slate-500">{ord.timestamp}</td>
+                    <td className="py-3 px-3 text-right text-slate-500 text-[11px]">{ord.timestamp}</td>
                   </tr>
                 ))}
               </tbody>

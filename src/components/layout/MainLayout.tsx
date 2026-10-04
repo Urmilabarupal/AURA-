@@ -16,6 +16,7 @@
 */
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
@@ -183,10 +184,21 @@ export const MainLayout: React.FC = () => {
         <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
         {/* Page Content Container */}
-        <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px] pb-28 sm:pb-24">
+        <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px] pb-24 lg:pb-8">
           {/* Subpage Header matching screenshot (rendered on all pages except Home) */}
           {activeRoute !== 'home' && <SubpageHeader currentRoute={activeRoute} />}
-          {renderActivePage()}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeRoute}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="w-full"
+            >
+              {renderActivePage()}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
 

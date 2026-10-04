@@ -253,11 +253,11 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
               Live Effective APY:
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl sm:text-2xl font-black text-[#00e699] font-mono tracking-tight">
+              <span className="text-xl sm:text-2xl font-black text-[#00e699] font-sans tabular-nums tracking-tight">
                 {effectiveApy.toFixed(2)}%
               </span>
               <span
-                className={`text-[11px] font-mono font-bold flex items-center ${
+                className={`text-[11px] font-sans tabular-nums font-bold flex items-center ${
                   isTickUp ? 'text-[#00e699]' : 'text-[#ff3b5c]'
                 }`}
               >
@@ -268,10 +268,10 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
           </div>
 
           <div className="hidden sm:flex px-3.5 py-2 rounded-xl bg-[#020204] border border-[#18181c] flex-col">
-            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-sans">
               Next Epoch Distribution
             </span>
-            <span className="text-xs font-bold text-white font-mono flex items-center gap-1.5">
+            <span className="text-xs font-bold text-white font-sans tabular-nums flex items-center gap-1.5">
               <Clock size={12} className="text-[#00e699]" />
               {formattedEpoch}
             </span>
@@ -282,45 +282,45 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
       {/* 2. Institutional Financial Metrics Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-mono">
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-sans">
             Total Value Locked (TVL)
           </span>
-          <div className="text-sm sm:text-base font-black text-white font-mono">
+          <div className="text-sm sm:text-base font-black text-white font-sans tabular-nums">
             ${(tvl).toLocaleString()}{' '}
-            <span className="text-[10px] font-bold text-[#00e699] font-sans">USD</span>
+            <span className="text-[10px] font-bold text-[#00e699]">USD</span>
           </div>
-          <p className="text-[10px] text-slate-500 font-mono">+4.2% Net Inflow (7D)</p>
+          <p className="text-[10px] text-slate-500 font-sans tabular-nums">+4.2% Net Inflow (7D)</p>
         </div>
 
         <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-mono">
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-sans">
             Base Protocol APR
           </span>
-          <div className="text-sm sm:text-base font-black text-white font-mono">
+          <div className="text-sm sm:text-base font-black text-white font-sans tabular-nums">
             {currentTier.baseApr.toFixed(2)}%
           </div>
-          <p className="text-[10px] text-slate-500 font-mono">Contract Guaranteed Floor</p>
+          <p className="text-[10px] text-slate-500 font-sans">Contract Guaranteed Floor</p>
         </div>
 
         <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-mono">
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-sans">
             Daily Reward Rate
           </span>
-          <div className="text-sm sm:text-base font-black text-[#00e699] font-mono">
+          <div className="text-sm sm:text-base font-black text-[#00e699] font-sans tabular-nums">
             +{dailyRewardRate.toFixed(4)}% / Day
           </div>
-          <p className="text-[10px] text-slate-500 font-mono">Calculated on compound basis</p>
+          <p className="text-[10px] text-slate-500 font-sans">Calculated on compound basis</p>
         </div>
 
         <div className="p-3.5 rounded-xl bg-[#020204] border border-[#18181c] space-y-1">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-mono">
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-sans">
             Slashing Protection
           </span>
-          <div className="text-sm sm:text-base font-black text-emerald-400 font-mono flex items-center gap-1">
+          <div className="text-sm sm:text-base font-black text-emerald-400 font-sans flex items-center gap-1">
             <ShieldCheck size={14} className="text-[#00e699]" />
             100% Reserve
           </div>
-          <p className="text-[10px] text-slate-500 font-mono">Sovereign Treasury Insured</p>
+          <p className="text-[10px] text-slate-500 font-sans">Sovereign Treasury Insured</p>
         </div>
       </div>
 
@@ -612,8 +612,8 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-400">Capital Commitment:</span>
-              <div className="flex items-center gap-1.5 font-mono">
-                <span className="text-lg font-black text-white">
+              <div className="flex items-center gap-1.5 font-sans">
+                <span className="text-lg font-black text-white tabular-nums">
                   ${stakeAmount.toLocaleString()}
                 </span>
                 <span className="text-xs font-bold text-[#00e699]">
@@ -634,7 +634,7 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
 
             {/* Quick Amount Buttons */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[10px] text-slate-500 uppercase font-mono">
+              <span className="text-[10px] text-slate-500 uppercase font-sans">
                 Presets:
               </span>
               {presetAmounts.map((amt) => (
@@ -642,7 +642,7 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
                   key={amt}
                   type="button"
                   onClick={() => setStakeAmount(amt)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-sans tabular-nums transition-colors cursor-pointer ${
                     stakeAmount === amt
                       ? 'bg-[#18181c] text-[#00e699] font-bold border border-[#00e699]/40'
                       : 'bg-[#08080a] text-slate-400 hover:text-white border border-[#18181c]'
@@ -658,11 +658,11 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
         {/* Right: Projected Financial Returns Card */}
         <div className="lg:col-span-5 p-4 sm:p-5 rounded-xl bg-gradient-to-br from-[#08080a] to-[#040406] border border-[#18181c] flex flex-col justify-between space-y-4">
           <div className="space-y-3">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400">
               Projected Maturity Settlement ({selectedTier} Days)
             </span>
 
-            <div className="space-y-2 border-b border-[#18181c] pb-3 text-xs font-mono">
+            <div className="space-y-2 border-b border-[#18181c] pb-3 text-xs font-sans tabular-nums">
               <div className="flex items-center justify-between text-slate-300">
                 <span>Daily Payout:</span>
                 <span className="font-bold text-[#00e699]">
@@ -685,18 +685,18 @@ export const StakingApyVisualizer: React.FC<StakingApyVisualizerProps> = ({
 
             <div className="flex items-baseline justify-between pt-1">
               <div>
-                <span className="text-[10px] text-slate-500 uppercase font-mono block">
+                <span className="text-[10px] text-slate-500 uppercase font-sans block">
                   Total Projected Capital
                 </span>
-                <span className="text-xl sm:text-2xl font-black text-white font-mono">
+                <span className="text-xl sm:text-2xl font-black text-white font-sans tabular-nums">
                   ${totalPayoutAtMaturity.toLocaleString()}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-500 uppercase font-mono block">
+                <span className="text-[10px] text-slate-500 uppercase font-sans block">
                   ROI Multiplier
                 </span>
-                <span className="text-sm font-black text-[#00e699] font-mono">
+                <span className="text-sm font-black text-[#00e699] font-sans tabular-nums">
                   +{((totalMaturityReturnUSD / (stakeAmount || 1)) * 100).toFixed(0)}% ROI
                 </span>
               </div>

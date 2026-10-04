@@ -46,8 +46,8 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
     const val = payload[0].value;
     return (
       <div className="bg-[#08080a] border border-[#18181c] rounded-xl px-3 py-2 shadow-2xl backdrop-blur-md">
-        <div className="text-[10px] text-slate-400 font-mono">{label}</div>
-        <div className="text-xs font-black text-white font-mono">
+        <div className="text-[10px] text-slate-400 font-sans">{label}</div>
+        <div className="text-xs font-black text-white font-sans tabular-nums">
           ${typeof val === 'number' ? val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : val}
         </div>
       </div>
@@ -246,7 +246,7 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
                   <span className="text-[10px] text-slate-400 truncate max-w-[60px]">{asset.name}</span>
                 </div>
                 <div
-                  className={`flex items-center gap-0.5 text-[10px] font-mono font-bold ${
+                  className={`flex items-center gap-0.5 text-[10px] font-sans font-bold tabular-nums ${
                     pos ? 'text-[#00e699]' : 'text-rose-500'
                   }`}
                 >
@@ -257,10 +257,10 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
 
               {/* Price & Vol */}
               <div className="z-10 my-1">
-                <div className="text-base font-black text-white tracking-tight font-mono">
+                <div className="text-base font-black text-white tracking-tight font-sans tabular-nums">
                   {asset.price}
                 </div>
-                <div className="text-[10px] text-slate-400 font-mono">
+                <div className="text-[10px] text-slate-400 font-sans tabular-nums">
                   Vol {asset.volume24h}
                 </div>
               </div>
@@ -295,20 +295,20 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
       <div className="p-4 sm:p-5 rounded-xl bg-[#030305] border border-[#18181c] space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#121217] border border-[#18181c] flex items-center justify-center text-white font-bold font-mono">
+            <div className="w-10 h-10 rounded-xl bg-[#121217] border border-[#18181c] flex items-center justify-center text-white font-bold font-sans">
               {activeAsset.symbol}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-white">{activeAsset.name}</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">
+                <span className="text-[10px] font-sans px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">
                   {activeAsset.symbol}/USDT
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-mono">
-                <span className="text-lg font-black text-white">{activeAsset.price}</span>
+              <div className="flex items-center gap-2 text-xs font-sans">
+                <span className="text-lg font-black text-white tabular-nums">{activeAsset.price}</span>
                 <span
-                  className={`flex items-center gap-0.5 font-bold text-xs ${
+                  className={`flex items-center gap-0.5 font-bold text-xs tabular-nums ${
                     isPositive ? 'text-[#00e699]' : 'text-rose-500'
                   }`}
                 >
@@ -319,7 +319,7 @@ export const CryptoPerformanceMiniCharts: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono">
+          <div className="flex items-center gap-4 text-xs font-sans tabular-nums">
             <div>
               <span className="text-slate-400 block text-[10px]">24h High</span>
               <span className="text-slate-200 font-bold">{activeAsset.high24h}</span>
