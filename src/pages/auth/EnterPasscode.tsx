@@ -2,26 +2,36 @@
  FILE: src/pages/auth/EnterPasscode.tsx
 
  PURPOSE:
- "Enter Your Passcode" screen matching Screen 5 from Money X Design PDF:
- - Pitch black OLED canvas (#000000)
- - Authentic Money X Original Brand Emblem & Typography (vertical layout with glowing halo)
- - Headline: "Enter Your Passcode"
- - 6 indicator dots for entered PIN with emerald glow
- - Connected 3x4 tactile keypad with numbers 1-9, 0, backspace, and the checkmark button ("गुड का साइन" ✓)
- - Physical keyboard listener (digits 0-9, Backspace, Enter triggers the checkmark ✓)
- - User enters 6-digit PIN and clicks the checkmark button to unlock session and open the Dashboard!
- - Failsafe button: Allows user to connect wallet / set new passcode if none exists yet.
+ Compact, Zero-Scroll Screen Lock ("Enter Passcode") Screen:
+ - Preserves the authentic original design with 3x4 tactile keypad and checkmark button ("गुड का निशान" ✓)
+ - 100% fits on a single display viewport without any vertical scrolling
+ - Center 3D glowing padlock graphic
+ - Header: "Enter Passcode"
+ - 6-dot indicator with eye visibility toggle
+ - 3x4 tactile keypad with backspace, 0, and bright green checkmark (✓)
+ - Physical keyboard listener (digits 0-9, Backspace, Enter)
 */
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MoneyXLogo } from '../../components/common/MoneyXLogo';
-import { Check, Loader2, Wallet, X } from 'lucide-react';
-import { BRAND } from '../../config/brand';
+import { AuthLayoutWrapper } from '../../components/common/AuthLayoutWrapper';
+import { GlowingLockGraphic } from '../../components/common/GlowingLockGraphic';
+import {
+  AlertCircle,
+  ArrowRight,
+  Check,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Wallet,
+  X,
+} from 'lucide-react';
 
 export const EnterPasscode: React.FC = () => {
-  const { verifyPasscode, setAuthStage, refreshUserData, createdPasscode } = useAuth();
+  const { verifyPasscode, setAuthStage, refreshUserData, createdPasscode, walletAddress } = useAuth();
   const [pin, setPin] = useState<string>('');
+  const [showPin, setShowPin] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
@@ -32,30 +42,32 @@ export const EnterPasscode: React.FC = () => {
   );
 
   const handleKeyPress = (num: string) => {
+    if (isVerifying || isSuccess) return;
     if (pin.length < 6) {
-      const newPin = pin + num;
-      setPin(newPin);
+      const next = pin + num;
+      setPin(next);
       setErrorMsg(null);
     }
   };
 
   const handleDelete = () => {
+    if (isVerifying || isSuccess) return;
     setPin((prev) => prev.slice(0, -1));
     setErrorMsg(null);
   };
 
-  // User explicitly requested: PIN number lagate hi, laga ke jo good ka sign hai (✓), uspe click karega. Uske baad dashboard page open hona chahiye!
   const handleConfirm = () => {
     if (pin.length === 6) {
-      attemptVerify(pin);
+      attemptUnlock(pin);
     } else {
       setErrorMsg('Please enter your 6-digit passcode');
     }
   };
 
-  const attemptVerify = async (pinToTest: string) => {
+  const attemptUnlock = async (pinToTest: string) => {
     setIsVerifying(true);
     setErrorMsg(null);
+
     try {
       const res = await verifyPasscode(pinToTest);
       if (res.success) {
@@ -64,7 +76,7 @@ export const EnterPasscode: React.FC = () => {
           await refreshUserData();
           // Open Dashboard!
           setAuthStage('AUTHENTICATED');
-        }, 450);
+        }, 400);
       } else {
         setErrorMsg(res.message || 'Incorrect passcode. Please try again.');
         setPin('');
@@ -77,9 +89,9 @@ export const EnterPasscode: React.FC = () => {
     }
   };
 
-  // Keyboard accessibility: physical keyboard typing (0-9, Backspace, Enter)
+  // Physical keyboard listener
   useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (isVerifying || isSuccess) return;
 
       if (/^[0-9]$/.test(e.key)) {
@@ -88,203 +100,183 @@ export const EnterPasscode: React.FC = () => {
         handleDelete();
       } else if (e.key === 'Enter') {
         if (pin.length === 6) {
-          attemptVerify(pin);
+          attemptUnlock(pin);
         }
       }
     };
 
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [pin, isVerifying, isSuccess]);
 
   return (
-    <div className="min-h-screen w-full bg-[#000000] text-slate-100 flex flex-col items-center justify-between p-4 py-8 select-none font-sans">
-      
-      {/* Centered Main Lock Card matching PDF Screen 5 */}
-      <div className="w-full max-w-[370px] flex flex-col items-center text-center my-auto space-y-6">
+    <AuthLayoutWrapper
+      activeStep={3}
+      stepLabels={{
+        step1: { title: 'Wallet', sub: 'Connected' },
+        step2: { title: 'Passcode', sub: 'Configured' },
+        step3: { title: 'Complete', sub: 'Unlock App' },
+      }}
+    >
+      {/* Compact Main Card (Zero scroll, extra level polish) */}
+      <div className="w-full max-w-[460px] rounded-2xl sm:rounded-3xl bg-[#050f09]/92 backdrop-blur-2xl border border-[#163824] p-4 sm:p-5 shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(0,255,163,0.06)] text-center space-y-2.5">
         
-        {/* Money X Original Brand Emblem & Typography */}
-        <div className="pt-2">
-          <MoneyXLogo size="xl" glow layout="vertical" />
+        {/* Center 3D Glowing Padlock Graphic (Compact sm size) */}
+        <div className="flex justify-center -my-1">
+          <GlowingLockGraphic
+            size="sm"
+            state={isSuccess ? 'success' : errorMsg ? 'error' : 'idle'}
+          />
         </div>
 
-        {/* Title & Subtitle */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-black text-white tracking-tight leading-tight">
-            Enter Your Passcode
+        {/* Card Header */}
+        <div className="space-y-0.5">
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+            Enter <span className="text-[#00ffa3] drop-shadow-[0_0_14px_rgba(0,255,163,0.65)]">Passcode</span>
           </h1>
-          <p className="text-xs text-slate-400 font-normal">
-            Enter your 6-digit security PIN and press ✓ to unlock
+          <p className="text-[11px] text-slate-400 font-normal">
+            Enter your 6-digit passcode to unlock your account.
           </p>
         </div>
 
-        {/* Warning if no passcode exists in storage yet */}
+        {/* Warning if no passcode in storage */}
         {!hasConfiguredPasscode && (
-          <div className="w-full p-3.5 rounded-2xl bg-amber-950/40 border border-amber-600/40 text-amber-300 text-xs text-center space-y-2">
-            <p className="leading-snug">No passcode has been configured yet. Connect your wallet to create your 6-digit PIN.</p>
+          <div className="p-2 rounded-xl bg-amber-950/40 border border-amber-600/40 text-amber-300 text-[11px] text-center space-y-1">
+            <p>No passcode configured yet on this device.</p>
             <button
               type="button"
               onClick={() => setAuthStage('UNAUTHENTICATED')}
-              className="w-full py-2.5 px-3 rounded-xl bg-[#00e699] text-black font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:bg-[#00ffa3] transition-all"
+              className="w-full py-1.5 px-3 rounded-lg bg-[#00ffa3] text-black font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110"
             >
-              <Wallet size={14} className="stroke-[2.5]" />
-              <span>Connect Wallet & Set PIN</span>
+              <Wallet size={12} />
+              <span>Connect Wallet & Create Passcode</span>
             </button>
           </div>
         )}
 
-        {/* 6 Dots PIN Feedback Indicator */}
-        <div className="h-7 flex items-center justify-center">
-          {errorMsg ? (
-            <p className="text-xs font-semibold text-[#ff3b5c] animate-shake">
-              {errorMsg}
-            </p>
-          ) : isSuccess ? (
-            <p className="text-xs font-bold text-[#00e699] flex items-center gap-1.5 animate-fadeIn">
-              <Check size={16} className="stroke-[3]" />
-              <span>Passcode Verified!</span>
-            </p>
-          ) : (
-            <div className="flex items-center gap-3">
-              {[0, 1, 2, 3, 4, 5].map((idx) => (
-                <div
-                  key={idx}
-                  className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
-                    pin.length > idx
-                      ? 'bg-[#00e699] scale-110 shadow-[0_0_14px_rgba(0,230,153,0.7)]'
-                      : 'bg-[#18181c] border border-[#27272e]'
-                  }`}
-                />
-              ))}
+        {/* Error notification */}
+        {errorMsg && (
+          <div className="p-2 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center justify-center gap-1.5 text-xs text-[#ff3b5c] animate-shake">
+            <AlertCircle size={13} className="shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Success notification */}
+        {isSuccess && (
+          <div className="p-2 rounded-xl bg-emerald-950/40 border border-[#00ffa3]/50 flex items-center justify-center gap-1.5 text-xs text-[#00ffa3] font-bold animate-fadeIn">
+            <Check size={14} className="stroke-[3]" />
+            <span>Passcode Verified! Opening Dashboard...</span>
+          </div>
+        )}
+
+        {/* ----------------- 6 DOTS PIN DISPLAY CONTAINER ----------------- */}
+        <div className="p-2.5 sm:p-3 rounded-xl bg-[#030905]/95 border border-[#173021] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-black/40 flex items-center justify-center text-slate-400">
+              <Lock size={14} className={pin.length > 0 ? 'text-[#00ffa3]' : 'text-slate-400'} />
             </div>
-          )}
+            <div className="text-left">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Security PIN</span>
+              <div className="flex items-center gap-2.5 mt-1 h-3.5">
+                {[0, 1, 2, 3, 4, 5].map((idx) => {
+                  const isFilled = pin.length > idx;
+                  return (
+                    <div
+                      key={idx}
+                      className={`transition-all duration-200 flex items-center justify-center ${
+                        isFilled
+                          ? showPin
+                            ? 'text-xs font-mono font-black text-[#00ffa3]'
+                            : 'w-3 h-3 rounded-full bg-[#00ffa3] shadow-[0_0_10px_rgba(0,255,163,0.9)] scale-110'
+                          : 'w-3 h-3 rounded-full border border-slate-600 bg-transparent'
+                      }`}
+                    >
+                      {isFilled && showPin ? pin[idx] : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowPin(!showPin)}
+            className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+            aria-label="Toggle pin visibility"
+          >
+            {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
         </div>
 
-        {/* Keypad Grid (3 Columns x 4 Rows) matching PDF Screen 5 */}
-        <div className="w-full rounded-2xl border border-[#18181c] overflow-hidden bg-[#08080a] shadow-2xl">
-          
-          {/* Row 1: 1, 2, 3 */}
-          <div className="grid grid-cols-3 border-b border-[#18181c]">
-            {[1, 2, 3].map((digit, idx) => (
+        {/* ----------------- TACTILE 3X4 KEYPAD WITH CHECKMARK (✓) ----------------- */}
+        <div className="w-full">
+          <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-[#020704] border border-[#12261b]">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
               <button
                 key={digit}
                 type="button"
                 onClick={() => handleKeyPress(digit.toString())}
                 disabled={isVerifying || isSuccess}
-                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50 ${
-                  idx < 2 ? 'border-r border-[#18181c]' : ''
-                }`}
+                className="h-10 sm:h-11 rounded-lg bg-[#06140b] border border-[#162e20] text-base font-bold text-white hover:bg-[#0c2415] hover:text-[#00ffa3] active:scale-95 transition-all cursor-pointer flex items-center justify-center shadow-xs disabled:opacity-50"
               >
                 {digit}
               </button>
             ))}
-          </div>
 
-          {/* Row 2: 4, 5, 6 */}
-          <div className="grid grid-cols-3 border-b border-[#18181c]">
-            {[4, 5, 6].map((digit, idx) => (
-              <button
-                key={digit}
-                type="button"
-                onClick={() => handleKeyPress(digit.toString())}
-                disabled={isVerifying || isSuccess}
-                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50 ${
-                  idx < 2 ? 'border-r border-[#18181c]' : ''
-                }`}
-              >
-                {digit}
-              </button>
-            ))}
-          </div>
-
-          {/* Row 3: 7, 8, 9 */}
-          <div className="grid grid-cols-3 border-b border-[#18181c]">
-            {[7, 8, 9].map((digit, idx) => (
-              <button
-                key={digit}
-                type="button"
-                onClick={() => handleKeyPress(digit.toString())}
-                disabled={isVerifying || isSuccess}
-                className={`h-[62px] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50 ${
-                  idx < 2 ? 'border-r border-[#18181c]' : ''
-                }`}
-              >
-                {digit}
-              </button>
-            ))}
-          </div>
-
-          {/* Row 4: [ ✕ ] Backspace | 0 | [ ✓ ] Confirm Checkmark Button */}
-          <div className="grid grid-cols-3">
-            {/* Col 1: Delete button */}
+            {/* Row 4: [ ✕ ] Backspace | 0 | [ ✓ ] Confirm Checkmark Button */}
             <button
               type="button"
               onClick={handleDelete}
               disabled={isVerifying || isSuccess || pin.length === 0}
-              className="h-[62px] border-r border-[#18181c] flex items-center justify-center hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-30"
-              aria-label="Delete last digit"
+              className="h-10 sm:h-11 rounded-lg bg-[#06140b] border border-[#162e20] text-slate-400 hover:text-white hover:bg-[#0c2415] active:scale-95 transition-all cursor-pointer flex items-center justify-center shadow-xs disabled:opacity-40"
+              aria-label="Backspace"
             >
-              <div className="w-[34px] h-[24px] rounded-md bg-[#141418] hover:bg-[#202028] text-slate-300 flex items-center justify-center shadow-sm">
-                <X size={14} className="stroke-[3]" />
-              </div>
+              <X size={16} className="stroke-[2.5]" />
             </button>
 
-            {/* Col 2: Number 0 */}
             <button
               type="button"
               onClick={() => handleKeyPress('0')}
               disabled={isVerifying || isSuccess}
-              className="h-[62px] border-r border-[#18181c] flex items-center justify-center text-[22px] font-semibold text-white hover:bg-[#121217] active:bg-[#18181c] transition-colors cursor-pointer select-none disabled:opacity-50"
+              className="h-10 sm:h-11 rounded-lg bg-[#06140b] border border-[#162e20] text-base font-bold text-white hover:bg-[#0c2415] hover:text-[#00ffa3] active:scale-95 transition-all cursor-pointer flex items-center justify-center shadow-xs disabled:opacity-50"
             >
               0
             </button>
 
-            {/* Col 3: Confirm Button ("गुड का साइन" ✓) with glowing emerald state */}
+            {/* Checkmark Button ("गुड का निशान" ✓) with glowing emerald state */}
             <button
               type="button"
               onClick={handleConfirm}
               disabled={isVerifying || isSuccess || pin.length !== 6}
-              className={`h-[62px] flex items-center justify-center transition-all cursor-pointer select-none ${
+              className={`h-10 sm:h-11 rounded-lg flex items-center justify-center transition-all cursor-pointer shadow-md ${
                 pin.length === 6
-                  ? 'bg-[#00e699]/15 text-[#00e699] hover:bg-[#00e699]/25 active:scale-95 shadow-[inset_0_0_15px_rgba(0,230,153,0.25)]'
-                  : 'text-slate-600 hover:text-slate-400 hover:bg-[#121217] opacity-40 cursor-not-allowed'
+                  ? 'bg-[#00ffa3] text-black shadow-[0_0_18px_rgba(0,255,163,0.7)] scale-105 active:scale-95'
+                  : 'bg-[#06140b] border border-[#162e20] text-slate-600 opacity-40 cursor-not-allowed'
               }`}
-              aria-label="Confirm passcode and open dashboard"
+              aria-label="Confirm passcode"
             >
               {isVerifying ? (
-                <Loader2 size={20} className="animate-spin text-[#00e699]" />
+                <Loader2 size={16} className="animate-spin text-black" />
               ) : (
-                <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                    pin.length === 6
-                      ? 'bg-[#00e699] text-black shadow-lg shadow-[#00e699]/50 scale-105'
-                      : 'text-slate-500'
-                  }`}
-                >
-                  <Check size={18} className="stroke-[3]" />
-                </div>
+                <Check size={18} className="stroke-[3.5]" />
               )}
             </button>
           </div>
-
         </div>
 
-        {/* Option to reconnect wallet or set new passcode */}
+        {/* Reconnect Different Wallet Option */}
         <button
           type="button"
           onClick={() => setAuthStage('UNAUTHENTICATED')}
-          className="text-xs text-slate-400 hover:text-[#00e699] flex items-center justify-center gap-1.5 transition-colors cursor-pointer py-1"
+          className="text-[11px] text-slate-400 hover:text-[#00ffa3] transition-colors cursor-pointer inline-flex items-center gap-1"
         >
-          <Wallet size={13} />
-          <span>Connect Different Wallet / Set New Passcode</span>
+          <Wallet size={12} />
+          <span>Connect Different Wallet</span>
         </button>
 
       </div>
-
-      {/* Footer Info */}
-      <div className="text-[11px] text-slate-500 text-center">
-        {BRAND.chainNetwork} · Non-Custodial Hardware Security
-      </div>
-    </div>
+    </AuthLayoutWrapper>
   );
 };

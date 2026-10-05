@@ -16,7 +16,18 @@ import { realMarketApi } from '../services/realMarketApi';
 import { cookieService } from '../services/cookieService';
 import { UserProfile, UserWallets } from '../types';
 
-export type AuthStage = 'LANDING' | 'UNAUTHENTICATED' | 'SETUP_PASSCODE' | 'LOCKED' | 'AUTHENTICATED';
+export type AuthStage =
+  | 'LANDING'
+  | 'UNAUTHENTICATED'
+  | 'WALLET_OPTIONS'
+  | 'METAMASK_CONNECT'
+  | 'WALLET_CONNECTED'
+  | 'SET_PASSCODE'
+  | 'SETUP_PASSCODE'
+  | 'CONFIRM_PASSCODE'
+  | 'PASSCODE_SUCCESS'
+  | 'LOCKED'
+  | 'AUTHENTICATED';
 
 interface AuthContextType {
   authStage: AuthStage;
@@ -171,7 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { success: true, address: addr };
     }
-    return { success: false, error: res.error || res.message || 'Connection failed' };
+    return { success: false, error: res.message || res.error || 'Connection failed' };
   };
 
   const connectMobileWallet = async (): Promise<{ success: boolean; address: string }> => {

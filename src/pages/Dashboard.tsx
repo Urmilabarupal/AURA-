@@ -65,6 +65,7 @@ import {
   YAxis,
 } from 'recharts';
 import {
+  ArrowDownLeft,
   ArrowDownRight,
   ArrowUp,
   ArrowUpRight,
@@ -152,45 +153,79 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 select-none font-sans text-white bg-[#000000]">
       
-      {/* 1. HERO WELCOME BANNER (Matching Screenshot Exactly) */}
+      {/* 1. HERO WELCOME BANNER (With User Details, Deposit & Withdraw buttons) */}
       <section className="relative rounded-3xl bg-gradient-to-r from-[#050807] via-[#080d0a] to-[#040806] border border-[#18181c] p-6 sm:p-8 lg:p-10 overflow-hidden shadow-2xl">
         {/* Subtle Ambient Emerald Glow */}
-        <div className="absolute top-1/2 right-1/4 w-[380px] h-[380px] bg-[#00e699]/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 right-1/4 w-[380px] h-[380px] bg-[#00ffa3]/10 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
           
           {/* Left Text & CTA Buttons */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-left">
-            <span className="text-xs sm:text-sm font-semibold text-slate-400 flex items-center gap-1.5">
-              <span>Welcome Back</span>
-              <span className="animate-bounce">👋</span>
-            </span>
+          <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-left">
+            
+            {/* Welcome Back & User Identity Header */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs sm:text-sm font-semibold text-slate-400 flex items-center gap-1.5">
+                  <span>Welcome Back,</span>
+                  <strong className="text-white font-black text-sm sm:text-base">
+                    {user?.name || 'Alexander Vance'}
+                  </strong>
+                  <span className="animate-bounce">👋</span>
+                </span>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white tracking-tight leading-[1.12]">
-              Let's Grow Together <br />
-              with <span className="text-[#00e699]">Money X</span>
-            </h1>
+                {/* User ID Badge */}
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#05140b] border border-[#153421] text-[11px] text-[#00ffa3] font-mono font-bold">
+                  <span>ID: {user?.id || 'MX-829104'}</span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(user?.id || 'MX-829104', 'User ID')}
+                    className="hover:text-white transition-colors cursor-pointer"
+                    title="Copy User ID"
+                  >
+                    <Copy size={11} />
+                  </button>
+                </div>
+
+                {/* Connected Wallet Badge */}
+                {user?.walletAddress && (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#08080a] border border-[#1b2b20] text-[11px] text-slate-300 font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00ffa3] animate-pulse" />
+                    <span>{user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}</span>
+                  </div>
+                )}
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white tracking-tight leading-[1.12]">
+                Let&apos;s Grow Together <br />
+                with <span className="text-[#00ffa3] drop-shadow-[0_0_16px_rgba(0,255,163,0.6)]">Money X</span>
+              </h1>
+            </div>
 
             <p className="text-xs sm:text-sm text-slate-400 max-w-lg leading-relaxed">
-              Stake, Farm, Participate, Earn Rewards and be part of a global community.
+              Stake, Farm, Participate, Earn Rewards and be part of a global decentralized community.
             </p>
 
+            {/* DEPOSIT & WITHDRAW BUTTONS (Replaced Explore Ecosystem and View Guide as requested) */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
+              {/* Deposit Button */}
               <button
                 type="button"
-                onClick={() => setActiveRoute('trade')}
-                className="px-6 py-3 rounded-xl bg-[#00e699] hover:bg-[#00ffa3] active:scale-[0.98] text-black font-extrabold text-xs sm:text-sm tracking-tight transition-all shadow-lg shadow-[#00e699]/30 flex items-center gap-2 cursor-pointer"
+                onClick={() => setDepositModalOpen(true)}
+                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00ffa3] hover:brightness-110 active:scale-[0.98] text-black font-black text-xs sm:text-sm tracking-tight transition-all shadow-lg shadow-[#00ffa3]/30 flex items-center gap-2 cursor-pointer"
               >
-                <span>Explore Ecosystem</span>
+                <ArrowDownLeft size={16} className="stroke-[3]" />
+                <span>Deposit</span>
               </button>
 
+              {/* Withdraw Button */}
               <button
                 type="button"
-                onClick={() => setGuideModalOpen(true)}
-                className="px-5 py-3 rounded-xl bg-[#0a0f0d] hover:bg-[#121c16] text-slate-200 border border-[#1b2b20] font-bold text-xs sm:text-sm tracking-tight transition-all flex items-center gap-2 cursor-pointer"
+                onClick={() => setActiveRoute('withdraw')}
+                className="px-6 py-3.5 rounded-xl bg-[#09150e] hover:bg-[#102419] text-white border border-[#1c3826] hover:border-[#00ffa3]/50 active:scale-[0.98] font-bold text-xs sm:text-sm tracking-tight transition-all flex items-center gap-2 cursor-pointer shadow-md"
               >
-                <Play size={14} className="fill-slate-300 text-slate-300" />
-                <span>View Guide</span>
+                <ArrowUpRight size={16} className="text-[#00ffa3] stroke-[2.5]" />
+                <span>Withdraw</span>
               </button>
             </div>
           </div>

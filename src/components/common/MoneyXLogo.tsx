@@ -17,6 +17,8 @@ interface MoneyXLogoProps {
   layout?: 'horizontal' | 'vertical';
   className?: string;
   glow?: boolean;
+  showSubtitle?: boolean;
+  subtitleText?: string;
 }
 
 export const MoneyXLogo: React.FC<MoneyXLogoProps> = ({
@@ -25,6 +27,8 @@ export const MoneyXLogo: React.FC<MoneyXLogoProps> = ({
   layout = 'horizontal',
   className = '',
   glow = false,
+  showSubtitle = false,
+  subtitleText = 'DECENTRALIZED REWARDS ECOSYSTEM',
 }) => {
   const uniqueId = useId().replace(/:/g, '');
   const gradId = `moneyXGrad_${uniqueId}`;
@@ -53,13 +57,13 @@ export const MoneyXLogo: React.FC<MoneyXLogoProps> = ({
   return (
     <div
       className={`inline-flex items-center select-none ${
-        layout === 'vertical' ? 'flex-col justify-center' : 'flex-row'
+        layout === 'vertical' ? 'flex-col justify-center text-center' : 'flex-row'
       } ${iconDimensions.gap} ${className}`}
     >
       {/* Infinity Icon Emblem */}
       <div
         className={`relative flex items-center justify-center shrink-0 ${
-          glow ? 'drop-shadow-[0_0_18px_rgba(0,230,153,0.55)]' : ''
+          glow ? 'drop-shadow-[0_0_20px_rgba(0,255,163,0.7)]' : ''
         }`}
       >
         <svg
@@ -73,12 +77,12 @@ export const MoneyXLogo: React.FC<MoneyXLogoProps> = ({
           <defs>
             <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#00ffa3" />
-              <stop offset="45%" stopColor="#00e699" />
-              <stop offset="100%" stopColor="#00c87f" />
+              <stop offset="50%" stopColor="#00e699" />
+              <stop offset="100%" stopColor="#00b875" />
             </linearGradient>
             {glow && (
-              <filter id={glowFilterId} x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+              <filter id={glowFilterId} x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                 <feMerge>
                   <feMergeNode in="coloredBlur" />
                   <feMergeNode in="SourceGraphic" />
@@ -91,9 +95,9 @@ export const MoneyXLogo: React.FC<MoneyXLogoProps> = ({
           {glow && (
             <path
               d={infinityPath}
-              stroke="#00e699"
-              strokeWidth={iconDimensions.stroke * 1.5}
-              strokeOpacity="0.3"
+              stroke="#00ffa3"
+              strokeWidth={iconDimensions.stroke * 1.6}
+              strokeOpacity="0.4"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -111,13 +115,20 @@ export const MoneyXLogo: React.FC<MoneyXLogoProps> = ({
         </svg>
       </div>
 
-      {/* Brand Typography */}
+      {/* Brand Typography matching image.png */}
       {showText && (
-        <span
-          className={`font-black tracking-tight text-white font-sans ${iconDimensions.text} leading-none`}
-        >
-          Money <span className="text-white">X</span>
-        </span>
+        <div className={`flex flex-col ${layout === 'vertical' ? 'items-center' : 'items-start'}`}>
+          <span
+            className={`font-black tracking-tight text-white font-sans ${iconDimensions.text} leading-none`}
+          >
+            Money <span className="text-[#00ffa3] drop-shadow-[0_0_12px_rgba(0,255,163,0.6)]">X</span>
+          </span>
+          {showSubtitle && (
+            <span className="text-[9px] sm:text-[10px] tracking-[0.22em] text-[#00ffa3]/90 font-bold uppercase mt-1.5 leading-tight font-mono">
+              {subtitleText}
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

@@ -2,84 +2,77 @@
  FILE: src/pages/auth/CreatePasscode.tsx
 
  PURPOSE:
- "Set Your 6 Digit Passcode" screen matching Screen 4 from the Money X Design PDF:
- - Pitch black OLED canvas (#000000)
- - Authentic Money X Original Brand Emblem & Typography
- - Glowing lock emblem with security badge
- - Title: "Set Your 6 Digit Passcode"
- - 6 individual square box digit inputs with auto-advance and numeric paste
- - Connected wallet address badge
- - Signature Money X emerald green "Continue" button (#00e699)
- - Seamless transition to Screen Lock (Enter Passcode)
+ Compact, Zero-Scroll "Create Passcode" Screen:
+ - Fits 100% in a single display screen without vertical scrolling
+ - Only two direct inputs (Passcode & Confirm Passcode) - keypad buttons removed as requested!
+ - User can type with their physical / mobile keyboard directly into the inputs
+ - Eye toggle to view / hide digits
+ - Two security guarantee items with emerald green checkmarks
+ - Full-width neon emerald pill button: "Create Passcode →"
 */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MoneyXLogo } from '../../components/common/MoneyXLogo';
-import { AlertCircle, Check, Loader2, Lock, ShieldCheck } from 'lucide-react';
-import { BRAND } from '../../config/brand';
+import { AuthLayoutWrapper } from '../../components/common/AuthLayoutWrapper';
+import { GlowingLockGraphic } from '../../components/common/GlowingLockGraphic';
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+} from 'lucide-react';
 
 export const CreatePasscode: React.FC = () => {
   const { setupPasscode, setAuthStage, walletAddress } = useAuth();
-  const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
+
+  const [passcode, setPasscode] = useState<string>('');
+  const [confirmPasscode, setConfirmPasscode] = useState<string>('');
+
+  const [showPasscode, setShowPasscode] = useState<boolean>(false);
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const confirmInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // Focus first input box on mount
-    inputRefs.current[0]?.focus();
-  }, []);
+  const handlePasscodeChange = (val: string) => {
+    const clean = val.replace(/\D/g, '').slice(0, 6);
+    setPasscode(clean);
+    setErrorMsg(null);
+    if (clean.length === 6) {
+      // Auto focus confirm field
+      confirmInputRef.current?.focus();
+    }
+  };
 
-  const handleDigitChange = (index: number, value: string) => {
-    const clean = value.replace(/\D/g, '');
-    if (!clean) {
-      const next = [...digits];
-      next[index] = '';
-      setDigits(next);
+  const handleConfirmChange = (val: string) => {
+    const clean = val.replace(/\D/g, '').slice(0, 6);
+    setConfirmPasscode(clean);
+    setErrorMsg(null);
+  };
+
+  const handleCreatePasscode = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (passcode.length !== 6) {
+      setErrorMsg('Please enter a 6-digit passcode');
       return;
     }
 
-    const char = clean.slice(-1);
-    const next = [...digits];
-    next[index] = char;
-    setDigits(next);
-    setErrorMsg(null);
-
-    // Auto-advance to next box
-    if (index < 5) {
-      inputRefs.current[index + 1]?.focus();
+    if (confirmPasscode.length !== 6) {
+      setErrorMsg('Please confirm your 6-digit passcode');
+      return;
     }
-  };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !digits[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (!pasteData) return;
-
-    const next = [...digits];
-    for (let i = 0; i < 6; i++) {
-      next[i] = pasteData[i] || '';
-    }
-    setDigits(next);
-    const focusIdx = Math.min(pasteData.length, 5);
-    inputRefs.current[focusIdx]?.focus();
-  };
-
-  const fullCode = digits.join('');
-  const isComplete = fullCode.length === 6;
-
-  const handleContinue = async () => {
-    if (!isComplete) {
-      setErrorMsg('Please enter all 6 digits.');
+    if (passcode !== confirmPasscode) {
+      setErrorMsg('Passcodes do not match. Please re-enter.');
+      setConfirmPasscode('');
+      confirmInputRef.current?.focus();
       return;
     }
 
@@ -87,13 +80,13 @@ export const CreatePasscode: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      const res = await setupPasscode(fullCode);
+      const res = await setupPasscode(passcode);
       if (res.success) {
         setIsSuccess(true);
         setTimeout(() => {
-          // Transition directly to Screen Lock: Enter Passcode
+          // Transition to Screen Lock: Enter Passcode
           setAuthStage('LOCKED');
-        }, 500);
+        }, 400);
       } else {
         setErrorMsg(res.message || 'Failed to configure passcode.');
         setIsSubmitting(false);
@@ -104,98 +97,156 @@ export const CreatePasscode: React.FC = () => {
     }
   };
 
+  const isReady = passcode.length === 6 && confirmPasscode.length === 6;
+
   return (
-    <div className="min-h-screen w-full bg-[#000000] flex flex-col items-center justify-center p-4 py-8 select-none font-sans text-white">
-      <div className="w-full max-w-[420px] flex flex-col items-center text-center space-y-7">
+    <AuthLayoutWrapper
+      activeStep={2}
+      stepLabels={{
+        step1: { title: 'Wallet', sub: 'Connected' },
+        step2: { title: 'Passcode', sub: 'Set 6-digit' },
+        step3: { title: 'Complete', sub: 'Start Using' },
+      }}
+    >
+      {/* Compact Main Card (Zero scroll, purely keyboard inputs) */}
+      <div className="w-full max-w-[540px] rounded-2xl sm:rounded-3xl bg-[#050f09]/92 backdrop-blur-2xl border border-[#163824] p-4 sm:p-6 shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(0,255,163,0.06)] relative overflow-hidden text-left space-y-3.5">
         
-        {/* Money X Original Brand Header */}
-        <MoneyXLogo size="lg" glow layout="horizontal" />
-
-        {/* Lock Graphic Circle matching PDF Screen 4 */}
-        <div className="relative">
-          <div className="w-20 h-20 rounded-full bg-[#00e699]/10 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] shadow-[0_0_40px_rgba(0,230,153,0.25)]">
-            <Lock size={36} className="stroke-[2.5]" />
-          </div>
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#00e699] text-black flex items-center justify-center shadow-md">
-            <ShieldCheck size={14} className="stroke-[3]" />
-          </div>
+        {/* Floating 3D Glowing Padlock on Top Right */}
+        <div className="hidden sm:block absolute -top-4 -right-3 pointer-events-none opacity-80 z-0">
+          <GlowingLockGraphic size="sm" state={isSuccess ? 'success' : errorMsg ? 'error' : 'idle'} />
         </div>
 
-        {/* Title & Description matching PDF Screen 4 */}
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Set Your 6 Digit Passcode
+        {/* Card Header */}
+        <div className="relative z-10 space-y-1 pr-0 sm:pr-20">
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+            Create <span className="text-[#00ffa3] drop-shadow-[0_0_14px_rgba(0,255,163,0.65)]">Passcode</span>
           </h1>
-          <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-            Create a secure 6-digit PIN to lock and protect your non-custodial wallet session.
+          <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed font-normal">
+            Create a 6-digit passcode to secure your account on this device. Keep it safe, as it cannot be recovered.
           </p>
-          {walletAddress && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#08080a] border border-[#18181c] text-[11px] text-slate-300 font-medium">
-              <span className="w-2 h-2 rounded-full bg-[#00e699] animate-pulse" />
-              <span>Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
-            </div>
-          )}
         </div>
 
-        {/* Error notification */}
+        {/* Error Notification */}
         {errorMsg && (
-          <div className="w-full p-3 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center justify-center gap-2 text-xs text-[#ff3b5c] animate-shake">
-            <AlertCircle size={15} />
+          <div className="p-2.5 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center gap-2 text-xs text-[#ff3b5c] animate-shake">
+            <AlertCircle size={14} className="shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* 6 Square Input Boxes matching Screen 4 in PDF */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 w-full" onPaste={handlePaste}>
-          {digits.map((digit, idx) => (
-            <input
-              key={idx}
-              ref={(el) => {
-                inputRefs.current[idx] = el;
-              }}
-              type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleDigitChange(idx, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(idx, e)}
-              className={`w-12 h-14 sm:w-13 sm:h-16 rounded-xl bg-[#08080a] border text-center text-xl sm:text-2xl font-bold transition-all focus:outline-none ${
-                digit
-                  ? 'border-[#00e699] text-[#00e699] shadow-lg shadow-[#00e699]/15'
-                  : 'border-[#18181c] text-white focus:border-[#00e699]/70 focus:bg-[#0c0c10]'
-              }`}
-            />
-          ))}
-        </div>
+        {/* ----------------- TWO KEYBOARD INPUT CAPSULES (No keypad buttons) ----------------- */}
+        <form onSubmit={handleCreatePasscode} className="relative z-10 space-y-2.5">
+          
+          {/* Input 1: Passcode */}
+          <div className="p-3 sm:p-3.5 rounded-xl bg-[#030905]/95 border border-[#173021] focus-within:border-[#00ffa3] focus-within:shadow-[0_0_16px_rgba(0,255,163,0.2)] transition-all flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1 mr-2">
+              <div className="w-7 h-7 rounded-lg bg-black/40 flex items-center justify-center text-slate-400 shrink-0">
+                <Lock size={15} className={passcode.length > 0 ? 'text-[#00ffa3]' : 'text-slate-400'} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className="text-[10px] font-bold text-slate-400 block leading-none mb-1">
+                  Passcode
+                </label>
+                <input
+                  type={showPasscode ? 'text' : 'password'}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={passcode}
+                  onChange={(e) => handlePasscodeChange(e.target.value)}
+                  placeholder="••••••"
+                  autoFocus
+                  className="w-full bg-transparent text-sm sm:text-base font-mono font-bold tracking-[0.3em] text-[#00ffa3] placeholder-slate-600 focus:outline-none"
+                />
+              </div>
+            </div>
 
-        {/* Continue Button matching Screen 4 in PDF */}
-        <button
-          type="button"
-          onClick={handleContinue}
-          disabled={!isComplete || isSubmitting || isSuccess}
-          className={`w-full py-4 rounded-xl font-black text-sm tracking-tight transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-xl ${
-            isComplete && !isSubmitting
-              ? 'bg-[#00e699] hover:bg-[#00ffaa] text-black shadow-[#00e699]/30 active:scale-[0.98]'
-              : 'bg-[#121217] border border-[#222228] text-slate-500 cursor-not-allowed'
-          }`}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 size={18} className="animate-spin text-black" />
-              <span>Configuring Passcode...</span>
-            </>
-          ) : isSuccess ? (
-            <>
-              <Check size={18} className="stroke-[3] text-black" />
-              <span>Passcode Configured!</span>
-            </>
-          ) : (
-            <span>Continue</span>
-          )}
-        </button>
+            <button
+              type="button"
+              onClick={() => setShowPasscode(!showPasscode)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              aria-label="Toggle passcode visibility"
+            >
+              {showPasscode ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          {/* Input 2: Confirm Passcode */}
+          <div className="p-3 sm:p-3.5 rounded-xl bg-[#030905]/95 border border-[#173021] focus-within:border-[#00ffa3] focus-within:shadow-[0_0_16px_rgba(0,255,163,0.2)] transition-all flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1 mr-2">
+              <div className="w-7 h-7 rounded-lg bg-black/40 flex items-center justify-center text-slate-400 shrink-0">
+                <Lock size={15} className={confirmPasscode.length > 0 ? 'text-[#00ffa3]' : 'text-slate-400'} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className="text-[10px] font-bold text-slate-400 block leading-none mb-1">
+                  Confirm Passcode
+                </label>
+                <input
+                  ref={confirmInputRef}
+                  type={showConfirm ? 'text' : 'password'}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={confirmPasscode}
+                  onChange={(e) => handleConfirmChange(e.target.value)}
+                  placeholder="••••••"
+                  className="w-full bg-transparent text-sm sm:text-base font-mono font-bold tracking-[0.3em] text-[#00ffa3] placeholder-slate-600 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowConfirm(!showConfirm)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              aria-label="Toggle confirm passcode visibility"
+            >
+              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          {/* Checklist Guarantee Items */}
+          <div className="space-y-1.5 pt-0.5">
+            <div className="flex items-center gap-2 text-[11px] text-slate-300">
+              <CheckCircle2 size={14} className="text-[#00ffa3] shrink-0 fill-[#00ffa3]/20" />
+              <span>Passcode is required now to use Money X&apos;s features.</span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-slate-300">
+              <CheckCircle2 size={14} className="text-[#00ffa3] shrink-0 fill-[#00ffa3]/20" />
+              <span>Passcode cannot be reset.</span>
+            </div>
+          </div>
+
+          {/* Primary Action Button */}
+          <div className="pt-1.5">
+            <button
+              type="submit"
+              disabled={!isReady || isSubmitting || isSuccess}
+              className={`w-full py-3 rounded-full font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer shadow-lg ${
+                isReady && !isSubmitting
+                  ? 'bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00ffa3] hover:brightness-110 active:scale-[0.99] text-black shadow-[0_0_24px_rgba(0,255,163,0.4)]'
+                  : 'bg-[#0a180f] border border-[#1b3323] text-slate-500 opacity-60 cursor-not-allowed'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin text-black" />
+                  <span>Creating Passcode...</span>
+                </>
+              ) : isSuccess ? (
+                <span>Passcode Created! Redirecting...</span>
+              ) : (
+                <>
+                  <span>Create Passcode</span>
+                  <ArrowRight size={16} className="stroke-[2.5]" />
+                </>
+              )}
+            </button>
+          </div>
+
+        </form>
 
       </div>
-    </div>
+    </AuthLayoutWrapper>
   );
 };
