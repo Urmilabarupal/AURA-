@@ -85,14 +85,16 @@ export const AuthLayoutWrapper: React.FC<AuthLayoutWrapperProps> = ({
       {/* ----------------- COMPACT TOP BAR matching image.png ----------------- */}
       <header className="relative z-20 w-full max-w-[1100px] mx-auto flex items-center justify-between shrink-0 py-1">
         
-        {/* Left: "← Back to Ecosystem Overview" Button */}
+        {/* Left: "Back to Ecosystem Overview" Button */}
         <button
           type="button"
           onClick={() => setAuthStage('LANDING')}
-          className="px-3.5 py-1.5 rounded-full bg-[#06120a]/80 backdrop-blur-md border border-[#183122] hover:border-[#00ffa3]/50 hover:bg-[#0a1c11] text-[11px] font-semibold text-slate-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-md active:scale-95 group"
+          className="group px-3.5 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-[#06150d]/90 via-[#0a2013]/90 to-[#06150d]/90 hover:from-[#0a2417] hover:to-[#0f3220] text-[#00ffa3] hover:text-white border border-[#00ffa3]/35 hover:border-[#00ffa3] font-bold text-[11px] sm:text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,163,0.18)] hover:shadow-[0_0_25px_rgba(0,255,163,0.4)] transition-all cursor-pointer backdrop-blur-md active:scale-95"
         >
-          <ArrowLeft size={13} className="group-hover:-translate-x-0.5 transition-transform text-[#00ffa3]" />
-          <span>Back to Ecosystem Overview</span>
+          <span className="w-4 h-4 rounded-full bg-[#00ffa3]/20 flex items-center justify-center text-[#00ffa3] group-hover:bg-[#00ffa3] group-hover:text-black transition-colors">
+            <ArrowLeft size={11} className="stroke-[2.5] group-hover:-translate-x-0.5 transition-transform" />
+          </span>
+          <span className="tracking-wide">Back to Ecosystem Overview</span>
         </button>
 
         {/* Right: "🌐 English ∨" Button with dropdown */}

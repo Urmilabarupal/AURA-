@@ -2,162 +2,92 @@
  FILE: src/pages/auth/ConnectSignUp.tsx
 
  PURPOSE:
- Compact, Zero-Scroll "Connect Your Wallet" Screen (Pure English):
- - 100% fits on a single display viewport without any vertical scrolling
- - Pure English typography (All Hindi text removed as requested)
- - "Choose Your Wallet" card with 6 providers:
-   * 1. MetaMask (Selected state: bright neon emerald border & glow, 3D fox logo)
-   * 2. WalletConnect
-   * 3. Coinbase Wallet
-   * 4. Trust Wallet
-   * 5. Binance Wallet
-   * 6. More Wallets
- - Compact 2x2 registration fields:
-   * Full Name
-   * Mobile Number (with country code)
-   * Referral ID
-   * Country
- - Full-width neon emerald pill button: "Connect Wallet →"
- - Security note & compact bottom stat badges
+ Pixel-Perfect reproduction of Screenshot 1 (xahmoney.com mobile flow)
+ with user specifications:
+ 1. REMOVED duplicate logo and name (Single prominent Money X logo at top)
+ 2. REMOVED top back button as requested
+ 3. 3 Status Nodes (Wallet, Sign Up, Sign In) start in active SPINNING / LOADING state:
+    - Never auto-connected on mount
+    - Keep spinning until user explicitly clicks "Connect Wallet"
+    - Turn GREEN upon successful wallet connection
+    - Turn RED on failure / error
+ 4. Connect Wallet button:
+    - Real MetaMask connection
+    - Once connected, "Connect Wallet" text disappears and shows connected address (e.g. 0x3a56...7F2B)
+ 5. Form inputs & validation:
+    - Referral ID is auto-filled (MNX001)
+    - Full Name starts EMPTY (no prefilled placeholder name)
+    - Pick Your Country selectable by user
+    - Mobile Number starts EMPTY, strictly max 10 digits
+    - Robust security & validation before advancing to passcode setup
+ 6. Floating "Trying to Auto Sign In..." pill at bottom
 */
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
-import { AuthLayoutWrapper } from '../../components/common/AuthLayoutWrapper';
+import { MoneyXLogo } from '../../components/common/MoneyXLogo';
 import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   ArrowRight,
-  Boxes,
   Check,
-  CheckCircle2,
+  ChevronDown,
+  Copy,
   ExternalLink,
-  Globe,
   Loader2,
   Lock,
   Phone,
   Shield,
-  ShieldCheck,
   Tag,
   User,
-  Users,
   Wallet,
+  X,
 } from 'lucide-react';
 
 export const ConnectSignUp: React.FC = () => {
   const { register, setAuthStage, connectRealMetaMask, connectMobileWallet } = useAuth();
-  const { showToast } = useToast();
+  const { showToast, copyToClipboard } = useToast();
 
-  const [selectedWallet, setSelectedWallet] = useState<string>('metamask');
+  // Form Fields - clean initial values as requested
+  const [referId, setReferId] = useState<string>(BRAND.defaultReferId || 'MNX001');
+  const [country, setCountry] = useState<string>('USA (+1)');
+  const [mobileNumber, setMobileNumber] = useState<string>(''); // Empty initially
+  const [fullName, setFullName] = useState<string>(''); // Empty initially (no hardcoded name)
 
-  // Form Fields (Pure English)
-  const [name, setName] = useState<string>('Alexander Vance');
-  const [countryCode, setCountryCode] = useState<string>('+91');
-  const [mobileNumber, setMobileNumber] = useState<string>('9876543210');
-  const [country, setCountry] = useState<string>('India (+91)');
-  const [referId, setReferId] = useState<string>(BRAND.defaultReferId || 'MX99842');
+  // Connected wallet state - strictly null on mount!
+  const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
+  const [copiedAddr, setCopiedAddr] = useState<boolean>(false);
+
+  // Status for the 3 top nodes: strictly 'trying' initially so loaders spin!
+  const [nodeStatus, setNodeStatus] = useState<'trying' | 'connected' | 'error'>('trying');
 
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const countryOptions = [
-    { name: 'India (+91)', code: '+91', flag: '🇮🇳' },
-    { name: 'USA (+1)', code: '+1', flag: '🇺🇸' },
-    { name: 'UK (+44)', code: '+44', flag: '🇬🇧' },
-    { name: 'UAE (+971)', code: '+971', flag: '🇦🇪' },
-    { name: 'Canada (+1)', code: '+1', flag: '🇨🇦' },
-    { name: 'Australia (+61)', code: '+61', flag: '🇦🇺' },
-    { name: 'Singapore (+65)', code: '+65', flag: '🇸🇬' },
+    { label: 'USA (+1)', code: '+1' },
+    { label: 'India (+91)', code: '+91' },
+    { label: 'UK (+44)', code: '+44' },
+    { label: 'UAE (+971)', code: '+971' },
+    { label: 'Canada (+1)', code: '+1' },
+    { label: 'Australia (+61)', code: '+61' },
+    { label: 'Singapore (+65)', code: '+65' },
+    { label: 'Germany (+49)', code: '+49' },
   ];
 
-  const handleCountryChange = (cName: string) => {
-    setCountry(cName);
-    const found = countryOptions.find((c) => c.name === cName);
-    if (found) {
-      setCountryCode(found.code);
-    }
+  // Mobile number input handler with strict 10-digit limit
+  const handleMobileChange = (val: string) => {
+    const digitsOnly = val.replace(/\D/g, '').slice(0, 10);
+    setMobileNumber(digitsOnly);
+    if (errorMsg) setErrorMsg(null);
   };
 
-  const wallets = [
-    {
-      id: 'metamask',
-      name: 'MetaMask',
-      icon: (
-        <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 318.6 318.6">
-          <path fill="#E2761B" stroke="#E2761B" strokeLinecap="round" strokeLinejoin="round" d="m274.1 35.5-99.5 73.9L194 65.4z" />
-          <path fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round" d="m44.4 35.5 98.7 74.6-18.7-44.7z" />
-          <path fill="#D7C1B3" stroke="#D7C1B3" strokeLinecap="round" strokeLinejoin="round" d="m238.3 206.8-30.2 46.1 63.6 17.5 17.6-63.1z" />
-          <path fill="#D7C1B3" stroke="#D7C1B3" strokeLinecap="round" strokeLinejoin="round" d="m29.3 207.3 17.6 63.1 63.6-17.5-30.2-46.1z" />
-          <path fill="#233447" stroke="#233447" strokeLinecap="round" strokeLinejoin="round" d="m110.3 174.5-30.2-8.9 21.5-9.8z" />
-          <path fill="#233447" stroke="#233447" strokeLinecap="round" strokeLinejoin="round" d="m208.3 174.5 8.7-18.7 21.5 9.8z" />
-          <path fill="#CD6116" stroke="#CD6116" strokeLinecap="round" strokeLinejoin="round" d="m101.6 252.9 33.6 16.3-2.3-21.4z" />
-          <path fill="#CD6116" stroke="#CD6116" strokeLinecap="round" strokeLinejoin="round" d="m183.4 247.8-2.3 21.4 33.6-16.3z" />
-          <path fill="#E4751F" stroke="#E4751F" strokeLinecap="round" strokeLinejoin="round" d="m214.7 252.9-33.6 16.3 3.6 28.5 63.9-19.1z" />
-          <path fill="#E4751F" stroke="#E4751F" strokeLinecap="round" strokeLinejoin="round" d="m70 278.6 63.9 19.1 3.6-28.5-33.6-16.3z" />
-          <path fill="#F6851B" stroke="#F6851B" strokeLinecap="round" strokeLinejoin="round" d="m137.5 297.7-3.6 28.5 25.4 7.4 25.4-7.4-3.6-28.5-21.8 15.3z" />
-          <path fill="#C0AD9E" stroke="#C0AD9E" strokeLinecap="round" strokeLinejoin="round" d="m159.3 326.2-25.4-7.4 20.1 21.7 5.3 1.8 5.3-1.8 20.1-21.7z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'walletconnect',
-      name: 'WalletConnect',
-      icon: (
-        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#3b99fc] flex items-center justify-center p-1">
-          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5.5 8.5a9 9 0 0 1 13 0l.5.5a.7.7 0 0 1 0 1l-1.5 1.5a.7.7 0 0 1-1 0l-.7-.7a6 6 0 0 0-8.6 0l-.7.7a.7.7 0 0 1-1 0L4 10a.7.7 0 0 1 0-1l1.5-1.5zm3 3a5 5 0 0 1 7 0l.5.5a.7.7 0 0 1 0 1l-1.5 1.5a.7.7 0 0 1-1 0l-.7-.7a2 2 0 0 0-2.6 0l-.7.7a.7.7 0 0 1-1 0L7 13a.7.7 0 0 1 0-1l1.5-1.5z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'coinbase',
-      name: 'Coinbase',
-      icon: (
-        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#0052ff] flex items-center justify-center">
-          <div className="w-2.5 h-2.5 rounded-[2px] bg-white flex items-center justify-center">
-            <div className="w-1 h-1 bg-[#0052ff] rounded-[1px]" />
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'trust',
-      name: 'Trust',
-      icon: (
-        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-tr from-[#0500ff] via-[#0066ff] to-[#00b2ff] flex items-center justify-center p-0.5 shadow-sm">
-          <Shield size={12} className="text-white fill-white" />
-        </div>
-      ),
-    },
-    {
-      id: 'binance',
-      name: 'Binance',
-      icon: (
-        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#f3ba2f] flex items-center justify-center p-0.5">
-          <div className="w-2.5 h-2.5 rotate-45 border border-black" />
-        </div>
-      ),
-    },
-    {
-      id: 'more',
-      name: 'More',
-      icon: (
-        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#18261e] flex items-center justify-center text-slate-300">
-          <div className="flex gap-0.5">
-            <div className="w-1 h-1 rounded-full bg-slate-300" />
-            <div className="w-1 h-1 rounded-full bg-slate-300" />
-            <div className="w-1 h-1 rounded-full bg-slate-300" />
-          </div>
-        </div>
-      ),
-    },
-  ];
-
+  // Connect Wallet Handler
   const handleConnectWallet = async () => {
-    if (!name.trim()) {
-      setErrorMsg('Please enter your full name');
+    if (connectedAddress) {
+      showToast('Wallet already connected!', 'info');
       return;
     }
 
@@ -166,276 +96,460 @@ export const ConnectSignUp: React.FC = () => {
 
     try {
       let addr = '';
-
-      if (selectedWallet === 'metamask') {
-        const res = await connectRealMetaMask();
-        if (res.success && res.address) {
-          addr = res.address;
-        } else {
-          // If extension not present, allow mobile web3 fallback session
-          if (res.error?.includes('not detected') || res.error?.includes('NOT_INSTALLED')) {
-            const fallback = await connectMobileWallet();
-            addr = fallback.address;
-          } else {
-            setErrorMsg(res.error || 'Connection rejected or failed');
-            setIsConnecting(false);
-            return;
-          }
-        }
-      } else {
-        // Other wallets route through web3 session
-        const res = await connectMobileWallet();
+      const res = await connectRealMetaMask();
+      if (res.success && res.address) {
         addr = res.address;
+      } else {
+        // Fallback for mobile / preview iframe
+        if (
+          res.error?.includes('not detected') ||
+          res.error?.includes('NOT_INSTALLED') ||
+          res.error?.includes('Missing provider') ||
+          !res.address
+        ) {
+          const fallback = await connectMobileWallet();
+          addr = fallback.address;
+        } else {
+          // Failure / Rejection -> Turn RED
+          setErrorMsg(res.error || 'Connection rejected or failed');
+          setNodeStatus('error');
+          setIsConnecting(false);
+          return;
+        }
       }
 
+      // Success: replace button text with address & turn nodes green!
+      setConnectedAddress(addr);
+      setNodeStatus('connected');
       showToast(`Wallet Connected: ${addr.slice(0, 6)}...${addr.slice(-4)}`, 'success');
-
-      const fullMobile = `${countryCode} ${mobileNumber}`.trim();
-      await register({
-        walletAddress: addr,
-        name: name.trim(),
-        country,
-        mobile: fullMobile,
-        referId: referId.trim(),
-      });
-
-      // Smoothly advance to Screen 2: Create Passcode matching image.png!
-      setTimeout(() => {
-        setAuthStage('SETUP_PASSCODE');
-      }, 350);
 
     } catch (err: any) {
       setErrorMsg(err.message || 'Error connecting to wallet');
+      setNodeStatus('error');
     } finally {
       setIsConnecting(false);
     }
   };
 
-  return (
-    <AuthLayoutWrapper
-      activeStep={1}
-      stepLabels={{
-        step1: { title: 'Wallet', sub: 'Connect Wallet' },
-        step2: { title: 'Sign Up', sub: 'Set Details' },
-        step3: { title: 'Sign In', sub: 'Access App' },
-      }}
-    >
-      <div className="w-full max-w-[560px] flex flex-col items-center text-center">
-        
-        {/* Compressed Headline matching image.png */}
-        <div className="space-y-0.5 text-center mb-2 shrink-0">
-          <h1 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-tight">
-            Connect Your <span className="text-[#00ffa3] drop-shadow-[0_0_14px_rgba(0,255,163,0.7)]">Wallet</span>
-          </h1>
-          <p className="text-[11px] sm:text-xs text-slate-400 max-w-sm mx-auto leading-tight">
-            Connect your wallet to access all features and manage your account securely.
-          </p>
-        </div>
+  // Submit Details and Proceed to Passcode Setup
+  const handleSubmitAndProceed = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-        {/* ----------------- COMPRESSED CHOOSE YOUR WALLET CARD ----------------- */}
-        <div className="w-full rounded-2xl sm:rounded-3xl bg-[#050f09]/92 backdrop-blur-2xl border border-[#163824] p-3.5 sm:p-5 shadow-[0_16px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(0,255,163,0.06)] text-left space-y-3">
+    // 1. Validation: Wallet must be connected
+    if (!connectedAddress) {
+      setErrorMsg('Please connect your wallet first before proceeding');
+      showToast('Please click Connect Wallet first!', 'info');
+      await handleConnectWallet();
+      return;
+    }
+
+    // 2. Validation: Full name required
+    const cleanName = fullName.trim();
+    if (!cleanName || cleanName.length < 2) {
+      setErrorMsg('Please enter your full name (minimum 2 characters)');
+      return;
+    }
+
+    // 3. Validation: Mobile number must be 10 digits
+    if (mobileNumber.length !== 10) {
+      setErrorMsg('Please enter a valid 10-digit mobile number');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      await register({
+        walletAddress: connectedAddress,
+        name: cleanName,
+        country,
+        mobile: mobileNumber,
+        referId: referId.trim(),
+      });
+
+      showToast('Profile registered! Set your passcode.', 'success');
+      // Advance to Passcode Setup Screen
+      setAuthStage('SETUP_PASSCODE');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Failed to submit details');
+      setIsSubmitting(false);
+    }
+  };
+
+  const shortAddress = connectedAddress
+    ? `${connectedAddress.slice(0, 6)}...${connectedAddress.slice(-4)}`
+    : null;
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (connectedAddress) {
+      copyToClipboard(connectedAddress, 'Wallet Address');
+      setCopiedAddr(true);
+      setTimeout(() => setCopiedAddr(false), 2000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full bg-[#000000] text-white flex flex-col items-center justify-between p-3 sm:p-5 select-none font-sans relative overflow-x-hidden">
+      
+      {/* Background Atmosphere */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(#00ffa3 1px, transparent 1px), linear-gradient(90deg, #00ffa3 1px, transparent 1px)`,
+            backgroundSize: '36px 36px',
+          }}
+        />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[650px] h-[280px] bg-[#00ffa3]/10 rounded-full blur-[140px]" />
+      </div>
+
+      {/* ----------------- SINGLE PROMINENT MONEY X LOGO (Duplicate removed) ----------------- */}
+      <header className="w-full max-w-[480px] mx-auto flex items-center justify-center pt-3 pb-1 z-20">
+        <MoneyXLogo size="lg" glow layout="horizontal" showSubtitle={false} />
+      </header>
+
+      {/* ----------------- MAIN COLUMN ----------------- */}
+      <div className="w-full max-w-[480px] flex flex-col items-center text-center my-auto py-2 space-y-4 z-10">
+        
+        {/* ----------------- 3 STATUS LOADING NODES (Spinning by default) ----------------- */}
+        <div className="w-full grid grid-cols-3 gap-2 px-1">
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xs sm:text-sm font-black text-white tracking-tight">
-                Choose Your Wallet
-              </h2>
-              <p className="text-[10px] text-slate-400">
-                Connect with your preferred wallet to continue
-              </p>
+          {/* Node 1: Wallet */}
+          <div className="flex flex-col items-center text-center">
+            <div
+              className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-300 relative ${
+                nodeStatus === 'connected'
+                  ? 'bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_24px_rgba(0,255,163,0.7)] scale-105'
+                  : nodeStatus === 'error'
+                  ? 'bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_20px_rgba(255,59,92,0.4)]'
+                  : 'bg-[#09121a] border-2 border-[#1c293c] shadow-lg'
+              }`}
+            >
+              {nodeStatus === 'connected' ? (
+                <Check size={28} className="stroke-[3.5] text-black animate-scaleIn" />
+              ) : nodeStatus === 'error' ? (
+                <X size={26} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
+              ) : (
+                /* Continuous Spinning Radial Sun / Gear Loader */
+                <div className="relative w-9 h-9 flex items-center justify-center">
+                  <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <Wallet size={13} className="absolute text-slate-400" />
+                </div>
+              )}
             </div>
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/30 text-[#00ffa3]">
-              Non-Custodial
+            <span className="text-sm sm:text-base font-black text-white mt-2 leading-tight">
+              Wallet
+            </span>
+            <span className={`text-[10px] sm:text-[11px] leading-tight mt-0.5 ${
+              nodeStatus === 'connected'
+                ? 'text-[#00ffa3] font-bold'
+                : nodeStatus === 'error'
+                ? 'text-[#ff3b5c]'
+                : 'text-slate-400'
+            }`}>
+              {nodeStatus === 'connected'
+                ? 'Connected ✓'
+                : nodeStatus === 'error'
+                ? 'Connection Failed'
+                : 'No DApp Found. Still Trying'}
             </span>
           </div>
 
-          {/* 6 Wallets Compact Grid */}
-          <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
-            {wallets.map((w) => {
-              const isSelected = selectedWallet === w.id;
-              return (
-                <button
-                  key={w.id}
-                  type="button"
-                  onClick={() => setSelectedWallet(w.id)}
-                  className={`p-1.5 sm:p-2 rounded-xl flex flex-col items-center justify-center text-center gap-1 transition-all cursor-pointer group active:scale-95 ${
-                    isSelected
-                      ? 'border-2 border-[#00ffa3] bg-[#07190f] shadow-[0_0_14px_rgba(0,255,163,0.3)]'
-                      : 'border border-[#172b1e] bg-[#030905] hover:border-[#00ffa3]/50 hover:bg-[#07140b]'
-                  }`}
-                >
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center shrink-0">
-                    {w.icon}
-                  </div>
-                  <span
-                    className={`text-[9px] sm:text-[10px] font-bold tracking-tight truncate max-w-full ${
-                      isSelected ? 'text-[#00ffa3]' : 'text-slate-300 group-hover:text-white'
-                    }`}
-                  >
-                    {w.name}
-                  </span>
-                </button>
-              );
-            })}
+          {/* Node 2: Sign Up */}
+          <div className="flex flex-col items-center text-center">
+            <div
+              className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-300 relative ${
+                nodeStatus === 'connected'
+                  ? 'bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_24px_rgba(0,255,163,0.7)] scale-105'
+                  : nodeStatus === 'error'
+                  ? 'bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_20px_rgba(255,59,92,0.4)]'
+                  : 'bg-[#09121a] border-2 border-[#1c293c] shadow-lg'
+              }`}
+            >
+              {nodeStatus === 'connected' ? (
+                <Check size={28} className="stroke-[3.5] text-black animate-scaleIn" />
+              ) : nodeStatus === 'error' ? (
+                <X size={26} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
+              ) : (
+                <div className="relative w-9 h-9 flex items-center justify-center">
+                  <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <User size={13} className="absolute text-slate-400" />
+                </div>
+              )}
+            </div>
+            <span className={`text-sm sm:text-base font-black mt-2 leading-tight ${
+              nodeStatus === 'connected' ? 'text-white' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-200'
+            }`}>
+              Sign Up
+            </span>
+            <span className={`text-[10px] sm:text-[11px] leading-tight mt-0.5 ${
+              nodeStatus === 'connected' ? 'text-[#00ffa3] font-bold' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-400'
+            }`}>
+              {nodeStatus === 'connected'
+                ? 'Registered ✓'
+                : nodeStatus === 'error'
+                ? 'No DApp Found.'
+                : 'No DApp Found.'}
+            </span>
           </div>
 
-          {/* Error Message */}
+          {/* Node 3: Sign In */}
+          <div className="flex flex-col items-center text-center">
+            <div
+              className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-300 relative ${
+                nodeStatus === 'connected'
+                  ? 'bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_24px_rgba(0,255,163,0.7)] scale-105'
+                  : nodeStatus === 'error'
+                  ? 'bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_20px_rgba(255,59,92,0.4)]'
+                  : 'bg-[#09121a] border-2 border-[#1c293c] shadow-lg'
+              }`}
+            >
+              {nodeStatus === 'connected' ? (
+                <Check size={28} className="stroke-[3.5] text-black animate-scaleIn" />
+              ) : nodeStatus === 'error' ? (
+                <X size={26} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
+              ) : (
+                <div className="relative w-9 h-9 flex items-center justify-center">
+                  <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <Lock size={13} className="absolute text-slate-400" />
+                </div>
+              )}
+            </div>
+            <span className={`text-sm sm:text-base font-black mt-2 leading-tight ${
+              nodeStatus === 'connected' ? 'text-white' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-200'
+            }`}>
+              Sign In
+            </span>
+            <span className={`text-[10px] sm:text-[11px] leading-tight mt-0.5 ${
+              nodeStatus === 'connected' ? 'text-[#00ffa3] font-bold' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-400'
+            }`}>
+              {nodeStatus === 'connected'
+                ? 'Authorized ✓'
+                : nodeStatus === 'error'
+                ? 'No DApp Found.'
+                : 'No DApp Found.'}
+            </span>
+          </div>
+
+        </div>
+
+        {/* ----------------- MAIN CARD matching Screenshot 1 ----------------- */}
+        <div className="w-full rounded-[28px] bg-[#0c1017] border border-[#1b2434] p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.95)] text-left space-y-4">
+          
+          {/* CONNECT WALLET BUTTON */}
+          <div>
+            <button
+              type="button"
+              onClick={handleConnectWallet}
+              disabled={isConnecting}
+              className={`w-full py-4 rounded-full font-black text-sm sm:text-base tracking-tight transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-xl ${
+                connectedAddress
+                  ? 'bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00ffa3] text-black shadow-[0_0_30px_rgba(0,255,163,0.6)] ring-2 ring-[#00ffa3]'
+                  : 'bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00b875] hover:brightness-110 active:scale-[0.99] text-black shadow-[0_0_28px_rgba(0,255,163,0.5)]'
+              }`}
+            >
+              {isConnecting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin text-black" />
+                  <span>Connecting to MetaMask...</span>
+                </>
+              ) : connectedAddress ? (
+                /* "Connect Wallet" text disappears, replaced by connected wallet address */
+                <div className="flex items-center gap-2 font-mono" onClick={handleCopy}>
+                  <Check size={18} className="stroke-[3] text-black" />
+                  <span>{shortAddress}</span>
+                  <span className="text-[10px] font-sans font-bold bg-black/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    {copiedAddr ? 'Copied!' : 'Connected ✓'}
+                  </span>
+                </div>
+              ) : (
+                <span>Connect Wallet</span>
+              )}
+            </button>
+
+            {/* Subtext under button */}
+            <p className="text-center text-[11px] sm:text-xs text-slate-400 mt-2 leading-relaxed">
+              {connectedAddress
+                ? `Connected to ${shortAddress}. Complete your details below and proceed.`
+                : 'Connect your wallet to access all features and manage your account effortlessly.'}
+            </p>
+          </div>
+
+          {/* Error Message if any */}
           {errorMsg && (
-            <div className="p-2 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center gap-2 text-[11px] text-[#ff3b5c] animate-shake">
-              <AlertCircle size={13} className="shrink-0" />
+            <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center gap-2 text-xs text-[#ff3b5c] animate-shake">
+              <AlertCircle size={15} className="shrink-0" />
               <span className="flex-1">{errorMsg}</span>
               {errorMsg.toLowerCase().includes('not detected') && (
                 <a
                   href="https://metamask.io/download/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] text-[#00ffa3] hover:underline font-bold shrink-0"
+                  className="inline-flex items-center gap-1 text-[11px] text-[#00ffa3] hover:underline font-bold shrink-0"
                 >
                   <span>Install</span>
-                  <ExternalLink size={10} />
+                  <ExternalLink size={11} />
                 </a>
               )}
             </div>
           )}
 
-          {/* User Details Fields (Pure English, Compact 2x2 Grid) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
-            {/* 1. Full Name */}
-            <div className="space-y-0.5">
-              <label className="text-[10px] sm:text-[11px] font-semibold text-slate-300 flex items-center justify-between">
-                <span>Full Name</span>
-                <span className="text-[9px] text-slate-500 font-normal">Required</span>
-              </label>
-              <div className="relative">
-                <User size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your full name"
-                  className="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-[#030905] border border-[#172b1e] text-xs font-semibold text-white focus:outline-none focus:border-[#00ffa3] transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* 2. Mobile Number with Country Dial Code */}
-            <div className="space-y-0.5">
-              <label className="text-[10px] sm:text-[11px] font-semibold text-slate-300 flex items-center justify-between">
-                <span>Mobile Number</span>
-                <span className="text-[9px] text-slate-500 font-normal">Required</span>
-              </label>
-              <div className="flex gap-1.5">
-                <div className="w-20 shrink-0">
-                  <select
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    className="w-full px-1.5 py-1.5 rounded-lg bg-[#030905] border border-[#172b1e] text-xs font-bold text-slate-300 focus:outline-none focus:border-[#00ffa3] cursor-pointer"
-                  >
-                    {countryOptions.map((c) => (
-                      <option key={c.name} value={c.code} className="bg-[#050f09] text-white">
-                        {c.flag} {c.code}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex-1 relative">
-                  <Phone size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    type="tel"
-                    value={mobileNumber}
-                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))}
-                    placeholder="9876543210"
-                    className="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-[#030905] border border-[#172b1e] text-xs font-semibold text-white focus:outline-none focus:border-[#00ffa3] transition-colors"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Referral ID */}
-            <div className="space-y-0.5">
-              <label className="text-[10px] sm:text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                <Tag size={11} className="text-[#00ffa3]" />
-                <span>Referral ID</span>
-              </label>
+          {/* ----------------- FORM FIELDS ----------------- */}
+          
+          {/* Field 1: Your Unique Referral ID (Auto-filled) */}
+          <div className="space-y-1">
+            <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+              Your Unique Referral ID
+            </label>
+            <p className="text-[11px] text-slate-500 leading-tight">
+              Share your Referral ID to invite others and expand your network seamlessly!
+            </p>
+            <div className="pt-0.5">
               <input
                 type="text"
                 value={referId}
                 onChange={(e) => setReferId(e.target.value.toUpperCase())}
-                placeholder="MX99842"
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#030905] border border-[#172b1e] text-xs font-mono font-bold text-[#00ffa3] focus:outline-none focus:border-[#00ffa3] transition-colors"
+                placeholder="Referral ID"
+                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-sm font-mono font-bold text-white focus:outline-none focus:border-[#00ffa3] transition-colors"
               />
-            </div>
-
-            {/* 4. Country */}
-            <div className="space-y-0.5">
-              <label className="text-[10px] sm:text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                <Globe size={11} className="text-slate-400" />
-                <span>Country</span>
-              </label>
-              <select
-                value={country}
-                onChange={(e) => handleCountryChange(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#030905] border border-[#172b1e] text-xs font-semibold text-white focus:outline-none focus:border-[#00ffa3] cursor-pointer"
-              >
-                {countryOptions.map((c) => (
-                  <option key={c.name} value={c.name} className="bg-[#050f09] text-white">
-                    {c.name}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
-          {/* Primary Connect Wallet Button */}
-          <div className="pt-1">
+          {/* Field 2: Pick Your Country (Selectable) */}
+          <div className="space-y-1">
+            <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+              Pick Your Country
+            </label>
+            <div className="relative pt-0.5">
+              <select
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-[#00ffa3] cursor-pointer appearance-none pr-10"
+              >
+                {countryOptions.map((c) => (
+                  <option key={c.label} value={c.label} className="bg-[#0c1017] text-white">
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <ChevronDown size={16} />
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-tight pt-0.5">
+              Choose your country to ensure accurate settings and seamless access.
+            </p>
+          </div>
+
+          {/* Field 3: Your Full Name (Empty initially) */}
+          <div className="space-y-1">
+            <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+              Your Full Name
+            </label>
+            <div className="pt-0.5">
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Field 4: Mobile Number (Empty initially, strictly max 10 digits) */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+                Mobile Number
+              </label>
+              <span className="text-[10px] text-slate-500 font-mono">
+                {mobileNumber.length}/10 digits
+              </span>
+            </div>
+            <div className="pt-0.5">
+              <input
+                type="tel"
+                maxLength={10}
+                value={mobileNumber}
+                onChange={(e) => handleMobileChange(e.target.value)}
+                placeholder="Enter 10-digit mobile number"
+                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] transition-colors font-mono"
+              />
+            </div>
+          </div>
+
+          {/* SUBMIT BUTTON -> ADVANCES TO PASSCODE SETUP */}
+          <div className="pt-2">
             <button
               type="button"
-              onClick={handleConnectWallet}
-              disabled={isConnecting}
-              className="w-full py-3 rounded-full bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00ffa3] hover:brightness-110 active:scale-[0.99] text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(0,255,163,0.4)] cursor-pointer transition-all disabled:opacity-50"
+              onClick={handleSubmitAndProceed}
+              disabled={isSubmitting}
+              className="w-full py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00b875] hover:brightness-110 active:scale-[0.99] text-black font-black text-sm sm:text-base tracking-tight transition-all shadow-lg shadow-[#00ffa3]/30 flex items-center justify-center gap-2 cursor-pointer"
             >
-              {isConnecting ? (
+              {isSubmitting ? (
                 <>
-                  <Loader2 size={16} className="animate-spin text-black" />
-                  <span>Connecting to {selectedWallet === 'metamask' ? 'MetaMask' : 'Wallet'}...</span>
+                  <Loader2 size={18} className="animate-spin text-black" />
+                  <span>Submitting & Preparing Passcode...</span>
                 </>
               ) : (
                 <>
-                  <Wallet size={16} className="stroke-[2.5]" />
-                  <span>Connect Wallet</span>
-                  <ArrowRight size={16} className="stroke-[2.5]" />
+                  <span>Submit & Setup Passcode</span>
+                  <ArrowRight size={16} className="stroke-[3]" />
                 </>
               )}
             </button>
           </div>
 
-          {/* Security Note */}
-          <div className="flex items-center justify-center gap-1.5 text-center text-[10px] text-slate-400">
-            <span className="text-amber-400 text-xs">🔒</span>
-            <span>We never store your private keys. Your wallet is always secure and in your control.</span>
-          </div>
-
-        </div>
-
-        {/* Compact Single-Row Stats Bar (matching bottom badges without vertical bloating) */}
-        <div className="w-full flex items-center justify-center gap-4 sm:gap-8 pt-2 text-[10px] sm:text-[11px] text-slate-400 shrink-0 font-medium">
-          <span className="flex items-center gap-1">
-            <Users size={12} className="text-[#00ffa3]" />
-            <strong className="text-white">2M+</strong> Global Users
-          </span>
-          <span className="text-slate-600">•</span>
-          <span className="flex items-center gap-1">
-            <ShieldCheck size={12} className="text-[#00ffa3]" />
-            <strong className="text-white">Secure</strong> Decentralized
-          </span>
-          <span className="text-slate-600">•</span>
-          <span className="flex items-center gap-1">
-            <Boxes size={12} className="text-[#00ffa3]" />
-            <strong className="text-white">Easy Access</strong> All Features
-          </span>
         </div>
 
       </div>
-    </AuthLayoutWrapper>
+
+      {/* Floating Bottom Pill Badge matching Screenshot 1 */}
+      <div className="pb-3 z-30">
+        <div className="px-4 py-2 rounded-full bg-[#0d141c]/90 border border-[#1c293c] text-slate-300 text-xs font-semibold shadow-xl flex items-center gap-2 backdrop-blur-md">
+          <span className="w-2 h-2 rounded-full bg-[#00ffa3] animate-pulse" />
+          <span>Trying to Auto Sign In...</span>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="w-full text-center py-2 text-[10px] text-slate-600 font-mono z-10">
+        Money X Ecosystem · Decentralized Non-Custodial Protocol
+      </footer>
+
+    </div>
   );
 };

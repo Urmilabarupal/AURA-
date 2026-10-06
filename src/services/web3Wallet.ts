@@ -40,10 +40,24 @@ class Web3WalletService {
 
     let provider: any = (window as any).ethereum;
 
+    // Check for other injected providers if ethereum is not directly on window
+    if (!provider) {
+      provider =
+        (window as any).trustwallet ||
+        (window as any).coinbaseWalletExtension ||
+        (window as any).phantom?.ethereum ||
+        (window as any).okxwallet;
+    }
+
     // Check if multiple providers are injected (e.g. MetaMask + Phantom + Coinbase)
     if (provider?.providers && Array.isArray(provider.providers)) {
       const mm = provider.providers.find((p: any) => p.isMetaMask);
-      provider = mm || null;
+      provider = mm || provider.providers[0] || provider;
+    }
+
+    // Fallback to legacy web3 currentProvider if exists
+    if (!provider && (window as any).web3?.currentProvider) {
+      provider = (window as any).web3.currentProvider;
     }
 
     // Attempt to access parent frame if running inside an iframe (e.g. AI Studio preview)
@@ -52,7 +66,7 @@ class Web3WalletService {
         const parentEth = (window.parent as any).ethereum;
         if (parentEth) {
           if (parentEth.providers && Array.isArray(parentEth.providers)) {
-            provider = parentEth.providers.find((p: any) => p.isMetaMask) || parentEth;
+            provider = parentEth.providers.find((p: any) => p.isMetaMask) || parentEth.providers[0];
           } else {
             provider = parentEth;
           }

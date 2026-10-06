@@ -133,6 +133,16 @@ export const Dashboard: React.FC = () => {
   const [depositModalOpen, setDepositModalOpen] = useState<boolean>(false);
   const [guideModalOpen, setGuideModalOpen] = useState<boolean>(false);
   const [copiedAddress, setCopiedAddress] = useState<boolean>(false);
+  const [copiedReferral, setCopiedReferral] = useState<boolean>(false);
+
+  const referralCode = user?.referId || 'MNX001';
+  const referralLink = `https://moneyx.app/ref/${referralCode}`;
+
+  const handleCopyReferral = () => {
+    copyToClipboard(referralLink, 'Referral Link');
+    setCopiedReferral(true);
+    setTimeout(() => setCopiedReferral(false), 2000);
+  };
 
   // Dynamic balances (defaults matching exact screenshot: Funding 850, Main 400, Reward 125, Total 1,375)
   const fundingBalance = wallets?.spotBalanceUSDT ? Math.max(wallets.spotBalanceUSDT, 850) : 850;
@@ -275,7 +285,152 @@ export const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. 3 WALLET CARDS (Funding, Main, Reward) */}
+      {/* 2. USER PROFILE DATA & REFERRAL / REFERENDUM CARD (HX Money authentic features) */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        {/* Profile Card (Left 6 Cols) */}
+        <div className="lg:col-span-6 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl relative overflow-hidden space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00ffa3]/20 via-[#00e699]/10 to-[#00ffa3]/30 border border-[#00ffa3]/40 flex items-center justify-center text-[#00ffa3] font-black text-xl shadow-[0_0_20px_rgba(0,255,163,0.2)]">
+                {(user?.name || 'A').charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-black text-white tracking-tight">
+                    {user?.name || 'Alexander Vance'}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-950/60 border border-[#00ffa3]/40 text-[#00ffa3] text-[10px] font-bold">
+                    Active ✓
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                  ID: <span className="text-white font-bold">{user?.id || 'MX-829104'}</span> · VIP Tier 4
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setActiveRoute('profile')}
+              className="px-3 py-1.5 rounded-xl bg-[#06140b] border border-[#163824] hover:border-[#00ffa3]/50 text-xs text-[#00ffa3] font-bold transition-all cursor-pointer hover:bg-[#0c2415]"
+            >
+              View Profile
+            </button>
+          </div>
+
+          {/* Quick Metrics Grid */}
+          <div className="grid grid-cols-3 gap-2.5 pt-1">
+            <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
+              <span className="text-[10px] text-slate-400 block font-medium">Staked Total</span>
+              <span className="text-sm font-black text-white tabular-nums mt-0.5 block">1,250 USDT</span>
+            </div>
+            <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
+              <span className="text-[10px] text-slate-400 block font-medium">Total Rewards</span>
+              <span className="text-sm font-black text-[#00ffa3] tabular-nums mt-0.5 block">1,735 USDT</span>
+            </div>
+            <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
+              <span className="text-[10px] text-slate-400 block font-medium">Team Members</span>
+              <span className="text-sm font-black text-white tabular-nums mt-0.5 block">125 Users</span>
+            </div>
+          </div>
+
+          {/* Connected Wallet details */}
+          <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#00ffa3] animate-pulse" />
+              <span className="text-xs text-slate-400 font-medium">Wallet:</span>
+              <span className="text-xs font-mono text-slate-200">
+                {user?.walletAddress ? `${user.walletAddress.slice(0, 8)}...${user.walletAddress.slice(-6)}` : '0x71C2...3948'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyWallet}
+              className="text-xs text-[#00ffa3] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+            >
+              <Copy size={12} />
+              <span>{copiedAddress ? 'Copied' : 'Copy'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Referral / Referendum Hub (Right 6 Cols) */}
+        <div className="lg:col-span-6 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-black text-white tracking-tight flex items-center gap-2">
+                <span>Referral Center</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#00ffa3]/15 text-[#00ffa3] text-[10px] font-bold">
+                  10% Direct
+                </span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Invite partners to earn continuous multi-tier network rewards.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveRoute('community-share')}
+              className="px-3 py-1.5 rounded-xl bg-[#06140b] border border-[#163824] hover:border-[#00ffa3]/50 text-xs text-[#00ffa3] font-bold transition-all cursor-pointer hover:bg-[#0c2415]"
+            >
+              Share QR
+            </button>
+          </div>
+
+          {/* Referral Code & Copy Link Box */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 p-3 rounded-xl bg-[#030305] border border-[#18181c] flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">Your Referral Code</span>
+                  <span className="text-sm font-mono font-bold text-[#00ffa3]">{referralCode}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(referralCode, 'Referral Code')}
+                  className="p-1.5 rounded-lg bg-[#08120a] hover:bg-[#102416] text-[#00ffa3] border border-[#163824] transition-colors cursor-pointer"
+                  title="Copy Referral Code"
+                >
+                  <Copy size={13} />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCopyReferral}
+                className="px-4 py-3 rounded-xl bg-gradient-to-r from-[#00ffa3] to-[#00b875] hover:brightness-110 active:scale-95 text-black font-black text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                {copiedReferral ? <Check size={14} className="stroke-[3]" /> : <Copy size={14} />}
+                <span>{copiedReferral ? 'Copied!' : 'Copy Link'}</span>
+              </button>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#030305] border border-[#18181c] text-[11px] text-slate-400 font-mono truncate">
+              {referralLink}
+            </div>
+          </div>
+
+          {/* Quick Level Rewards Summary */}
+          <div className="flex items-center justify-between text-xs text-slate-400 pt-0.5">
+            <span>Level 1: <strong className="text-white">10%</strong></span>
+            <span>Level 2: <strong className="text-white">5%</strong></span>
+            <span>Level 3: <strong className="text-white">3%</strong></span>
+            <span>Level 4-5: <strong className="text-white">2%</strong></span>
+            <button
+              type="button"
+              onClick={() => setActiveRoute('community')}
+              className="text-[#00ffa3] font-bold hover:underline cursor-pointer flex items-center gap-0.5 ml-2"
+            >
+              <span>View Tree</span>
+              <ChevronRight size={12} />
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      {/* 3. 3 WALLET CARDS (Funding, Main, Reward) */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
         {/* Funding Wallet */}

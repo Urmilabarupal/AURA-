@@ -47,24 +47,147 @@ interface AuthContextType {
   connectRealMetaMask: () => Promise<{ success: boolean; address?: string; error?: string }>;
   connectMobileWallet: () => Promise<{ success: boolean; address: string }>;
   register: (data: { walletAddress?: string; referId?: string; country: string; mobile: string; name: string }) => Promise<{ success: boolean; message?: string }>;
-  setupPasscode: (passcode: string) => Promise<{ success: boolean; message?: string }>;
+  setupPasscode: (passcode: string, advanceToLocked?: boolean) => Promise<{ success: boolean; message?: string }>;
   verifyPasscode: (pin: string) => Promise<{ success: boolean; message?: string }>;
   refreshUserData: () => Promise<void>;
   logout: () => void;
   lockApp: () => void;
 }
 
+// URL and SEO Route Title Mappings
+const getPathForRoute = (stage: AuthStage, route: string): string => {
+  if (stage === 'LANDING') return '/home';
+  if (stage === 'UNAUTHENTICATED') return '/connect-wallet';
+  if (stage === 'SETUP_PASSCODE') return '/setup-passcode';
+  if (stage === 'LOCKED') return '/lock';
+  if (stage === 'AUTHENTICATED') {
+    if (route === 'home') return '/dashboard';
+    return `/${route}`;
+  }
+  return '/home';
+};
+
+const getPageTitle = (path: string): string => {
+  const titles: Record<string, string> = {
+    '/': 'MONEY X · Decentralized Wealth & Staking Ecosystem',
+    '/home': 'MONEY X · Decentralized Wealth & Staking Ecosystem',
+    '/dashboard': 'MONEY X · Dashboard & Portfolio Overview',
+    '/wallets': 'MONEY X · Multi-Chain Wallets & Digital Assets',
+    '/deposit': 'MONEY X · Instant Digital Asset Deposit',
+    '/withdraw': 'MONEY X · Secure Digital Asset Withdrawal',
+    '/trade': 'MONEY X · Decentralized Spot & Swap Trading',
+    '/staking': 'MONEY X · High-Yield Staking Pools & APY',
+    '/farming': 'MONEY X · Liquidity Yield Farming',
+    '/community': 'MONEY X · Community & Team Network',
+    '/connect-wallet': 'MONEY X · Connect Web3 Wallet',
+    '/setup-passcode': 'MONEY X · Set Passcode Security',
+    '/lock': 'MONEY X · Screen Lock Security Vault',
+    '/profile': 'MONEY X · User Profile & Verification',
+    '/transactions': 'MONEY X · All Transactions History',
+    '/convert': 'MONEY X · Instant Swap & Convert',
+    '/tickets': 'MONEY X · Tickets & Raffles',
+    '/redeem': 'MONEY X · Reward Vault & Redeem',
+    '/reward': 'MONEY X · Rank & Rewards System',
+    '/jackpot': 'MONEY X · Decentralized Jackpot & Pools',
+  };
+  return titles[path] || 'MONEY X · Decentralized Wealth Ecosystem';
+};
+
+const syncBrowserUrl = (newPath: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    if (window.location.pathname !== newPath) {
+      window.history.pushState(null, '', `${newPath}${window.location.search}`);
+    }
+    document.title = getPageTitle(newPath);
+  } catch (err) {
+    console.warn('URL sync non-fatal warning', err);
+  }
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Always begin at LANDING page so user sees landing first without bottom bar
-  const [authStage, setAuthStage] = useState<AuthStage>('LANDING');
+  // Parse initial URL pathname
+  const initialPath = typeof window !== 'undefined' ? window.location.pathname : '/home';
+  
+  const getInitialState = (): { stage: AuthStage; route: string } => {
+    const session = cookieService.getAuthSession();
+    if (initialPath === '/connect-wallet' || initialPath === '/auth') {
+      return { stage: 'UNAUTHENTICATED', route: 'home' };
+    }
+    if (initialPath === '/setup-passcode') {
+      return { stage: 'SETUP_PASSCODE', route: 'home' };
+    }
+    if (initialPath === '/lock') {
+      return { stage: 'LOCKED', route: 'home' };
+    }
+    if (session.isAuthenticated) {
+      if (initialPath === '/deposit') return { stage: 'AUTHENTICATED', route: 'deposit' };
+      if (initialPath === '/withdraw') return { stage: 'AUTHENTICATED', route: 'withdraw' };
+      if (initialPath === '/wallets' || initialPath === '/wallet') return { stage: 'AUTHENTICATED', route: 'wallets' };
+      if (initialPath === '/trade') return { stage: 'AUTHENTICATED', route: 'trade' };
+      if (initialPath === '/staking') return { stage: 'AUTHENTICATED', route: 'staking' };
+      if (initialPath === '/farming') return { stage: 'AUTHENTICATED', route: 'farming' };
+      if (initialPath === '/community') return { stage: 'AUTHENTICATED', route: 'community' };
+      if (initialPath === '/profile') return { stage: 'AUTHENTICATED', route: 'profile' };
+      if (initialPath === '/transactions') return { stage: 'AUTHENTICATED', route: 'transactions' };
+      if (initialPath === '/convert') return { stage: 'AUTHENTICATED', route: 'convert' };
+      if (initialPath === '/dashboard') return { stage: 'AUTHENTICATED', route: 'home' };
+      return { stage: 'AUTHENTICATED', route: 'home' };
+    }
+    return { stage: 'LANDING', route: 'home' };
+  };
+
+  const initial = getInitialState();
+  const [authStage, setAuthStageInternal] = useState<AuthStage>(initial.stage);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [wallets, setWallets] = useState<UserWallets | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [securityModalOpen, setSecurityModalOpen] = useState<boolean>(false);
   const [emptyStateMode, setEmptyStateMode] = useState<boolean>(false);
-  const [activeRoute, setActiveRoute] = useState<string>('home');
+  const [activeRoute, setActiveRouteInternal] = useState<string>(initial.route);
+
+  // Sync state transitions to browser URL & document title
+  const setAuthStage = (stage: AuthStage) => {
+    setAuthStageInternal(stage);
+    const path = getPathForRoute(stage, activeRoute);
+    syncBrowserUrl(path);
+  };
+
+  const setActiveRoute = (route: string) => {
+    setActiveRouteInternal(route);
+    const path = getPathForRoute(authStage, route);
+    syncBrowserUrl(path);
+  };
+
+  // Browser back/forward popstate listener
+  useEffect(() => {
+    const handlePopState = () => {
+      const currentPath = window.location.pathname;
+      const session = cookieService.getAuthSession();
+      if (currentPath === '/connect-wallet' || currentPath === '/auth') {
+        setAuthStageInternal('UNAUTHENTICATED');
+      } else if (currentPath === '/setup-passcode') {
+        setAuthStageInternal('SETUP_PASSCODE');
+      } else if (currentPath === '/lock') {
+        setAuthStageInternal('LOCKED');
+      } else if (currentPath === '/home' || currentPath === '/') {
+        setAuthStageInternal('LANDING');
+      } else {
+        const cleanRoute = currentPath.replace(/^\//, '');
+        const targetRoute = cleanRoute === 'dashboard' ? 'home' : cleanRoute;
+        setActiveRouteInternal(targetRoute);
+        if (session.isAuthenticated) {
+          setAuthStageInternal('AUTHENTICATED');
+        }
+      }
+      document.title = getPageTitle(currentPath);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [createdPasscode, setCreatedPasscode] = useState<string>(() => {
     if (typeof localStorage !== 'undefined') {
       return localStorage.getItem('xah_custom_passcode') || '';
@@ -235,7 +358,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const setupPasscode = async (passcode: string) => {
+  const setupPasscode = async (passcode: string, advanceToLocked = false) => {
     setIsLoading(true);
     try {
       const res = await ApiService.setupPasscode(passcode);
@@ -247,9 +370,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) {
           setUser({ ...user, passcodeConfigured: true });
         }
-        // Must enter passcode to unlock session!
-        setAuthStage('LOCKED');
-        return { success: true, message: 'Passcode configured! Please enter your PIN to enter.' };
+        if (advanceToLocked) {
+          setAuthStage('LOCKED');
+        }
+        return { success: true, message: 'Passcode configured!' };
       }
       return { success: false, message: res.error?.message || 'Failed to setup passcode' };
     } finally {
