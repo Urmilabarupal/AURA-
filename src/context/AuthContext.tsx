@@ -84,6 +84,8 @@ const getPageTitle = (path: string): string => {
     '/lock': 'MONEY X · Screen Lock Security Vault',
     '/profile': 'MONEY X · User Profile & Verification',
     '/transactions': 'MONEY X · All Transactions History',
+    '/single-wallet': 'MONEY X · Single Chain Wallet & Balance',
+    '/menu': 'MONEY X · All Ecosystem Services & Pages',
     '/convert': 'MONEY X · Instant Swap & Convert',
     '/tickets': 'MONEY X · Tickets & Raffles',
     '/redeem': 'MONEY X · Reward Vault & Redeem',
@@ -126,6 +128,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (initialPath === '/deposit') return { stage: 'AUTHENTICATED', route: 'deposit' };
       if (initialPath === '/withdraw') return { stage: 'AUTHENTICATED', route: 'withdraw' };
       if (initialPath === '/wallets' || initialPath === '/wallet') return { stage: 'AUTHENTICATED', route: 'wallets' };
+      if (initialPath === '/single-wallet' || initialPath === '/wallet-detail') return { stage: 'AUTHENTICATED', route: 'single-wallet' };
+      if (initialPath === '/menu' || initialPath === '/ecosystem') return { stage: 'AUTHENTICATED', route: 'menu' };
       if (initialPath === '/trade') return { stage: 'AUTHENTICATED', route: 'trade' };
       if (initialPath === '/staking') return { stage: 'AUTHENTICATED', route: 'staking' };
       if (initialPath === '/farming') return { stage: 'AUTHENTICATED', route: 'farming' };

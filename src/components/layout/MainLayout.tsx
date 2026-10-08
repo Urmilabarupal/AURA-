@@ -57,6 +57,7 @@ import { CommunityLevels } from '../../pages/community/CommunityLevels';
 import { CommunityTransactions } from '../../pages/community/CommunityTransactions';
 import { CommunityIncome } from '../../pages/community/CommunityIncome';
 import { CommunityShare } from '../../pages/community/CommunityShare';
+import { EcosystemMenuView } from '../../pages/menu/EcosystemMenuView';
 import { JackpotView } from '../../pages/jackpot/JackpotView';
 import { JackpotDeposit } from '../../pages/jackpot/JackpotDeposit';
 import { JackpotWallet } from '../../pages/jackpot/JackpotWallet';
@@ -73,6 +74,7 @@ import { SalesPolicyView } from '../../pages/info/SalesPolicyView';
 export const MainLayout: React.FC = () => {
   const { activeRoute, securityModalOpen, setSecurityModalOpen } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
 
   const renderActivePage = () => {
     switch (activeRoute) {
@@ -87,10 +89,15 @@ export const MainLayout: React.FC = () => {
       case 'withdraw':
         return <WithdrawPage />;
       case 'wallet-detail':
+      case 'single-wallet':
+      case 'wallet':
         return <SingleWallet />;
       case 'extra-wallet':
       case 'hxc-wallet':
         return <ExtraWallet />;
+      case 'menu':
+      case 'ecosystem':
+        return <EcosystemMenuView />;
       case 'profile':
         return <ProfileView />;
       case 'international-trip':
@@ -134,7 +141,10 @@ export const MainLayout: React.FC = () => {
         return <FarmingPlanView />;
       case 'farming-income':
         return <FarmingIncome />;
+      case 'community':
       case 'community-overview':
+      case 'direct-team':
+      case 'team-overview':
         return <CommunityOverview />;
       case 'community-levels':
         return <CommunityLevels />;
@@ -176,17 +186,28 @@ export const MainLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#000000] dark:bg-[#000000] light:bg-[#f8fafc] text-slate-100 dark:text-slate-100 light:text-slate-900 flex flex-col font-sans transition-colors duration-200">
       {/* Sidebar Navigation */}
-      <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
+      <Sidebar
+        mobileOpen={mobileMenuOpen}
+        setMobileOpen={setMobileMenuOpen}
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+      />
 
       {/* Main Content Area */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-w-0">
-        {/* Top Header */}
-        <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+          sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+        }`}
+      >
+        {/* Top Navigation - Strictly Header ONLY on Home page, and SubpageHeader on other pages */}
+        {activeRoute === 'home' ? (
+          <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+        ) : (
+          <SubpageHeader currentRoute={activeRoute} />
+        )}
 
         {/* Page Content Container */}
         <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px] pb-24 lg:pb-8">
-          {/* Subpage Header matching screenshot (rendered on all pages except Home) */}
-          {activeRoute !== 'home' && <SubpageHeader currentRoute={activeRoute} />}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeRoute}

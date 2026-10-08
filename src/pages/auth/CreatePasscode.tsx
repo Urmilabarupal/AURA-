@@ -48,16 +48,31 @@ export const CreatePasscode: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Validation conditions
-  const isLengthValid = passcode.length >= 6;
-  const isMatching = passcode.length > 0 && passcode === confirmPasscode;
+  // Helper to sanitize numeric input (1-6 digits only)
+  const handlePasscodeChange = (val: string) => {
+    // Only accept numeric digits, max 6
+    const numericVal = val.replace(/\D/g, '').slice(0, 6);
+    setPasscode(numericVal);
+    if (errorMsg) setErrorMsg(null);
+  };
+
+  const handleConfirmChange = (val: string) => {
+    // Only accept numeric digits, max 6
+    const numericVal = val.replace(/\D/g, '').slice(0, 6);
+    setConfirmPasscode(numericVal);
+    if (errorMsg) setErrorMsg(null);
+  };
+
+  // Validation conditions: 1 to 6 numeric digits
+  const isLengthValid = passcode.length >= 1 && passcode.length <= 6 && /^\d{1,6}$/.test(passcode);
+  const isMatching = isLengthValid && passcode === confirmPasscode;
   const isFormValid = isLengthValid && isMatching;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isLengthValid) {
-      setErrorMsg('Passcode must be at least 6 characters long');
+      setErrorMsg('Passcode must be between 1 and 6 numbers (digits only)');
       return;
     }
 
@@ -120,7 +135,7 @@ export const CreatePasscode: React.FC = () => {
                 Set Your <span className="text-[#00ffa3]">Passcode</span>
               </h1>
               <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-                Create a secure passcode of at least 6 characters to lock and protect your account on this device.
+                Setup a 1 to 6 digit numeric passcode to lock and protect your account on this device.
               </p>
             </div>
           </div>
@@ -138,23 +153,28 @@ export const CreatePasscode: React.FC = () => {
             
             {/* Input 1: Passcode */}
             <div className="space-y-1">
-              <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
-                Enter Passcode
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+                  Enter Passcode (1 - 6 Numbers)
+                </label>
+                <span className="text-[10px] font-mono text-slate-400">
+                  {passcode.length}/6 digits
+                </span>
+              </div>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                   <Lock size={16} className={passcode.length > 0 ? 'text-[#00ffa3]' : 'text-slate-400'} />
                 </div>
                 <input
                   type={showPasscode ? 'text' : 'password'}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
                   value={passcode}
-                  onChange={(e) => {
-                    setPasscode(e.target.value);
-                    if (errorMsg) setErrorMsg(null);
-                  }}
-                  placeholder="Enter at least 6 characters"
+                  onChange={(e) => handlePasscodeChange(e.target.value)}
+                  placeholder="Enter 1 to 6 digit numbers"
                   autoFocus
-                  className="w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#030905] border border-[#173021] text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] focus:shadow-[0_0_15px_rgba(0,255,163,0.25)] transition-all"
+                  className="w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#030905] border border-[#173021] text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] focus:shadow-[0_0_15px_rgba(0,255,163,0.25)] transition-all tracking-widest"
                 />
                 <button
                   type="button"
@@ -169,22 +189,27 @@ export const CreatePasscode: React.FC = () => {
 
             {/* Input 2: Confirm Passcode */}
             <div className="space-y-1">
-              <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
-                Confirm Passcode
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+                  Confirm Passcode
+                </label>
+                <span className="text-[10px] font-mono text-slate-400">
+                  {confirmPasscode.length}/6 digits
+                </span>
+              </div>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                   <ShieldCheck size={16} className={confirmPasscode.length > 0 ? 'text-[#00ffa3]' : 'text-slate-400'} />
                 </div>
                 <input
                   type={showConfirm ? 'text' : 'password'}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
                   value={confirmPasscode}
-                  onChange={(e) => {
-                    setConfirmPasscode(e.target.value);
-                    if (errorMsg) setErrorMsg(null);
-                  }}
-                  placeholder="Re-enter your passcode"
-                  className="w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#030905] border border-[#173021] text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] focus:shadow-[0_0_15px_rgba(0,255,163,0.25)] transition-all"
+                  onChange={(e) => handleConfirmChange(e.target.value)}
+                  placeholder="Re-enter 1 to 6 digit numbers"
+                  className="w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#030905] border border-[#173021] text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] focus:shadow-[0_0_15px_rgba(0,255,163,0.25)] transition-all tracking-widest"
                 />
                 <button
                   type="button"
@@ -206,7 +231,7 @@ export const CreatePasscode: React.FC = () => {
                   <div className="w-3.5 h-3.5 rounded-full border border-slate-600 shrink-0" />
                 )}
                 <span className={isLengthValid ? 'text-slate-200 font-medium' : 'text-slate-500'}>
-                  At least 6 characters long
+                  1 to 6 numbers (numeric digits only)
                 </span>
               </div>
 

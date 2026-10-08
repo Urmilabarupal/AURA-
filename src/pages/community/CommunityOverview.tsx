@@ -150,27 +150,44 @@ export const CommunityOverview: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column: Total Referred People Card (Screenshot 46 Right) */}
-        <div className="lg:col-span-4 p-8 rounded-3xl bg-blue-600 border border-blue-400/40 shadow-2xl text-center space-y-6 text-white">
-          <div className="flex justify-center">
-            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shadow-lg">
-              <Users size={36} className="text-white" />
+        {/* Right Column: Total Referred People Card (Modern Money X Emerald Obsidian styling) */}
+        <div className="lg:col-span-4 p-8 rounded-3xl bg-[#08080a] border border-[#00e699]/30 shadow-2xl text-center space-y-6 text-white relative overflow-hidden">
+          {/* Ambient glow */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#00e699]/15 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex justify-center relative z-10">
+            <div className="w-20 h-20 rounded-2xl bg-[#00e699]/15 border border-[#00e699]/40 flex items-center justify-center shadow-[0_0_25px_rgba(0,230,153,0.3)]">
+              <Users size={36} className="text-[#00ffa3]" />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <h2 className="text-5xl font-black font-mono tracking-tight">{totalReferred}</h2>
-            <p className="text-sm font-bold uppercase tracking-wider text-blue-100">
+          <div className="space-y-1 relative z-10">
+            <h2 className="text-5xl font-black font-mono tracking-tight text-[#00ffa3] drop-shadow-[0_0_12px_rgba(0,255,163,0.4)]">
+              {totalReferred}
+            </h2>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Total Referred People
             </p>
           </div>
 
-          {/* Invited Action Button (Screenshot 46) */}
+          {/* Quick Metrics in card */}
+          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#18181c] relative z-10 text-xs font-mono">
+            <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
+              <span className="text-[10px] text-slate-500 block">Direct Team</span>
+              <span className="font-bold text-white mt-0.5 block">{totalReferred} Active</span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-[#020204] border border-[#18181c]">
+              <span className="text-[10px] text-slate-500 block">Commission</span>
+              <span className="font-bold text-[#00ffa3] mt-0.5 block">10.0%</span>
+            </div>
+          </div>
+
+          {/* Invited Action Button */}
           <button
             onClick={() => setActiveRoute('community-share')}
-            className="w-full py-3 px-6 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-black text-xs tracking-wider uppercase shadow-xl transition-all cursor-pointer"
+            className="w-full py-3.5 px-6 rounded-2xl bg-[#00e699] hover:bg-[#00ffa3] text-black font-black text-xs tracking-wider uppercase shadow-xl shadow-[#00e699]/25 transition-all cursor-pointer active:scale-98 relative z-10"
           >
-            INVITED
+            INVITED / SHARE LINK
           </button>
         </div>
       </div>

@@ -205,35 +205,35 @@ export const ConnectSignUp: React.FC = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[650px] h-[280px] bg-[#00ffa3]/10 rounded-full blur-[140px]" />
       </div>
 
-      {/* ----------------- SINGLE PROMINENT MONEY X LOGO (Duplicate removed) ----------------- */}
-      <header className="w-full max-w-[480px] mx-auto flex items-center justify-center pt-3 pb-1 z-20">
-        <MoneyXLogo size="lg" glow layout="horizontal" showSubtitle={false} />
+      {/* ----------------- SINGLE PROMINENT MONEY X LOGO ----------------- */}
+      <header className="w-full max-w-[440px] mx-auto flex items-center justify-center pt-2 pb-1 z-20 shrink-0">
+        <MoneyXLogo size="md" glow layout="horizontal" showSubtitle={false} />
       </header>
 
-      {/* ----------------- MAIN COLUMN ----------------- */}
-      <div className="w-full max-w-[480px] flex flex-col items-center text-center my-auto py-2 space-y-4 z-10">
+      {/* ----------------- MAIN COLUMN (Compressed, 1-screen fit) ----------------- */}
+      <div className="w-full max-w-[440px] flex flex-col items-center text-center my-auto py-1 space-y-3 z-10 shrink-0">
         
-        {/* ----------------- 3 STATUS LOADING NODES (Spinning by default) ----------------- */}
+        {/* ----------------- 3 STATUS LOADING NODES (Smaller on Success as requested) ----------------- */}
         <div className="w-full grid grid-cols-3 gap-2 px-1">
           
           {/* Node 1: Wallet */}
           <div className="flex flex-col items-center text-center">
             <div
-              className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-300 relative ${
+              className={`rounded-full flex items-center justify-center transition-all duration-300 relative ${
                 nodeStatus === 'connected'
-                  ? 'bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_24px_rgba(0,255,163,0.7)] scale-105'
+                  ? 'w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_16px_rgba(0,255,163,0.5)]'
                   : nodeStatus === 'error'
-                  ? 'bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_20px_rgba(255,59,92,0.4)]'
-                  : 'bg-[#09121a] border-2 border-[#1c293c] shadow-lg'
+                  ? 'w-12 h-12 sm:w-13 sm:h-13 bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_14px_rgba(255,59,92,0.4)]'
+                  : 'w-12 h-12 sm:w-13 sm:h-13 bg-[#09121a] border-2 border-[#1c293c] shadow-md'
               }`}
             >
               {nodeStatus === 'connected' ? (
-                <Check size={28} className="stroke-[3.5] text-black animate-scaleIn" />
+                <Check size={18} className="stroke-[3.5] text-black animate-scaleIn" />
               ) : nodeStatus === 'error' ? (
-                <X size={26} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
+                <X size={18} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
               ) : (
                 /* Continuous Spinning Radial Sun / Gear Loader */
-                <div className="relative w-9 h-9 flex items-center justify-center">
+                <div className="relative w-7 h-7 flex items-center justify-center">
                   <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle
                       cx="12"
@@ -245,14 +245,14 @@ export const ConnectSignUp: React.FC = () => {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <Wallet size={13} className="absolute text-slate-400" />
+                  <Wallet size={11} className="absolute text-slate-400" />
                 </div>
               )}
             </div>
-            <span className="text-sm sm:text-base font-black text-white mt-2 leading-tight">
+            <span className="text-xs sm:text-[13px] font-black text-white mt-1.5 leading-tight">
               Wallet
             </span>
-            <span className={`text-[10px] sm:text-[11px] leading-tight mt-0.5 ${
+            <span className={`text-[9px] sm:text-[10px] leading-tight mt-0.5 ${
               nodeStatus === 'connected'
                 ? 'text-[#00ffa3] font-bold'
                 : nodeStatus === 'error'
@@ -262,28 +262,28 @@ export const ConnectSignUp: React.FC = () => {
               {nodeStatus === 'connected'
                 ? 'Connected ✓'
                 : nodeStatus === 'error'
-                ? 'Connection Failed'
-                : 'No DApp Found. Still Trying'}
+                ? 'Failed'
+                : 'Still Trying'}
             </span>
           </div>
 
           {/* Node 2: Sign Up */}
           <div className="flex flex-col items-center text-center">
             <div
-              className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-300 relative ${
+              className={`rounded-full flex items-center justify-center transition-all duration-300 relative ${
                 nodeStatus === 'connected'
-                  ? 'bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_24px_rgba(0,255,163,0.7)] scale-105'
+                  ? 'w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_16px_rgba(0,255,163,0.5)]'
                   : nodeStatus === 'error'
-                  ? 'bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_20px_rgba(255,59,92,0.4)]'
-                  : 'bg-[#09121a] border-2 border-[#1c293c] shadow-lg'
+                  ? 'w-12 h-12 sm:w-13 sm:h-13 bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_14px_rgba(255,59,92,0.4)]'
+                  : 'w-12 h-12 sm:w-13 sm:h-13 bg-[#09121a] border-2 border-[#1c293c] shadow-md'
               }`}
             >
               {nodeStatus === 'connected' ? (
-                <Check size={28} className="stroke-[3.5] text-black animate-scaleIn" />
+                <Check size={18} className="stroke-[3.5] text-black animate-scaleIn" />
               ) : nodeStatus === 'error' ? (
-                <X size={26} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
+                <X size={18} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
               ) : (
-                <div className="relative w-9 h-9 flex items-center justify-center">
+                <div className="relative w-7 h-7 flex items-center justify-center">
                   <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle
                       cx="12"
@@ -295,43 +295,43 @@ export const ConnectSignUp: React.FC = () => {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <User size={13} className="absolute text-slate-400" />
+                  <User size={11} className="absolute text-slate-400" />
                 </div>
               )}
             </div>
-            <span className={`text-sm sm:text-base font-black mt-2 leading-tight ${
+            <span className={`text-xs sm:text-[13px] font-black mt-1.5 leading-tight ${
               nodeStatus === 'connected' ? 'text-white' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-200'
             }`}>
               Sign Up
             </span>
-            <span className={`text-[10px] sm:text-[11px] leading-tight mt-0.5 ${
+            <span className={`text-[9px] sm:text-[10px] leading-tight mt-0.5 ${
               nodeStatus === 'connected' ? 'text-[#00ffa3] font-bold' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-400'
             }`}>
               {nodeStatus === 'connected'
                 ? 'Registered ✓'
                 : nodeStatus === 'error'
-                ? 'No DApp Found.'
-                : 'No DApp Found.'}
+                ? 'Failed'
+                : 'No DApp Found'}
             </span>
           </div>
 
           {/* Node 3: Sign In */}
           <div className="flex flex-col items-center text-center">
             <div
-              className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-300 relative ${
+              className={`rounded-full flex items-center justify-center transition-all duration-300 relative ${
                 nodeStatus === 'connected'
-                  ? 'bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_24px_rgba(0,255,163,0.7)] scale-105'
+                  ? 'w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_16px_rgba(0,255,163,0.5)]'
                   : nodeStatus === 'error'
-                  ? 'bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_20px_rgba(255,59,92,0.4)]'
-                  : 'bg-[#09121a] border-2 border-[#1c293c] shadow-lg'
+                  ? 'w-12 h-12 sm:w-13 sm:h-13 bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_14px_rgba(255,59,92,0.4)]'
+                  : 'w-12 h-12 sm:w-13 sm:h-13 bg-[#09121a] border-2 border-[#1c293c] shadow-md'
               }`}
             >
               {nodeStatus === 'connected' ? (
-                <Check size={28} className="stroke-[3.5] text-black animate-scaleIn" />
+                <Check size={18} className="stroke-[3.5] text-black animate-scaleIn" />
               ) : nodeStatus === 'error' ? (
-                <X size={26} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
+                <X size={18} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
               ) : (
-                <div className="relative w-9 h-9 flex items-center justify-center">
+                <div className="relative w-7 h-7 flex items-center justify-center">
                   <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle
                       cx="12"
@@ -343,30 +343,30 @@ export const ConnectSignUp: React.FC = () => {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <Lock size={13} className="absolute text-slate-400" />
+                  <Lock size={11} className="absolute text-slate-400" />
                 </div>
               )}
             </div>
-            <span className={`text-sm sm:text-base font-black mt-2 leading-tight ${
+            <span className={`text-xs sm:text-[13px] font-black mt-1.5 leading-tight ${
               nodeStatus === 'connected' ? 'text-white' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-200'
             }`}>
               Sign In
             </span>
-            <span className={`text-[10px] sm:text-[11px] leading-tight mt-0.5 ${
+            <span className={`text-[9px] sm:text-[10px] leading-tight mt-0.5 ${
               nodeStatus === 'connected' ? 'text-[#00ffa3] font-bold' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-400'
             }`}>
               {nodeStatus === 'connected'
                 ? 'Authorized ✓'
                 : nodeStatus === 'error'
-                ? 'No DApp Found.'
-                : 'No DApp Found.'}
+                ? 'Failed'
+                : 'No DApp Found'}
             </span>
           </div>
 
         </div>
 
-        {/* ----------------- MAIN CARD matching Screenshot 1 ----------------- */}
-        <div className="w-full rounded-[28px] bg-[#0c1017] border border-[#1b2434] p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.95)] text-left space-y-4">
+        {/* ----------------- MAIN CARD (Compressed & Responsive) ----------------- */}
+        <div className="w-full rounded-2xl sm:rounded-3xl bg-[#0c1017] border border-[#1b2434] p-4 sm:p-5 shadow-[0_16px_50px_rgba(0,0,0,0.9)] text-left space-y-3">
           
           {/* CONNECT WALLET BUTTON */}
           <div>
@@ -374,23 +374,23 @@ export const ConnectSignUp: React.FC = () => {
               type="button"
               onClick={handleConnectWallet}
               disabled={isConnecting}
-              className={`w-full py-4 rounded-full font-black text-sm sm:text-base tracking-tight transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-xl ${
+              className={`w-full py-3 sm:py-3.5 rounded-full font-black text-xs sm:text-sm tracking-tight transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg ${
                 connectedAddress
-                  ? 'bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00ffa3] text-black shadow-[0_0_30px_rgba(0,255,163,0.6)] ring-2 ring-[#00ffa3]'
-                  : 'bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00b875] hover:brightness-110 active:scale-[0.99] text-black shadow-[0_0_28px_rgba(0,255,163,0.5)]'
+                  ? 'bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00ffa3] text-black shadow-[0_0_24px_rgba(0,255,163,0.6)] ring-2 ring-[#00ffa3]'
+                  : 'bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00b875] hover:brightness-110 active:scale-[0.99] text-black shadow-[0_0_22px_rgba(0,255,163,0.5)]'
               }`}
             >
               {isConnecting ? (
                 <>
-                  <Loader2 size={18} className="animate-spin text-black" />
+                  <Loader2 size={16} className="animate-spin text-black" />
                   <span>Connecting to MetaMask...</span>
                 </>
               ) : connectedAddress ? (
                 /* "Connect Wallet" text disappears, replaced by connected wallet address */
                 <div className="flex items-center gap-2 font-mono" onClick={handleCopy}>
-                  <Check size={18} className="stroke-[3] text-black" />
+                  <Check size={16} className="stroke-[3] text-black" />
                   <span>{shortAddress}</span>
-                  <span className="text-[10px] font-sans font-bold bg-black/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="text-[9px] font-sans font-bold bg-black/20 px-2 py-0.5 rounded-full flex items-center gap-1">
                     {copiedAddr ? 'Copied!' : 'Connected ✓'}
                   </span>
                 </div>
@@ -400,63 +400,58 @@ export const ConnectSignUp: React.FC = () => {
             </button>
 
             {/* Subtext under button */}
-            <p className="text-center text-[11px] sm:text-xs text-slate-400 mt-2 leading-relaxed">
+            <p className="text-center text-[10px] sm:text-[11px] text-slate-400 mt-1.5 leading-snug">
               {connectedAddress
-                ? `Connected to ${shortAddress}. Complete your details below and proceed.`
-                : 'Connect your wallet to access all features and manage your account effortlessly.'}
+                ? `Connected to ${shortAddress}. Complete details below and proceed.`
+                : 'Connect your wallet to access all features and manage your account.'}
             </p>
           </div>
 
           {/* Error Message if any */}
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center gap-2 text-xs text-[#ff3b5c] animate-shake">
-              <AlertCircle size={15} className="shrink-0" />
-              <span className="flex-1">{errorMsg}</span>
+            <div className="p-2.5 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center gap-2 text-xs text-[#ff3b5c] animate-shake">
+              <AlertCircle size={14} className="shrink-0" />
+              <span className="flex-1 text-[11px]">{errorMsg}</span>
               {errorMsg.toLowerCase().includes('not detected') && (
                 <a
                   href="https://metamask.io/download/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-[#00ffa3] hover:underline font-bold shrink-0"
+                  className="inline-flex items-center gap-1 text-[10px] text-[#00ffa3] hover:underline font-bold shrink-0"
                 >
                   <span>Install</span>
-                  <ExternalLink size={11} />
+                  <ExternalLink size={10} />
                 </a>
               )}
             </div>
           )}
 
-          {/* ----------------- FORM FIELDS ----------------- */}
+          {/* ----------------- FORM FIELDS (Compressed spacing) ----------------- */}
           
           {/* Field 1: Your Unique Referral ID (Auto-filled) */}
-          <div className="space-y-1">
-            <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+          <div className="space-y-0.5">
+            <label className="text-[11px] sm:text-xs font-semibold text-slate-200 block">
               Your Unique Referral ID
             </label>
-            <p className="text-[11px] text-slate-500 leading-tight">
-              Share your Referral ID to invite others and expand your network seamlessly!
-            </p>
-            <div className="pt-0.5">
-              <input
-                type="text"
-                value={referId}
-                onChange={(e) => setReferId(e.target.value.toUpperCase())}
-                placeholder="Referral ID"
-                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-sm font-mono font-bold text-white focus:outline-none focus:border-[#00ffa3] transition-colors"
-              />
-            </div>
+            <input
+              type="text"
+              value={referId}
+              onChange={(e) => setReferId(e.target.value.toUpperCase())}
+              placeholder="Referral ID"
+              className="w-full px-3.5 py-2 sm:py-2.5 rounded-full bg-[#080b12] border border-[#161f30] text-xs font-mono font-bold text-white focus:outline-none focus:border-[#00ffa3] transition-colors"
+            />
           </div>
 
           {/* Field 2: Pick Your Country (Selectable) */}
-          <div className="space-y-1">
-            <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+          <div className="space-y-0.5">
+            <label className="text-[11px] sm:text-xs font-semibold text-slate-200 block">
               Pick Your Country
             </label>
-            <div className="relative pt-0.5">
+            <div className="relative">
               <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-[#00ffa3] cursor-pointer appearance-none pr-10"
+                className="w-full px-3.5 py-2 sm:py-2.5 rounded-full bg-[#080b12] border border-[#161f30] text-xs font-semibold text-white focus:outline-none focus:border-[#00ffa3] cursor-pointer appearance-none pr-8"
               >
                 {countryOptions.map((c) => (
                   <option key={c.label} value={c.label} className="bg-[#0c1017] text-white">
@@ -464,70 +459,63 @@ export const ConnectSignUp: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <ChevronDown size={16} />
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <ChevronDown size={14} />
               </div>
             </div>
-            <p className="text-[11px] text-slate-500 leading-tight pt-0.5">
-              Choose your country to ensure accurate settings and seamless access.
-            </p>
           </div>
 
           {/* Field 3: Your Full Name (Empty initially) */}
-          <div className="space-y-1">
-            <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+          <div className="space-y-0.5">
+            <label className="text-[11px] sm:text-xs font-semibold text-slate-200 block">
               Your Full Name
             </label>
-            <div className="pt-0.5">
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Enter your full name"
-                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] transition-colors"
-              />
-            </div>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Enter your full name"
+              className="w-full px-3.5 py-2 sm:py-2.5 rounded-full bg-[#080b12] border border-[#161f30] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] transition-colors"
+            />
           </div>
 
           {/* Field 4: Mobile Number (Empty initially, strictly max 10 digits) */}
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
+              <label className="text-[11px] sm:text-xs font-semibold text-slate-200 block">
                 Mobile Number
               </label>
-              <span className="text-[10px] text-slate-500 font-mono">
+              <span className="text-[9px] text-slate-500 font-mono">
                 {mobileNumber.length}/10 digits
               </span>
             </div>
-            <div className="pt-0.5">
-              <input
-                type="tel"
-                maxLength={10}
-                value={mobileNumber}
-                onChange={(e) => handleMobileChange(e.target.value)}
-                placeholder="Enter 10-digit mobile number"
-                className="w-full px-4 py-3 rounded-full bg-[#080b12] border border-[#161f30] text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] transition-colors font-mono"
-              />
-            </div>
+            <input
+              type="tel"
+              maxLength={10}
+              value={mobileNumber}
+              onChange={(e) => handleMobileChange(e.target.value)}
+              placeholder="Enter 10-digit mobile number"
+              className="w-full px-3.5 py-2 sm:py-2.5 rounded-full bg-[#080b12] border border-[#161f30] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] transition-colors font-mono"
+            />
           </div>
 
           {/* SUBMIT BUTTON -> ADVANCES TO PASSCODE SETUP */}
-          <div className="pt-2">
+          <div className="pt-1">
             <button
               type="button"
               onClick={handleSubmitAndProceed}
               disabled={isSubmitting}
-              className="w-full py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00b875] hover:brightness-110 active:scale-[0.99] text-black font-black text-sm sm:text-base tracking-tight transition-all shadow-lg shadow-[#00ffa3]/30 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-[#00ffa3] via-[#00e699] to-[#00b875] hover:brightness-110 active:scale-[0.99] text-black font-black text-xs sm:text-sm tracking-tight transition-all shadow-md shadow-[#00ffa3]/25 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 size={18} className="animate-spin text-black" />
+                  <Loader2 size={16} className="animate-spin text-black" />
                   <span>Submitting & Preparing Passcode...</span>
                 </>
               ) : (
                 <>
                   <span>Submit & Setup Passcode</span>
-                  <ArrowRight size={16} className="stroke-[3]" />
+                  <ArrowRight size={14} className="stroke-[3]" />
                 </>
               )}
             </button>
@@ -538,9 +526,9 @@ export const ConnectSignUp: React.FC = () => {
       </div>
 
       {/* Floating Bottom Pill Badge matching Screenshot 1 */}
-      <div className="pb-3 z-30">
-        <div className="px-4 py-2 rounded-full bg-[#0d141c]/90 border border-[#1c293c] text-slate-300 text-xs font-semibold shadow-xl flex items-center gap-2 backdrop-blur-md">
-          <span className="w-2 h-2 rounded-full bg-[#00ffa3] animate-pulse" />
+      <div className="pb-2 z-30 shrink-0">
+        <div className="px-3.5 py-1.5 rounded-full bg-[#0d141c]/90 border border-[#1c293c] text-slate-300 text-[11px] font-semibold shadow-lg flex items-center gap-2 backdrop-blur-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00ffa3] animate-pulse" />
           <span>Trying to Auto Sign In...</span>
         </div>
       </div>

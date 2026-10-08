@@ -53,11 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
   };
 
   return (
-    <header
-      className={`sticky top-0 z-40 w-full bg-[#000000]/90 backdrop-blur-xl border-b border-[#141816] px-4 sm:px-6 py-3.5 select-none font-sans ${
-        isHome ? 'block' : 'hidden lg:block'
-      }`}
-    >
+    <header className="sticky top-0 z-40 w-full bg-[#000000]/90 backdrop-blur-xl border-b border-[#141816] px-4 sm:px-6 py-3.5 select-none font-sans">
       
       {/* ----------------- MOBILE HEADER VIEW (Only on Home Page for < lg) ----------------- */}
       {isHome && (

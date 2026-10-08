@@ -44,19 +44,25 @@ export const EnterPasscode: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [forgotModalOpen, setForgotModalOpen] = useState<boolean>(false);
 
+  const expectedLength = createdPasscode ? createdPasscode.length : 6;
+  const numDots = Math.min(Math.max(expectedLength, 1), 6);
+
   const handleDigit = (digit: string) => {
     if (isVerifying || isSuccess) return;
 
     if (isError) {
       setIsError(false);
       setPin(digit);
+      if (numDots === 1) {
+        attemptUnlock(digit);
+      }
       return;
     }
 
-    if (pin.length < 6) {
+    if (pin.length < numDots) {
       const next = pin + digit;
       setPin(next);
-      if (next.length === 6) {
+      if (next.length === numDots) {
         attemptUnlock(next);
       }
     }
@@ -172,17 +178,17 @@ export const EnterPasscode: React.FC = () => {
           >
             {isError
               ? 'Please enter the correct passcode to unlock the app.'
-              : 'Enter 6-digit passcode to unlock'}
+              : `Enter your ${numDots}-digit numeric passcode to unlock`}
           </p>
         </div>
 
-        {/* 6 Circular PIN Dots matching Screen 8 & 9 */}
+        {/* Circular PIN Dots matching configured passcode length */}
         <div
           className={`flex items-center justify-center gap-4 py-2 ${
             isError ? 'animate-shake' : ''
           }`}
         >
-          {[0, 1, 2, 3, 4, 5].map((idx) => {
+          {Array.from({ length: numDots }).map((_, idx) => {
             const isFilled = pin.length > idx;
             return (
               <div

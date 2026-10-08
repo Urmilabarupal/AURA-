@@ -51,10 +51,48 @@ export const SingleWallet: React.FC = () => {
   const { user, wallets, refreshUserData, setActiveRoute, emptyStateMode } = useAuth();
   const { copyToClipboard } = useToast();
 
+  const [selectedAssetId, setSelectedAssetId] = useState<string>(() => {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('xah_selected_wallet_asset') || 'native';
+    }
+    return 'native';
+  });
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [depositModalOpen, setDepositModalOpen] = useState<boolean>(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState<boolean>(false);
   const [copiedAddr, setCopiedAddr] = useState<boolean>(false);
+
+  // Asset configurations for single wallet inspection
+  const assetConfig: Record<string, { name: string; symbol: string; rateUsd: number; isNative?: boolean }> = {
+    native: { name: `${BRAND.chainName} Protocol Token`, symbol: BRAND.tokenSymbol, rateUsd: 337.2, isNative: true },
+    usdt: { name: 'Tether USD (Multi-Chain)', symbol: 'USDT', rateUsd: 1.0 },
+    eth: { name: 'Ethereum Native', symbol: 'ETH', rateUsd: 2800 },
+    busd: { name: 'BNB Smart Chain', symbol: 'BNB', rateUsd: 590 },
+    trx: { name: 'TRON TRC-20', symbol: 'TRX', rateUsd: 0.16 },
+  };
+
+  const currentAsset = assetConfig[selectedAssetId] || assetConfig.native;
+
+  // Compute balance for current asset
+  const getAssetBalance = () => {
+    if (emptyStateMode) return { token: 0, usd: 0 };
+    if (selectedAssetId === 'native') {
+      const bal = wallets?.mainBalanceNative ?? 0;
+      return { token: bal, usd: +(bal * currentAsset.rateUsd).toFixed(2) };
+    }
+    if (selectedAssetId === 'usdt') {
+      const bal = wallets?.fundingBalanceUSDT ?? (wallets?.spotBalanceUSDT ?? 0);
+      return { token: bal, usd: bal };
+    }
+    if (selectedAssetId === 'eth') {
+      const bal = wallets?.spotBalanceNative ?? 0;
+      return { token: bal, usd: +(bal * currentAsset.rateUsd).toFixed(2) };
+    }
+    return { token: 0, usd: 0 };
+  };
+
+  const assetBalance = getAssetBalance();
 
   // Deposit Form
   const [depositAmount, setDepositAmount] = useState<number>(100);
@@ -72,7 +110,7 @@ export const SingleWallet: React.FC = () => {
 
   useEffect(() => {
     loadTransactions();
-  }, [emptyStateMode]);
+  }, [emptyStateMode, selectedAssetId]);
 
   const loadTransactions = async () => {
     if (emptyStateMode) {
@@ -82,7 +120,14 @@ export const SingleWallet: React.FC = () => {
     try {
       const res = await ApiService.getTransactions({ limit: 10 });
       if (res.success && res.data) {
-        setTransactions(res.data);
+        // Filter transactions relevant to selected asset or general
+        if (selectedAssetId === 'usdt') {
+          setTransactions(res.data.filter((t) => t.currency === 'USDT'));
+        } else if (selectedAssetId === 'native') {
+          setTransactions(res.data.filter((t) => t.currency === BRAND.tokenSymbol || t.currency === 'USDT'));
+        } else {
+          setTransactions(res.data);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -106,7 +151,7 @@ export const SingleWallet: React.FC = () => {
       const res = await ApiService.deposit({
         wallet: 'spot',
         amountUSDT: depositAmount,
-        currency: 'USDT',
+        currency: currentAsset.symbol === 'USDT' ? 'USDT' : 'USDT',
       });
       if (res.success) {
         setDepositSuccess(true);
@@ -172,16 +217,44 @@ export const SingleWallet: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveRoute('wallets')}
-            className="p-2 rounded-xl bg-[#08080a] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-[#08080a] hover:bg-[#1d233c] text-slate-300 hover:text-white transition-colors cursor-pointer"
           >
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
-              {BRAND.chainName}
-            </h1>
-            <p className="text-xs text-slate-400">Decentralized Settlement Layer</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-black text-slate-100 uppercase tracking-tight">
+                {currentAsset.symbol} Wallet
+              </h1>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#00e699]/15 text-[#00e699] border border-[#00e699]/30">
+                {currentAsset.name}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400">Decentralized Single Asset Vault & Transaction Ledger</p>
           </div>
+        </div>
+
+        {/* Quick Asset Switcher Pills */}
+        <div className="hidden sm:flex items-center gap-1.5 p-1 rounded-xl bg-[#08080a] border border-[#18181c]">
+          {Object.entries(assetConfig).map(([id, info]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setSelectedAssetId(id);
+                if (typeof localStorage !== 'undefined') {
+                  localStorage.setItem('xah_selected_wallet_asset', id);
+                }
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
+                selectedAssetId === id
+                  ? 'bg-[#00e699] text-black shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {info.symbol}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -191,11 +264,11 @@ export const SingleWallet: React.FC = () => {
         <div className="lg:col-span-8 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-4">
           <div className="flex items-center justify-between border-b border-[#18181c] pb-3">
             <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wide">
-              Transactions ({transactions.length})
+              {currentAsset.symbol} Transactions ({transactions.length})
             </h3>
             <button
               onClick={loadTransactions}
-              className="text-xs text-[#00e699] hover:text-[#00ffaa] flex items-center gap-1 font-semibold"
+              className="text-xs text-[#00e699] hover:text-[#00ffaa] flex items-center gap-1 font-semibold cursor-pointer"
             >
               <RefreshCw size={12} />
               <span>Refresh</span>
@@ -205,8 +278,8 @@ export const SingleWallet: React.FC = () => {
           {transactions.length === 0 ? (
             <EmptyState
               title="Data Not Found"
-              description="The requested information is currently unavailable"
-              actionText="Deposit to Wallet"
+              description={`No recent transactions found for ${currentAsset.symbol}. Deposit funds to start trading and earning.`}
+              actionText={`Deposit ${currentAsset.symbol}`}
               onAction={() => setDepositModalOpen(true)}
             />
           ) : (
@@ -250,17 +323,20 @@ export const SingleWallet: React.FC = () => {
         {/* Right Column: Balance & Action Card (Screenshot 13 Right) */}
         <div className="lg:col-span-4 p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-lg space-y-5">
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Balance
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                {currentAsset.symbol} Balance
+              </p>
+              <span className="text-[10px] text-slate-500 font-mono">1 {currentAsset.symbol} ≈ ${currentAsset.rateUsd}</span>
+            </div>
             <h2 className="text-3xl font-black text-slate-100 font-mono">
-              {emptyStateMode ? '0.00' : (wallets?.spotBalanceUSDT || 0).toFixed(2)}{' '}
-              <span className="text-sm font-bold text-[#00e699]">USDT</span>
+              {assetBalance.token.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}{' '}
+              <span className="text-sm font-bold text-[#00e699]">{currentAsset.symbol}</span>
             </h2>
             <div className="flex items-center justify-between text-xs text-slate-400 pt-1 font-mono">
-              <span>{BRAND.tokenSymbol}:</span>
+              <span>Estimated USD Value:</span>
               <span className="font-bold text-slate-200">
-                {emptyStateMode ? '0.00' : (wallets?.spotBalanceNative || 0).toFixed(4)}
+                ${assetBalance.usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
               </span>
             </div>
           </div>
@@ -269,16 +345,16 @@ export const SingleWallet: React.FC = () => {
           <div className="grid grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => setDepositModalOpen(true)}
-              className="py-3 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-[#00ffaa] shadow-lg shadow-blue-950/50 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="py-3 px-4 rounded-xl text-xs font-bold text-black bg-[#00e699] hover:bg-[#00ffa3] shadow-lg shadow-[#00e699]/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
             >
-              <Download size={15} />
+              <Download size={15} className="stroke-[2.5]" />
               <span>Deposit</span>
             </button>
             <button
               onClick={() => setWithdrawModalOpen(true)}
-              className="py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-95 shadow-lg shadow-indigo-950/50 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="py-3 px-4 rounded-xl text-xs font-bold text-white bg-[#020204] hover:bg-[#121216] border border-[#18181c] flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <Upload size={15} />
+              <Upload size={15} className="stroke-[2.5]" />
               <span>Withdraw</span>
             </button>
           </div>

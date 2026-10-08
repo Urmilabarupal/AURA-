@@ -19,9 +19,11 @@ export const WalletsList: React.FC = () => {
   const { wallets, user, walletAddress, isMetaMaskConnected, setActiveRoute, emptyStateMode } = useAuth();
   const { copyToClipboard } = useToast();
 
-  const activeAddr = user?.walletAddress || walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
-  const nativeBalance = emptyStateMode ? 0 : (wallets?.mainBalanceNative ?? 1.485);
-  const totalChainValueUSD = emptyStateMode ? 0 : (wallets?.mainBalanceUSDT ?? (nativeBalance * 337.2));
+  const activeAddr = user?.walletAddress || walletAddress || '0x0000000000000000000000000000000000000000';
+  const nativeBalance = emptyStateMode ? 0 : (wallets?.mainBalanceNative ?? 0);
+  const usdtBalance = emptyStateMode ? 0 : (wallets?.fundingBalanceUSDT ?? 0);
+  const ethBalance = emptyStateMode ? 0 : (wallets?.spotBalanceNative ?? 0);
+  const totalChainValueUSD = emptyStateMode ? 0 : (wallets?.totalBalanceUSDT ?? +(usdtBalance + nativeBalance * 337.2 + ethBalance * 2800).toFixed(2));
 
   const assets = [
     {
@@ -41,8 +43,8 @@ export const WalletsList: React.FC = () => {
       id: 'usdt',
       symbol: 'USDT',
       name: 'Tether USD (Multi-Chain)',
-      balance: (wallets?.fundingBalanceUSDT ?? 84300.0).toFixed(2),
-      usdValue: `$${(wallets?.fundingBalanceUSDT ?? 84300.0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      balance: usdtBalance.toFixed(2),
+      usdValue: `$${usdtBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: (
         <div className="w-8 h-8 rounded-full bg-[#26a17b] flex items-center justify-center text-white font-extrabold text-sm shadow-sm">
           ₮
@@ -53,8 +55,8 @@ export const WalletsList: React.FC = () => {
       id: 'eth',
       symbol: 'ETH',
       name: 'Ethereum Native',
-      balance: '1.2450',
-      usdValue: '$4,170.75',
+      balance: ethBalance.toFixed(4),
+      usdValue: `$${(ethBalance * 2800).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: (
         <div className="w-8 h-8 flex items-center justify-center">
           <svg className="w-6 h-7" viewBox="0 0 784.37 1277.39" fill="none">
@@ -70,8 +72,8 @@ export const WalletsList: React.FC = () => {
       id: 'busd',
       symbol: 'BNB / BSC',
       name: 'BNB Smart Chain',
-      balance: '4.8500',
-      usdValue: '$2,861.50',
+      balance: '0.0000',
+      usdValue: '$0.00',
       icon: (
         <div className="w-8 h-8 flex items-center justify-center text-[#f3ba2f]">
           <svg className="w-7 h-7" viewBox="0 0 124 124" fill="none">
@@ -87,8 +89,8 @@ export const WalletsList: React.FC = () => {
       id: 'trx',
       symbol: 'TRX',
       name: 'TRON TRC-20',
-      balance: '8,420.00',
-      usdValue: '$1,263.00',
+      balance: '0.00',
+      usdValue: '$0.00',
       icon: (
         <div className="w-8 h-8 flex items-center justify-center text-[#ef0027]">
           <svg className="w-7 h-7" viewBox="0 0 100 100" fill="none">
@@ -169,7 +171,12 @@ export const WalletsList: React.FC = () => {
             {assets.map((asset) => (
               <div
                 key={asset.id}
-                onClick={() => setActiveRoute('deposit')}
+                onClick={() => {
+                  if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('xah_selected_wallet_asset', asset.id);
+                  }
+                  setActiveRoute('single-wallet');
+                }}
                 className="p-4 sm:p-5 rounded-2xl bg-[#08080a] border border-[#18181c] hover:border-[#00e699]/40 hover:bg-[#0c0c10] transition-all cursor-pointer flex items-center justify-between shadow-2xl group"
               >
                 <div className="flex items-center gap-3.5">

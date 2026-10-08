@@ -54,111 +54,38 @@ const STORAGE_KEY_TICKETS = 'aura_tickets_v1';
 // Seed User
 const DEFAULT_USER: UserProfile = {
   id: BRAND.defaultUserId,
-  username: '0x3a56...7F2B',
-  name: 'Sandeep Kumar',
-  firstName: 'Sandeep',
-  lastName: 'Kumar',
-  email: `sandeep.kumar@${BRAND.domain}`,
-  mobile: '+91 98765-43210',
+  username: '0x0000...0000',
+  name: 'User',
+  firstName: 'User',
+  lastName: '',
+  email: `user@${BRAND.domain}`,
+  mobile: '',
   country: 'India (+91)',
-  walletAddress: '0x3a56D4869c9b4e1837015E5aE4F4D3C5237F2B',
+  walletAddress: '',
   referId: BRAND.defaultReferId,
-  referBy: `${BRAND.name.slice(0, 2).toUpperCase()}99842`,
-  createdAt: '2026-01-15T10:00:00Z',
-  passcodeConfigured: true,
-  kycStatus: 'VERIFIED',
+  referBy: '',
+  createdAt: new Date().toISOString(),
+  passcodeConfigured: false,
+  kycStatus: 'UNVERIFIED',
 };
 
-// Seed Wallets
+// Seed Wallets (Strict Zero Dummy Data Enforcement)
 const DEFAULT_WALLETS: UserWallets = {
-  spotBalanceUSDT: 450.0,
-  spotBalanceNative: 1.3345,
-  mainBalanceUSDT: 1250.0,
-  mainBalanceNative: 3.707,
-  fundingBalanceUSDT: 350.0,
-  fundingBalanceNative: 1.038,
-  jackpotBalanceUSDT: 50.0,
-  extraBalanceHXC: 840.5,
-  totalBalanceUSDT: 2100.0,
-  totalDepositUSDT: 3500.0,
-  totalWithdrawUSDT: 1400.0,
+  spotBalanceUSDT: 0.0,
+  spotBalanceNative: 0.0,
+  mainBalanceUSDT: 0.0,
+  mainBalanceNative: 0.0,
+  fundingBalanceUSDT: 0.0,
+  fundingBalanceNative: 0.0,
+  jackpotBalanceUSDT: 0.0,
+  extraBalanceHXC: 0.0,
+  totalBalanceUSDT: 0.0,
+  totalDepositUSDT: 0.0,
+  totalWithdrawUSDT: 0.0,
 };
 
-// Seed Transactions
-const DEFAULT_TRANSACTIONS: Transaction[] = [
-  {
-    id: 'TX-98412-A1',
-    userId: BRAND.defaultUserId,
-    type: 'APP_TRANSFER',
-    typeLabel: 'App Transfer',
-    amount: 150.0,
-    currency: 'USDT',
-    amountUSD: 150.0,
-    status: 'COMPLETED',
-    timestamp: '2026-09-29 19:52:13',
-    referenceId: 'REF-88491023',
-    description: 'Internal transfer from Spot to Main Wallet',
-    fromWallet: 'spot',
-    toWallet: 'main',
-  },
-  {
-    id: 'TX-98411-B2',
-    userId: BRAND.defaultUserId,
-    type: 'DEPOSIT',
-    typeLabel: 'Chain Deposit',
-    amount: 500.0,
-    currency: 'USDT',
-    amountUSD: 500.0,
-    status: 'COMPLETED',
-    timestamp: '2026-09-28 14:20:00',
-    referenceId: 'REF-77382910',
-    description: 'USDT TRC20 On-chain Deposit',
-    toAddress: '0x7ACCd8BFC2DC0A1135ef3C95973F27d0C02a11b0',
-    toWallet: 'spot',
-  },
-  {
-    id: 'TX-98410-C3',
-    userId: BRAND.defaultUserId,
-    type: 'STAKING_INCOME',
-    typeLabel: 'Staking Yield',
-    amount: 25.5,
-    currency: 'USDT',
-    amountUSD: 25.5,
-    status: 'COMPLETED',
-    timestamp: '2026-09-27 00:00:00',
-    referenceId: 'REF-66291834',
-    description: 'Daily yield payout from 1825 Days Plan',
-    toWallet: 'main',
-  },
-  {
-    id: 'TX-98409-D4',
-    userId: BRAND.defaultUserId,
-    type: 'TRADE_BUY',
-    typeLabel: 'Spot Buy',
-    amount: 0.15,
-    currency: BRAND.tokenSymbol,
-    amountUSD: 50.58,
-    status: 'COMPLETED',
-    timestamp: '2026-09-26 18:30:12',
-    referenceId: 'REF-55102948',
-    description: `Bought 0.15 ${BRAND.tokenSymbol} @ 337.20 USDT`,
-    fromWallet: 'spot',
-  },
-  {
-    id: 'TX-98408-E5',
-    userId: BRAND.defaultUserId,
-    type: 'TICKET_PURCHASE',
-    typeLabel: 'Lottery Ticket',
-    amount: 10.0,
-    currency: 'USDT',
-    amountUSD: 10.0,
-    status: 'COMPLETED',
-    timestamp: '2026-09-25 11:15:42',
-    referenceId: 'REF-44910283',
-    description: 'Purchased 1 Draw Ticket #TK-849201',
-    fromWallet: 'funding',
-  },
-];
+// Seed Transactions (Empty by default for real user operations)
+const DEFAULT_TRANSACTIONS: Transaction[] = [];
 
 // Helper to hash passcode (simple SHA256 simulation for demo)
 function hashPasscode(pin: string): string {
@@ -404,6 +331,21 @@ export class AuthoritativeBackend {
       kycStatus: 'UNVERIFIED',
     };
 
+    this.wallets = {
+      spotBalanceUSDT: 0.0,
+      spotBalanceNative: 0.0,
+      mainBalanceUSDT: 0.0,
+      mainBalanceNative: 0.0,
+      fundingBalanceUSDT: 0.0,
+      fundingBalanceNative: 0.0,
+      jackpotBalanceUSDT: 0.0,
+      extraBalanceHXC: 0.0,
+      totalBalanceUSDT: 0.0,
+      totalDepositUSDT: 0.0,
+      totalWithdrawUSDT: 0.0,
+    };
+    this.transactions = [];
+
     this.authToken = `aura_sess_${Date.now()}_${randomHex}`;
 
     return {
@@ -414,10 +356,10 @@ export class AuthoritativeBackend {
   }
 
   public static async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode: string }>> {
-    if (!passcode || passcode.length < 6) {
+    if (!passcode || passcode.length < 1 || passcode.length > 6 || !/^\d{1,6}$/.test(passcode)) {
       return {
         success: false,
-        error: { code: 'INVALID_PASSCODE', message: 'Passcode must be at least 6 digits.' },
+        error: { code: 'INVALID_PASSCODE', message: 'Passcode must be between 1 and 6 digits in numbers format only.' },
       };
     }
 

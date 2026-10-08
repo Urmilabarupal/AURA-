@@ -51,8 +51,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
   };
 
   const isHome = activeRoute === 'home' || activeRoute === '';
-  const isWallets = activeRoute === 'wallets' || activeRoute === 'deposit' || activeRoute === 'withdraw';
-  const isTrade = activeRoute === 'trade';
+  const isWallets = activeRoute === 'wallets' || activeRoute === 'deposit' || activeRoute === 'withdraw' || activeRoute === 'single-wallet';
+  const isMenu = activeRoute === 'menu' || activeRoute === 'ecosystem';
   const isEarn =
     activeRoute === 'staking' ||
     activeRoute === 'farming' ||
@@ -62,6 +62,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
     activeRoute === 'sip-bonus';
   const isCommunity =
     activeRoute === 'community' ||
+    activeRoute === 'community-overview' ||
     activeRoute === 'community-share' ||
     activeRoute === 'direct-team' ||
     activeRoute === 'team-overview' ||
@@ -136,11 +137,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenMenu }) 
             
             <button
               type="button"
-              onClick={() => handleNav('trade')}
+              onClick={() => handleNav('menu')}
               className={`relative w-15 h-15 sm:w-16 sm:h-16 rounded-full p-1 bg-[#041108] border-2 border-[#00ffa3]/50 shadow-[0_0_30px_rgba(0,255,163,0.7),0_0_60px_rgba(0,230,153,0.35)] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center group ${
-                isTrade ? 'ring-4 ring-[#00ffa3]/40' : ''
+                isMenu ? 'ring-4 ring-[#00ffa3] scale-105' : ''
               }`}
-              aria-label="Trade / Ecosystem Menu"
+              aria-label="Ecosystem Menu"
             >
               {/* Core Gradient Orb */}
               <div className="w-full h-full rounded-full bg-gradient-to-br from-[#00ffa3] via-[#00e699] to-[#009b62] flex items-center justify-center shadow-inner group-hover:brightness-110 transition-all">

@@ -15,8 +15,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../common/Toast';
 import { BRAND } from '../../config/brand';
-import { ThemeToggle } from '../common/ThemeToggle';
-import { ChevronLeft, Home, Lock, MoreVertical, RefreshCw, Share2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Home, Lock, MoreVertical, RefreshCw, Share2 } from 'lucide-react';
 
 interface SubpageHeaderProps {
   currentRoute: string;
@@ -29,6 +28,10 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
 
   // Dynamic route titles mapping
   const routeTitles: Record<string, string> = {
+    menu: 'Ecosystem Menu',
+    ecosystem: 'Ecosystem Menu',
+    'single-wallet': 'Single Wallet Details',
+    'wallet-detail': 'Single Wallet Details',
     home: 'Home',
     trade: 'Trade',
     wallets: 'Wallets',
@@ -107,32 +110,30 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
   };
 
   return (
-    <div className="w-full h-14 rounded-2xl bg-[#08080a] dark:bg-[#08080a] light:bg-white border border-[#18181c] dark:border-[#18181c] light:border-slate-200 px-4 sm:px-5 flex items-center justify-between mb-6 shadow-2xl relative select-none transition-colors">
+    <header className="sticky top-0 z-40 w-full bg-[#000000]/95 backdrop-blur-xl border-b border-[#141816] px-4 sm:px-6 py-3 flex items-center justify-between select-none transition-colors">
       
       {/* Left: Back Arrow (< ChevronLeft) */}
       <button
         type="button"
         onClick={handleBack}
-        className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 dark:text-slate-300 light:text-slate-700 hover:text-white dark:hover:text-white light:hover:text-black hover:bg-[#18181c] dark:hover:bg-[#18181c] light:hover:bg-slate-100 transition-colors cursor-pointer -ml-1"
+        className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-[#0c140f] border border-transparent hover:border-[#1b2b20] transition-colors cursor-pointer"
         aria-label="Back to Home"
       >
         <ChevronLeft size={24} className="stroke-[2.5]" />
       </button>
 
       {/* Center: Dynamic Page Name */}
-      <h1 className="text-base sm:text-[17px] font-bold text-white dark:text-white light:text-slate-900 tracking-tight text-center">
+      <h1 className="text-base sm:text-lg font-black text-white tracking-tight text-center">
         {pageTitle}
       </h1>
 
-      {/* Right: Theme Toggle & Three Dots (⋮ MoreVertical) */}
-      <div className="flex items-center gap-1.5 -mr-1">
-        <ThemeToggle />
-
+      {/* Right: Three Dots (⋮ MoreVertical) - Strictly NO dark mode icon! */}
+      <div className="flex items-center gap-1.5">
         <div className="relative">
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-400 light:text-slate-600 hover:text-white dark:hover:text-white light:hover:text-black hover:bg-[#18181c] dark:hover:bg-[#18181c] light:hover:bg-slate-100 transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-[#0c140f] border border-transparent hover:border-[#1b2b20] transition-colors cursor-pointer"
             aria-label="More options"
           >
             <MoreVertical size={20} />
@@ -145,13 +146,13 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
                 onClick={() => setMenuOpen(false)}
                 className="fixed inset-0 z-30"
               />
-              <div className="absolute right-0 mt-2 w-44 rounded-xl bg-[#0e0e12] dark:bg-[#0e0e12] light:bg-white border border-[#222228] dark:border-[#222228] light:border-slate-200 shadow-2xl py-1.5 z-40 animate-fadeIn space-y-0.5">
+              <div className="absolute right-0 mt-2 w-48 rounded-xl bg-[#090d0b] border border-[#1b2b20] shadow-2xl py-1.5 z-50 animate-fadeIn space-y-0.5">
                 <button
                   type="button"
                   onClick={handleRefresh}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-300 dark:text-slate-300 light:text-slate-700 hover:text-[#00e699] hover:bg-[#18181c] dark:hover:bg-[#18181c] light:hover:bg-slate-50 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-300 hover:text-[#00ffa3] hover:bg-[#0f1d13] transition-colors cursor-pointer text-left"
                 >
-                  <RefreshCw size={14} className="text-[#00e699]" />
+                  <RefreshCw size={14} className="text-[#00ffa3]" />
                   <span>Refresh Data</span>
                 </button>
 
@@ -161,7 +162,7 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
                     setMenuOpen(false);
                     setActiveRoute('home');
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-300 dark:text-slate-300 light:text-slate-700 hover:text-[#00e699] hover:bg-[#18181c] dark:hover:bg-[#18181c] light:hover:bg-slate-50 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-300 hover:text-[#00ffa3] hover:bg-[#0f1d13] transition-colors cursor-pointer text-left"
                 >
                   <Home size={14} className="text-cyan-400" />
                   <span>Go to Home</span>
@@ -170,13 +171,13 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-300 dark:text-slate-300 light:text-slate-700 hover:text-[#00e699] hover:bg-[#18181c] dark:hover:bg-[#18181c] light:hover:bg-slate-50 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-300 hover:text-[#00ffa3] hover:bg-[#0f1d13] transition-colors cursor-pointer text-left"
                 >
-                  <Share2 size={14} className="text-[#00e699]" />
+                  <Share2 size={14} className="text-[#00ffa3]" />
                   <span>Share Page Link</span>
                 </button>
 
-                <div className="border-t border-[#18181c] dark:border-[#18181c] light:border-slate-200 my-1" />
+                <div className="border-t border-[#18261e] my-1" />
 
                 <button
                   type="button"
@@ -184,7 +185,7 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
                     setMenuOpen(false);
                     lockApp();
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-red-300 hover:text-red-200 hover:bg-red-950/30 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-red-300 hover:text-red-200 hover:bg-red-950/40 transition-colors cursor-pointer text-left"
                 >
                   <Lock size={14} className="text-red-400" />
                   <span>Lock Screen</span>
@@ -194,6 +195,6 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({ currentRoute }) =>
           )}
         </div>
       </div>
-    </div>
+    </header>
   );
 };
