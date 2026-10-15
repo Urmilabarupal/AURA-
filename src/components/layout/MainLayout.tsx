@@ -23,6 +23,7 @@ import { Sidebar } from './Sidebar';
 import { SubpageHeader } from './SubpageHeader';
 import { MobileBottomNav } from './MobileBottomNav';
 import { SecurityModal } from '../common/SecurityModal';
+import { ApiSetupModal } from '../common/ApiSetupModal';
 
 // Pages
 import { Dashboard } from '../../pages/Dashboard';
@@ -231,6 +232,9 @@ export const MainLayout: React.FC = () => {
         isOpen={securityModalOpen}
         onClose={() => setSecurityModalOpen(false)}
       />
+
+      {/* External User API & Data Manager Modal */}
+      <ApiSetupModal />
     </div>
   );
 };

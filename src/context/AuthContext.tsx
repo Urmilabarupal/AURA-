@@ -14,6 +14,7 @@ import { ApiService } from '../services/api';
 import { web3Wallet } from '../services/web3Wallet';
 import { realMarketApi } from '../services/realMarketApi';
 import { cookieService } from '../services/cookieService';
+import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
 
 export type AuthStage =
@@ -41,6 +42,13 @@ interface AuthContextType {
   createdPasscode: string;
   walletAddress: string;
   isMetaMaskConnected: boolean;
+  apiConfig: ApiConnectionConfig;
+  apiModalOpen: boolean;
+  setApiModalOpen: (open: boolean) => void;
+  updateApiConfig: (config: Partial<ApiConnectionConfig>) => void;
+  fetchUserDataFromApi: (url?: string) => Promise<{ success: boolean; error?: string; raw?: any }>;
+  importRawUserJson: (jsonStr: string) => { success: boolean; error?: string };
+  loadSampleUserData: () => void;
   setActiveRoute: (route: string) => void;
   setSecurityModalOpen: (open: boolean) => void;
   toggleEmptyStateMode: () => void;
@@ -201,6 +209,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [isMetaMaskConnected, setIsMetaMaskConnected] = useState<boolean>(false);
 
+  // External API integration state
+  const [apiConfig, setApiConfigState] = useState<ApiConnectionConfig>(() => ApiService.getUserApiConfig());
+  const [apiModalOpen, setApiModalOpen] = useState<boolean>(false);
+
+  const updateApiConfig = (newConfig: Partial<ApiConnectionConfig>) => {
+    const saved = ApiService.saveUserApiConfig(newConfig);
+    setApiConfigState(saved);
+  };
+
+  const fetchUserDataFromApi = async (url?: string): Promise<{ success: boolean; error?: string; raw?: any }> => {
+    const targetUrl = url || apiConfig.endpointUrl;
+    setApiConfigState((prev) => ({ ...prev, status: 'CONNECTING', lastError: null }));
+    const res = await ApiService.fetchUserDataFromApi(targetUrl);
+    setApiConfigState(ApiService.getUserApiConfig());
+    if (res.success && res.user) {
+      setUser(res.user);
+      if (res.wallets) {
+        setWallets(res.wallets);
+      }
+      if (res.user.walletAddress) {
+        setWalletAddress(res.user.walletAddress);
+      }
+      return { success: true, raw: res.raw };
+    } else {
+      return { success: false, error: res.error };
+    }
+  };
+
+  const importRawUserJson = (jsonStr: string): { success: boolean; error?: string } => {
+    const res = ApiService.importRawUserJson(jsonStr);
+    setApiConfigState(ApiService.getUserApiConfig());
+    if (res.success && res.user) {
+      setUser(res.user);
+      if (res.wallets) {
+        setWallets(res.wallets);
+      }
+      if (res.user.walletAddress) {
+        setWalletAddress(res.user.walletAddress);
+      }
+      return { success: true };
+    } else {
+      return { success: false, error: res.error };
+    }
+  };
+
+  const loadSampleUserData = () => {
+    const res = ApiService.loadSampleUserData();
+    setApiConfigState(ApiService.getUserApiConfig());
+    if (res.user) {
+      setUser(res.user);
+      if (res.wallets) {
+        setWallets(res.wallets);
+      }
+      if (res.user.walletAddress) {
+        setWalletAddress(res.user.walletAddress);
+      }
+    }
+  };
+
   const refreshUserData = async () => {
     try {
       const [profileRes, walletsRes] = await Promise.all([
@@ -212,14 +279,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(profileRes.data);
         if (profileRes.data.walletAddress) {
           setWalletAddress(profileRes.data.walletAddress);
+        }
 
-          // Fetch real on-chain balance for the user's wallet address
-          const onChain = await realMarketApi.fetchOnChainBalance(profileRes.data.walletAddress);
-          const tickers = await realMarketApi.fetchTickers();
-          const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-          const ethPrice = ethPair ? ethPair.price : 2800;
+        if (walletsRes.success && walletsRes.data) {
+          // If the profile / API already provided non-zero balances, prioritize them
+          if (walletsRes.data.totalBalanceUSDT > 0 || walletsRes.data.mainBalanceUSDT > 0) {
+            setWallets(walletsRes.data);
+          } else if (profileRes.data.walletAddress) {
+            // Otherwise compute live on-chain balance
+            const onChain = await realMarketApi.fetchOnChainBalance(profileRes.data.walletAddress);
+            const tickers = await realMarketApi.fetchTickers();
+            const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
+            const ethPrice = ethPair ? ethPair.price : 2800;
 
-          if (walletsRes.success && walletsRes.data) {
             const actualEth = onChain.balanceEth;
             const liveUsd = +(actualEth * ethPrice).toFixed(2);
             setWallets({
@@ -232,6 +304,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               fundingBalanceUSDT: +(liveUsd * 0.6).toFixed(2),
               totalBalanceUSDT: liveUsd,
             });
+          } else {
+            setWallets(walletsRes.data);
           }
         }
       } else {
@@ -472,6 +546,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createdPasscode,
         walletAddress,
         isMetaMaskConnected,
+        apiConfig,
+        apiModalOpen,
+        setApiModalOpen,
+        updateApiConfig,
+        fetchUserDataFromApi,
+        importRawUserJson,
+        loadSampleUserData,
         setActiveRoute,
         setSecurityModalOpen,
         toggleEmptyStateMode,

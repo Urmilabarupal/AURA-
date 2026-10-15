@@ -35,6 +35,7 @@
 */
 
 import { AuthoritativeBackend } from './backendEngine';
+import { UserApiService, ApiConnectionConfig } from './userApiService';
 import {
   ApiResponse,
   CommunityLevelData,
@@ -52,6 +53,60 @@ import {
 } from '../types';
 
 export const ApiService = {
+  // External ?Api=User Integration
+  getUserApiConfig(): ApiConnectionConfig {
+    return UserApiService.getConfig();
+  },
+
+  saveUserApiConfig(config: Partial<ApiConnectionConfig>): ApiConnectionConfig {
+    return UserApiService.saveConfig(config);
+  },
+
+  async fetchUserDataFromApi(endpointUrl?: string): Promise<{
+    success: boolean;
+    user?: UserProfile;
+    wallets?: UserWallets;
+    raw?: any;
+    error?: string;
+    isCorsOrMixedContent?: boolean;
+  }> {
+    const res = await UserApiService.fetchUserData(endpointUrl);
+    if (res.success && res.user) {
+      AuthoritativeBackend.setUser(res.user);
+      if (res.wallets) {
+        AuthoritativeBackend.setWallets(res.wallets);
+      }
+    }
+    return res;
+  },
+
+  importRawUserJson(jsonInput: string | object): {
+    success: boolean;
+    user?: UserProfile;
+    wallets?: UserWallets;
+    error?: string;
+  } {
+    const res = UserApiService.importRawJson(jsonInput);
+    if (res.success && res.user) {
+      AuthoritativeBackend.setUser(res.user);
+      if (res.wallets) {
+        AuthoritativeBackend.setWallets(res.wallets);
+      }
+    }
+    return res;
+  },
+
+  loadSampleUserData(): { user: UserProfile; wallets?: UserWallets } {
+    const res = UserApiService.loadSampleData();
+    if (res.user) {
+      AuthoritativeBackend.setUser(res.user);
+      if (res.wallets) {
+        AuthoritativeBackend.setWallets(res.wallets);
+      }
+    }
+    return res;
+  },
+
   // Auth & Profile
   async register(params: {
     walletAddress?: string;

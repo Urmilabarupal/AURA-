@@ -83,10 +83,13 @@ import {
   Gift,
   HelpCircle,
   Layers,
+  Mail,
   MessageCircle,
+  Phone,
   Play,
   QrCode,
   Rocket,
+  Server,
   ShieldCheck,
   Sparkles,
   Sprout,
@@ -127,7 +130,7 @@ const CHART_DATA_BY_TIMEFRAME = {
 };
 
 export const Dashboard: React.FC = () => {
-  const { user, wallets, setActiveRoute } = useAuth();
+  const { user, wallets, setActiveRoute, apiConfig, setApiModalOpen } = useAuth();
   const { copyToClipboard } = useToast();
 
   const [activeTimeframe, setActiveTimeframe] = useState<'7D' | '30D' | '90D' | '1Y'>('7D');
@@ -320,39 +323,75 @@ export const Dashboard: React.FC = () => {
       {/* 2. USER PROFILE DATA & REFERRAL / REFERENDUM CARD (HX Money authentic features) */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
-        {/* Profile Card (Left 6 Cols) */}
+        {/* Profile Card & User Data Showcase (Left 6 Cols) */}
         <div className="lg:col-span-6 p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl relative overflow-hidden space-y-4">
-          <div className="flex items-center justify-between">
+          
+          {/* Top User Header & Profile Actions */}
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00ffa3]/20 via-[#00e699]/10 to-[#00ffa3]/30 border border-[#00ffa3]/40 flex items-center justify-center text-[#00ffa3] font-black text-xl shadow-[0_0_20px_rgba(0,255,163,0.2)]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00ffa3]/20 via-[#00e699]/10 to-[#00ffa3]/30 border border-[#00ffa3]/40 flex items-center justify-center text-[#00ffa3] font-black text-xl shadow-[0_0_20px_rgba(0,255,163,0.2)] shrink-0">
                 {userDisplayName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-base sm:text-lg font-black text-white tracking-tight">
                     {userDisplayName}
                   </h3>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-950/60 border border-[#00ffa3]/40 text-[#00ffa3] text-[10px] font-bold">
-                    Active ✓
+                    {user?.kycStatus === 'VERIFIED' ? 'Verified ✓' : 'Active Account'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">
-                  ID: <span className="text-white font-bold">{userDisplayId}</span> · Standard Tier
+                  ID: <span className="text-white font-bold">{userDisplayId}</span>
+                  {user?.referBy && (
+                    <span className="text-slate-500"> · Sponsor: <strong className="text-[#00ffa3]">{user.referBy}</strong></span>
+                  )}
                 </p>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setActiveRoute('profile')}
-              className="px-3 py-1.5 rounded-xl bg-[#06140b] border border-[#163824] hover:border-[#00ffa3]/50 text-xs text-[#00ffa3] font-bold transition-all cursor-pointer hover:bg-[#0c2415]"
-            >
-              View Profile
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setApiModalOpen(true)}
+                className="px-2.5 py-1.5 rounded-xl bg-[#040e07] border border-[#163824] hover:border-[#00ffa3]/50 text-xs text-[#00ffa3] font-bold transition-all cursor-pointer flex items-center gap-1.5 hover:bg-[#081e10]"
+                title="Configure ?Api=User"
+              >
+                <Server size={13} />
+                <span className="hidden sm:inline">API Setup</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveRoute('profile')}
+                className="px-2.5 py-1.5 rounded-xl bg-[#121216] border border-[#222228] hover:border-slate-500 text-xs text-white font-bold transition-all cursor-pointer hover:bg-[#1a1a22]"
+              >
+                Profile
+              </button>
+            </div>
+          </div>
+
+          {/* User Data Attributes Grid (Displays Mobile, Email, Country, Sponsor) */}
+          <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div className="p-2.5 rounded-xl bg-[#030305] border border-[#18181c] flex items-center gap-2">
+              <Phone size={13} className="text-[#00ffa3] shrink-0" />
+              <div className="min-w-0">
+                <span className="text-[10px] text-slate-500 block leading-tight">Mobile</span>
+                <span className="text-white font-bold truncate block">{user?.mobile || 'Not configured'}</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#030305] border border-[#18181c] flex items-center gap-2">
+              <Mail size={13} className="text-[#00ffa3] shrink-0" />
+              <div className="min-w-0">
+                <span className="text-[10px] text-slate-500 block leading-tight">Email</span>
+                <span className="text-white font-bold truncate block">{user?.email || 'user@moneyx.com'}</span>
+              </div>
+            </div>
           </div>
 
           {/* Quick Metrics Grid */}
-          <div className="grid grid-cols-3 gap-2.5 pt-1">
+          <div className="grid grid-cols-3 gap-2.5 pt-0.5">
             <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
               <span className="text-[10px] text-slate-400 block font-medium">Staked Total</span>
               <span className="text-sm font-black text-white tabular-nums mt-0.5 block">{stakedTotal.toFixed(2)} USDT</span>
@@ -362,28 +401,55 @@ export const Dashboard: React.FC = () => {
               <span className="text-sm font-black text-[#00ffa3] tabular-nums mt-0.5 block">{totalRewards.toFixed(2)} USDT</span>
             </div>
             <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c]">
-              <span className="text-[10px] text-slate-400 block font-medium">Team Members</span>
-              <span className="text-sm font-black text-white tabular-nums mt-0.5 block">{teamMembers} Users</span>
+              <span className="text-[10px] text-slate-400 block font-medium">Total Balance</span>
+              <span className="text-sm font-black text-white tabular-nums mt-0.5 block">{totalBalance.toFixed(2)} USDT</span>
             </div>
           </div>
 
-          {/* Connected Wallet details */}
-          <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#00ffa3] animate-pulse" />
-              <span className="text-xs text-slate-400 font-medium">Wallet:</span>
-              <span className="text-xs font-mono text-slate-200">
-                {user?.walletAddress ? `${user.walletAddress.slice(0, 8)}...${user.walletAddress.slice(-6)}` : '0x71C2...3948'}
+          {/* Connected Wallet & Live API Endpoint Bar */}
+          <div className="space-y-2">
+            <div className="p-3 rounded-xl bg-[#030305] border border-[#18181c] flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 rounded-full bg-[#00ffa3] animate-pulse shrink-0" />
+                <span className="text-xs text-slate-400 font-medium">Wallet:</span>
+                <span className="text-xs font-mono text-slate-200 truncate">
+                  {user?.walletAddress ? `${user.walletAddress.slice(0, 10)}...${user.walletAddress.slice(-6)}` : '0x71C2...3948'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyWallet}
+                className="text-xs text-[#00ffa3] hover:underline flex items-center gap-1 font-semibold cursor-pointer shrink-0 ml-2"
+              >
+                <Copy size={12} />
+                <span>{copiedAddress ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+
+            {/* Live API Status Strip */}
+            <div
+              onClick={() => setApiModalOpen(true)}
+              className="p-2 px-3 rounded-xl bg-[#050807] border border-[#14261b] hover:border-[#00ffa3]/40 transition-colors flex items-center justify-between text-[11px] font-mono cursor-pointer"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${
+                    apiConfig.status === 'CONNECTED'
+                      ? 'bg-[#00ffa3] animate-pulse'
+                      : apiConfig.status === 'IMPORTED'
+                      ? 'bg-purple-400'
+                      : apiConfig.status === 'ERROR'
+                      ? 'bg-rose-400'
+                      : 'bg-emerald-500'
+                  }`}
+                />
+                <span className="text-slate-400">API Endpoint:</span>
+                <span className="text-[#00ffa3] truncate">{apiConfig.endpointUrl}</span>
+              </div>
+              <span className="text-slate-400 hover:text-white shrink-0 ml-2 underline text-[10px]">
+                Manage
               </span>
             </div>
-            <button
-              type="button"
-              onClick={handleCopyWallet}
-              className="text-xs text-[#00ffa3] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-            >
-              <Copy size={12} />
-              <span>{copiedAddress ? 'Copied' : 'Copy'}</span>
-            </button>
           </div>
         </div>
 
