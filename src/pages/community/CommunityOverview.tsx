@@ -18,9 +18,10 @@
  Developer documentation only. Never expose sensitive information.
 */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { EmptyState } from '../../components/common/EmptyState';
+import { ApiService } from '../../services/api';
 import { BRAND } from '../../config/brand';
 import {
   CheckCircle2,
@@ -38,18 +39,29 @@ import {
 export const CommunityOverview: React.FC = () => {
   const { user, setActiveRoute, emptyStateMode } = useAuth();
   const [copied, setCopied] = useState<boolean>(false);
+  const [referrals, setReferrals] = useState<Record<string, unknown>[]>([]);
+  const [referralError, setReferralError] = useState<string>('');
 
-  const referralUrl = `https://${BRAND.domain}/?r=${user?.referId || BRAND.defaultReferId}`;
-  const totalReferred = emptyStateMode ? 0 : 4;
+  const referralUrl = user?.referId ? `https://${BRAND.domain}/?r=${encodeURIComponent(user.referId)}` : '';
+  const visibleReferrals = emptyStateMode ? [] : referrals;
+  const totalReferred = visibleReferrals.length;
 
-  const sampleUsers = [
-    { id: `${BRAND.name.slice(0, 2).toUpperCase()}99281`, name: 'Elena Rostova', date: '2026-09-20', deposit: 1200.0, status: 'ACTIVE' },
-    { id: `${BRAND.name.slice(0, 2).toUpperCase()}88102`, name: 'Marcus Chen', date: '2026-09-15', deposit: 500.0, status: 'ACTIVE' },
-    { id: `${BRAND.name.slice(0, 2).toUpperCase()}77194`, name: 'Sarah Jenkins', date: '2026-09-10', deposit: 400.0, status: 'ACTIVE' },
-    { id: `${BRAND.name.slice(0, 2).toUpperCase()}66120`, name: 'David Kim', date: '2026-09-02', deposit: 300.0, status: 'ACTIVE' },
-  ];
+  const loadReferrals = async () => {
+    setReferralError('');
+    const response = await ApiService.getReferrals();
+    if (response.success && response.data) setReferrals(response.data);
+    else {
+      setReferrals([]);
+      setReferralError(response.error?.message || response.message || 'Could not load referrals from x.money API.');
+    }
+  };
+
+  useEffect(() => {
+    void loadReferrals();
+  }, [user?.id]);
 
   const copyLink = () => {
+    if (!referralUrl) return;
     navigator.clipboard.writeText(referralUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -109,7 +121,9 @@ export const CommunityOverview: React.FC = () => {
             <h3 className="text-sm font-bold text-slate-200">Referred Users</h3>
           </div>
 
-          {emptyStateMode || sampleUsers.length === 0 ? (
+          {referralError ? (
+            <p className="text-xs text-amber-300" role="status">{referralError}</p>
+          ) : visibleReferrals.length === 0 ? (
             <EmptyState
               title="Data Not Found"
               description="You have not referred any users yet. Share your invite link to build your team!"
@@ -129,21 +143,30 @@ export const CommunityOverview: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#171d30]">
-                  {sampleUsers.map((m) => (
-                    <tr key={m.id} className="hover:bg-[#151a2d]">
-                      <td className="py-3 px-3 text-[#00e699] font-bold">{m.id}</td>
-                      <td className="py-3 px-3 text-slate-200">{m.name}</td>
-                      <td className="py-3 px-3 text-slate-400 text-[11px]">{m.date}</td>
+                  {visibleReferrals.map((row, index) => {
+                    const member = {
+                      id: String(row.id ?? row.uid ?? row.user ?? `referral-${index}`),
+                      name: String(row.name ?? row.username ?? row.member_name ?? 'Name not provided by API'),
+                      date: String(row.created_at ?? row.createdAt ?? row.date ?? row.join_date ?? '—'),
+                      deposit: Number(row.deposit ?? row.amount ?? row.total_deposit ?? row.totalDeposit ?? 0) || 0,
+                      status: String(row.status ?? 'Unknown').toUpperCase(),
+                    };
+                    return (
+                    <tr key={member.id} className="hover:bg-[#151a2d]">
+                      <td className="py-3 px-3 text-[#00e699] font-bold">{member.id}</td>
+                      <td className="py-3 px-3 text-slate-200">{member.name}</td>
+                      <td className="py-3 px-3 text-slate-400 text-[11px]">{member.date}</td>
                       <td className="py-3 px-3 text-right text-slate-100 font-bold">
-                        ${m.deposit.toFixed(2)} USDT
+                        ${member.deposit.toFixed(2)} USDT
                       </td>
                       <td className="py-3 px-3 text-right">
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
-                          {m.status}
+                          {member.status}
                         </span>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
