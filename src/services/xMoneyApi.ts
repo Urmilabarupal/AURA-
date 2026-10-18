@@ -71,6 +71,8 @@ const mapType = (row: Record<string, unknown>): TransactionType => {
 };
 
 export class XMoneyApiService {
+  private static accountUserId = '';
+
   private static config(): ApiConnectionConfig {
     return UserApiService.getConfig();
   }
@@ -103,7 +105,9 @@ export class XMoneyApiService {
     // Currencys and Staking_Plans must not be filtered by a non-existent user column.
     if (userScopedEndpoints.has(endpoint)) {
       url.searchParams.set('uid', config.userId.trim());
-      url.searchParams.set('user', config.userId.trim());
+      // The PHP API distinguishes external UID from the internal user record ID.
+      // Only send the internal ID after the profile endpoint has returned it.
+      if (this.accountUserId) url.searchParams.set('user', this.accountUserId);
     }
     for (const [key, value] of Object.entries(extra)) {
       if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
@@ -150,6 +154,7 @@ export class XMoneyApiService {
   static async getUser(): Promise<{ user: UserProfile; wallets?: UserWallets; raw: unknown }> {
     const raw = await this.request('User');
     const parsed = UserApiService.parseUserData(raw);
+    this.accountUserId = parsed.user.id;
     // Do not let the requested UID silently resolve to a demo/default identity.
     const expectedUid = this.config().userId.trim();
     if (!parsed.user.id || parsed.user.id === 'User' || parsed.user.id === expectedUid && !parsed.user.name) {
