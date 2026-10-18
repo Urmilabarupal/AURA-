@@ -12,6 +12,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
 import { cookieService } from '../services/cookieService';
+import { web3Wallet } from '../services/web3Wallet';
 import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
 
