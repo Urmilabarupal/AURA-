@@ -185,7 +185,7 @@ export const ApiSetupModal: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                Target: <span className="text-[#00ffa3]">{apiConfig.endpointUrl}</span>
+                API base: <span className="text-[#00ffa3]">{apiConfig.endpointUrl}</span>
               </p>
             </div>
           </div>
@@ -269,7 +269,7 @@ export const ApiSetupModal: React.FC = () => {
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-[#030305] border border-[#18181c] space-y-3">
                 <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                  <span>User API URL (?Api=User)</span>
+                  <span>x.money API Base URL</span>
                   <span className="text-[10px] text-slate-500 font-mono">GET / JSON</span>
                 </label>
                 <div className="flex gap-2">
@@ -279,7 +279,7 @@ export const ApiSetupModal: React.FC = () => {
                       type="text"
                       value={urlInput}
                       onChange={(e) => setUrlInput(e.target.value)}
-                      placeholder="http://localhost/x.money/?Api=User"
+                      placeholder="http://localhost/x.money/"
                       className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#08080a] border border-[#1c1c24] text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-[#00ffa3] transition-colors"
                     />
                   </div>
@@ -303,10 +303,27 @@ export const ApiSetupModal: React.FC = () => {
                   </button>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-end">
+                  <div className="space-y-1.5">
+                    <label htmlFor="xmoney-user-uid" className="text-xs font-semibold text-slate-300">x.money User UID (required)</label>
+                    <input
+                      id="xmoney-user-uid"
+                      type="text"
+                      autoComplete="off"
+                      spellCheck={false}
+                      value={apiConfig.userId || ''}
+                      onChange={(e) => updateApiConfig({ userId: e.target.value })}
+                      placeholder="Enter the real UID from your x.money database"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#08080a] border border-[#1c1c24] text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-[#00ffa3]"
+                    />
+                  </div>
+                  <p className="text-[10px] text-amber-300 leading-relaxed max-w-xs">Use only your own test account. The legacy API needs server-side access controls before exposing real user data.</p>
+                </div>
+
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
                   <span className="flex items-center gap-1">
                     <Info size={12} className="text-[#00ffa3]" />
-                    <span>Default: <code className="text-slate-300 font-mono">http://localhost/x.money/?Api=User</code></span>
+                    <span>Default: <code className="text-slate-300 font-mono">http://localhost/x.money/</code></span>
                   </span>
                   <button
                     type="button"
@@ -325,7 +342,7 @@ export const ApiSetupModal: React.FC = () => {
                   <span>Testing with Localhost (XAMPP / PHP / Apache)?</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-amber-200/80">
-                  If this app is running in an online HTTPS preview, modern web browsers block direct calls to insecure HTTP localhost (<code className="font-mono text-amber-100">http://localhost/x.money/?Api=User</code>) due to <strong>Mixed Content</strong> and <strong>CORS</strong> policies.
+                  If this app is running in an online HTTPS preview, modern web browsers block direct calls to insecure HTTP localhost (<code className="font-mono text-amber-100">http://localhost/x.money/</code>) due to <strong>Mixed Content</strong> and <strong>CORS</strong> policies.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <button
@@ -337,14 +354,6 @@ export const ApiSetupModal: React.FC = () => {
                     <span>Paste API JSON Directly (Recommended for Localhost)</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handleLoadSample}
-                    className="px-3 py-1.5 rounded-lg bg-[#00ffa3]/20 hover:bg-[#00ffa3]/30 text-[#00ffa3] font-bold text-[11px] border border-[#00ffa3]/40 transition-colors cursor-pointer flex items-center gap-1"
-                  >
-                    <Zap size={12} />
-                    <span>Load Preset Sample Data</span>
-                  </button>
                 </div>
               </div>
 
@@ -409,7 +418,7 @@ export const ApiSetupModal: React.FC = () => {
                 </div>
 
                 <p className="text-[11px] text-slate-400">
-                  Open <code className="text-slate-200 font-mono">http://localhost/x.money/?Api=User</code> in your browser, copy the JSON output, and paste it here:
+                  Open <code className="text-slate-200 font-mono">http://localhost/x.money/?api=User&amp;uid=YOUR_UID</code> in your browser, copy the JSON output, and paste it here:
                 </p>
 
                 <textarea
