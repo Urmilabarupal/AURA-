@@ -218,7 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const targetUrl = url || apiConfig.endpointUrl;
     setApiConfigState((prev) => ({ ...prev, status: 'CONNECTING', lastError: null }));
     const res = await ApiService.fetchUserDataFromApi(targetUrl);
-    setApiConfigState(ApiService.getUserApiConfig());
+    setApiConfigState({ ...ApiService.getUserApiConfig(), rawResponse: res.success ? res.raw ?? null : null });
     if (res.success && res.user) {
       setUser(res.user);
       if (res.wallets) setWallets(res.wallets);
