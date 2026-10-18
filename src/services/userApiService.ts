@@ -29,9 +29,6 @@ export interface ApiConnectionConfig {
 }
 
 const STORAGE_KEY_API_CONFIG = 'moneyx_api_config_v1';
-const STORAGE_KEY_USER_DATA = 'aura_auth_user_v1';
-const STORAGE_KEY_WALLETS_DATA = 'aura_wallets_v1';
-const STORAGE_KEY_RAW_JSON = 'moneyx_last_api_raw_json_v1';
 
 export const DEFAULT_API_ENDPOINT = 'http://localhost/x.money/';
 
@@ -92,10 +89,8 @@ export class UserApiService {
       const stored = localStorage.getItem(STORAGE_KEY_API_CONFIG);
       if (stored) {
         const parsed = JSON.parse(stored);
-        const rawJsonStored = localStorage.getItem(STORAGE_KEY_RAW_JSON);
-        if (rawJsonStored) {
-          parsed.rawResponse = JSON.parse(rawJsonStored);
-        }
+        // Raw API payloads contain personal data; never persist them in browser storage.
+        parsed.rawResponse = null;
         return parsed;
       }
     } catch (err) {
@@ -136,9 +131,6 @@ export class UserApiService {
             lastError: updated.lastError,
           })
         );
-        if (updated.rawResponse) {
-          localStorage.setItem(STORAGE_KEY_RAW_JSON, JSON.stringify(updated.rawResponse));
-        }
       } catch (err) {
         console.warn('Failed to save API config to localStorage', err);
       }
@@ -390,14 +382,6 @@ export class UserApiService {
       const { user, wallets } = this.parseUserData(json);
       if (!user.id || user.name === 'User') throw new Error('The API response did not contain a usable user profile.');
 
-      // Persist to localStorage
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY_USER_DATA, JSON.stringify(user));
-        if (wallets) {
-          localStorage.setItem(STORAGE_KEY_WALLETS_DATA, JSON.stringify(wallets));
-        }
-      }
-
       this.saveConfig({
         endpointUrl: targetUrl,
         status: 'CONNECTED',
@@ -457,13 +441,6 @@ export class UserApiService {
     try {
       let parsedObj = typeof jsonInput === 'string' ? JSON.parse(jsonInput.trim()) : jsonInput;
       const { user, wallets } = this.parseUserData(parsedObj);
-
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY_USER_DATA, JSON.stringify(user));
-        if (wallets) {
-          localStorage.setItem(STORAGE_KEY_WALLETS_DATA, JSON.stringify(wallets));
-        }
-      }
 
       this.saveConfig({
         status: 'IMPORTED',
