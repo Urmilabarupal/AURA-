@@ -205,7 +205,7 @@ export class UserApiService {
       root.registered_at ||
       '';
 
-    const kycRaw = (root.kyc_status || root.kycStatus || root.status || '').toString().toUpperCase();
+    const kycRaw = (root.kyc_status || root.kycStatus || '').toString().toUpperCase();
     const kycStatus: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' =
       kycRaw === 'VERIFIED' || kycRaw === 'APPROVED' || kycRaw === 'ACTIVE'
         ? 'VERIFIED'
