@@ -206,11 +206,11 @@ export class XMoneyApiService {
     if (spotUsd !== undefined) wallets.spotBalanceUSDT = spotUsd;
     if (fundingUsd !== undefined) wallets.fundingBalanceUSDT = fundingUsd;
     // Do not guess native-coin prices or split balances into synthetic wallets.
-    if (wallets.totalBalanceUSDT === 0) {
-      wallets.totalBalanceUSDT = wallets.mainBalanceUSDT + wallets.spotBalanceUSDT + wallets.fundingBalanceUSDT + wallets.jackpotBalanceUSDT;
-    }
     if (stakingUsd !== undefined && wallets.mainBalanceUSDT === 0) {
       wallets.mainBalanceUSDT = stakingUsd;
+    }
+    if (wallets.totalBalanceUSDT === 0) {
+      wallets.totalBalanceUSDT = wallets.mainBalanceUSDT + wallets.spotBalanceUSDT + wallets.fundingBalanceUSDT + wallets.jackpotBalanceUSDT;
     }
     return wallets;
   }
