@@ -131,7 +131,7 @@ export const DepositPage: React.FC = () => {
               Deposit Cryptocurrency
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Transfer funds securely to your decentralized non-custodial wallet
+              Read deposit records from x.money. This local preview cannot initiate deposits.
             </p>
           </div>
         </div>
@@ -289,7 +289,7 @@ export const DepositPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span>Contract Security:</span>
-                <span className="text-[#00e699] font-bold">Verified EIP-1193</span>
+                <span className="text-[#00e699] font-bold">Read-only API</span>
               </div>
             </div>
 
