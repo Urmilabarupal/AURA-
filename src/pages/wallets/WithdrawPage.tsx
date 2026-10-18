@@ -9,10 +9,11 @@
  - Real connected wallet balance & security passcode check
 */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import { BRAND } from '../../config/brand';
+import { ApiService } from '../../services/api';
 import {
   AlertCircle,
   ArrowUp,
@@ -38,12 +39,14 @@ interface CryptoAsset {
 export const WithdrawPage: React.FC = () => {
   const { user, wallets, verifyPasscode, refreshUserData } = useAuth();
   const { showToast } = useToast();
+  const [recentWithdrawals, setRecentWithdrawals] = useState<Record<string, unknown>[]>([]);
+  const [withdrawHistoryError, setWithdrawHistoryError] = useState<string>('');
 
   const SUPPORTED_ASSETS: CryptoAsset[] = [
     {
       symbol: 'USDT',
       name: 'Tether USD',
-      balance: wallets?.fundingBalanceUSDT || 84300.0,
+      balance: wallets?.fundingBalanceUSDT ?? 0,
       fee: 1.0,
       minWithdraw: 10,
       networks: [BRAND.chainName, 'TRC-20', 'BEP-20', 'ERC-20'],
@@ -51,7 +54,7 @@ export const WithdrawPage: React.FC = () => {
     {
       symbol: BRAND.tokenSymbol,
       name: `${BRAND.chainName} Protocol Token`,
-      balance: wallets?.mainBalanceNative || 1.485,
+      balance: wallets?.mainBalanceNative ?? 0,
       fee: 0.05,
       minWithdraw: 0.1,
       networks: [BRAND.chainNetwork],
@@ -59,7 +62,7 @@ export const WithdrawPage: React.FC = () => {
     {
       symbol: 'ETH',
       name: 'Ethereum',
-      balance: 1.245,
+      balance: 0,
       fee: 0.002,
       minWithdraw: 0.01,
       networks: ['ERC-20', 'Arbitrum'],
@@ -67,7 +70,7 @@ export const WithdrawPage: React.FC = () => {
     {
       symbol: 'BUSD',
       name: 'Binance USD',
-      balance: 4.85,
+      balance: 0,
       fee: 0.5,
       minWithdraw: 10,
       networks: ['BEP-20'],
@@ -75,7 +78,7 @@ export const WithdrawPage: React.FC = () => {
     {
       symbol: 'TRX',
       name: 'TRON Native',
-      balance: 8420.0,
+      balance: 0,
       fee: 5,
       minWithdraw: 30,
       networks: ['TRC-20'],
@@ -89,6 +92,21 @@ export const WithdrawPage: React.FC = () => {
   const [passcode, setPasscode] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const loadWithdrawalHistory = async () => {
+    setWithdrawHistoryError('');
+    const response = await ApiService.getWithdrawals();
+    if (response.success && response.data) {
+      setRecentWithdrawals(response.data);
+    } else {
+      setRecentWithdrawals([]);
+      setWithdrawHistoryError(response.error?.message || response.message || 'Could not load withdrawal history from x.money API.');
+    }
+  };
+
+  useEffect(() => {
+    void loadWithdrawalHistory();
+  }, [user?.id]);
 
   const numAmount = parseFloat(amount) || 0;
   const netAmount = Math.max(0, numAmount - selectedAsset.fee);
@@ -394,13 +412,23 @@ export const WithdrawPage: React.FC = () => {
                 <History size={14} className="text-[#00e699]" />
                 <span>Recent Withdrawals</span>
               </span>
-              <span className="text-slate-500 font-mono text-[10px]">Real-Time Sync</span>
+              <button type="button" onClick={() => void loadWithdrawalHistory()} className="text-[#00e699] font-mono text-[10px] hover:underline">Refresh API</button>
             </div>
 
-            <div className="text-center py-6 text-xs text-slate-400 space-y-1">
-              <p>No recent withdrawal transactions found.</p>
-              <p className="text-[11px] text-slate-500">Authorized withdrawals will be automatically indexed here with blockchain TX hash.</p>
-            </div>
+            {withdrawHistoryError ? (
+              <p className="text-xs text-amber-300" role="status">{withdrawHistoryError}</p>
+            ) : recentWithdrawals.length === 0 ? (
+              <div className="text-center py-6 text-xs text-slate-400">
+                The x.money API returned no withdrawal records for this UID.
+              </div>
+            ) : recentWithdrawals.map((row, index) => (
+              <div key={String(row.id ?? row.orderid ?? index)} className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-2 border-b border-[#18181c] last:border-0 text-xs">
+                <span className="text-slate-300">#{String(row.id ?? row.orderid ?? '—')}</span>
+                <span className="text-white">{String(row.amount ?? '—')} {String(row.ccc ?? row.currency ?? '')}</span>
+                <span className="text-slate-300">{String(row.status ?? 'Unknown')}</span>
+                <span className="text-slate-500">{String(row.created_at ?? row.date ?? row.time ?? '—')}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
