@@ -116,19 +116,19 @@ export const ApiService = {
     mobile: string;
     name: string;
   }): Promise<ApiResponse<{ user: UserProfile; token: string }>> {
-    return AuthoritativeBackend.register(params);
+    return XMoneyApiService.failure<{ user: UserProfile; token: string }>(new Error('Registration is not connected to a secure x.money authentication endpoint. Use Local API preview for read-only testing.'));
   },
 
   async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode?: string }>> {
-    return AuthoritativeBackend.setupPasscode(passcode);
+    return XMoneyApiService.failure<{ success: boolean; passcode?: string }>(new Error('Passcode setup is local-only and is disabled in read-only API preview.'));
   },
 
   getLastCreatedPasscode(): string {
-    return AuthoritativeBackend.getLastCreatedPasscode();
+    return '';
   },
 
   async verifyPasscode(pin: string): Promise<ApiResponse<{ verified: boolean }>> {
-    return AuthoritativeBackend.verifyPasscode(pin);
+    return XMoneyApiService.failure<{ verified: boolean }>(new Error('No secure server-side authentication endpoint is available; passcode verification is disabled.'));
   },
 
   async getProfile(): Promise<ApiResponse<UserProfile>> {
@@ -143,7 +143,7 @@ export const ApiService = {
   },
 
   async updateProfile(data: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
-    return AuthoritativeBackend.updateProfile(data);
+    return XMoneyApiService.failure<UserProfile>(new Error('Profile updates are disabled until x.money provides an authenticated write API.'));
   },
 
   // Wallets
@@ -162,7 +162,7 @@ export const ApiService = {
     amountUSDT: number;
     currency: string;
   }): Promise<ApiResponse<{ wallets: UserWallets; tx: Transaction }>> {
-    return AuthoritativeBackend.deposit(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets; tx: Transaction }>(new Error('Deposit submission is disabled: the supplied x.money API does not securely authenticate users or validate payment status.'));
   },
 
   async withdraw(params: {
@@ -171,7 +171,7 @@ export const ApiService = {
     toAddress: string;
     chain: string;
   }): Promise<ApiResponse<{ wallets: UserWallets; tx: Transaction }>> {
-    return AuthoritativeBackend.withdraw(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets; tx: Transaction }>(new Error('Withdrawal submission is disabled until server-side authorization and payment controls are verified.'));
   },
 
   async transferInternal(params: {
@@ -179,7 +179,7 @@ export const ApiService = {
     toWallet: 'spot' | 'main' | 'funding';
     amountUSDT: number;
   }): Promise<ApiResponse<{ wallets: UserWallets }>> {
-    return AuthoritativeBackend.transferInternal(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets }>(new Error('Transfers are disabled until x.money provides an authenticated write API.'));
   },
 
   // Transactions
@@ -212,7 +212,7 @@ export const ApiService = {
     price: number;
     amount: number;
   }): Promise<ApiResponse<{ order: TradeOrder; wallets: UserWallets }>> {
-    return AuthoritativeBackend.submitOrder(params);
+    return XMoneyApiService.failure<{ order: TradeOrder; wallets: UserWallets }>(new Error('Trading is read-only because no authenticated order API is available.'));
   },
 
   async getTradeOrders(): Promise<ApiResponse<TradeOrder[]>> {
@@ -267,7 +267,7 @@ export const ApiService = {
     planId: string;
     amountAURA: number;
   }): Promise<ApiResponse<{ wallets: UserWallets }>> {
-    return AuthoritativeBackend.stake(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets }>(new Error('Staking writes are disabled until server-side authorization and ledger controls are verified.'));
   },
 
   // Farming
@@ -293,21 +293,21 @@ export const ApiService = {
     quantity: number;
     walletSource: 'funding' | 'spot';
   }): Promise<ApiResponse<{ tickets: LotteryTicket[]; wallets: UserWallets }>> {
-    return AuthoritativeBackend.buyTickets(params);
+    return XMoneyApiService.failure<{ tickets: LotteryTicket[]; wallets: UserWallets }>(new Error('Ticket purchases are disabled in read-only API preview.'));
   },
 
   // Redeem
   async redeemEarnings(amountUSDT: number): Promise<ApiResponse<{ redeemed: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.redeemEarnings(amountUSDT);
+    return XMoneyApiService.failure<{ redeemed: number; wallets: UserWallets }>(new Error('Redeeming is disabled in read-only API preview.'));
   },
 
   // Conversions
   async convertXah(amountXAH: number): Promise<ApiResponse<{ receivedUSDT: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.convertXah(amountXAH);
+    return XMoneyApiService.failure<{ receivedUSDT: number; wallets: UserWallets }>(new Error('Conversions are disabled until x.money provides an authenticated write API.'));
   },
 
   async convertHxc(amountHXC: number): Promise<ApiResponse<{ receivedUSDT: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.convertHxc(amountHXC);
+    return XMoneyApiService.failure<{ receivedUSDT: number; wallets: UserWallets }>(new Error('Conversions are disabled until x.money provides an authenticated write API.'));
   },
 
   async convertDirect(params: {
@@ -315,7 +315,7 @@ export const ApiService = {
     toCurrency: string;
     amount: number;
   }): Promise<ApiResponse<{ received: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.convertDirect(params as any);
+    return XMoneyApiService.failure<{ received: number; wallets: UserWallets }>(new Error('Conversions are disabled until x.money provides an authenticated write API.'));
   },
 
   // Community
@@ -330,10 +330,10 @@ export const ApiService = {
 
   // Testing utilities for Populated vs Empty data states
   resetSeedData() {
-    AuthoritativeBackend.resetToSeed();
+    // No seed/demo values in API mode.
   },
 
   clearDataForEmptyState() {
-    AuthoritativeBackend.clearDataForEmptyStateTesting();
+    // API data is not mutated by frontend test toggles.
   },
 };
