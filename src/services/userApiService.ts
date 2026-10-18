@@ -144,7 +144,7 @@ export class UserApiService {
       root.first_name ||
       root.firstName ||
       name.split(' ')[0] ||
-      'User';
+      '';
 
     const lastName =
       root.last_name ||
