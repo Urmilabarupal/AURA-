@@ -174,6 +174,15 @@ export const ApiService = {
     }
   },
 
+  async getCurrencies(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Currencys');
+      return XMoneyApiService.success(rows, rows.length ? 'Currencies loaded from x.money API.' : 'No currencies returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
+  },
+
   async getDeposits(): Promise<ApiResponse<Record<string, unknown>[]>> {
     try {
       const rows = await XMoneyApiService.getCollection('Deposits');
