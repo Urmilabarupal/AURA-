@@ -31,8 +31,8 @@ interface CryptoAsset {
   symbol: string;
   name: string;
   balance: number;
-  fee: number;
-  minWithdraw: number;
+  fee: number | null;
+  minWithdraw: number | null;
   networks: string[];
 }
 
@@ -45,43 +45,19 @@ export const WithdrawPage: React.FC = () => {
   const SUPPORTED_ASSETS: CryptoAsset[] = [
     {
       symbol: 'USDT',
-      name: 'Tether USD',
+      name: 'Funding wallet balance from x.money',
       balance: wallets?.fundingBalanceUSDT ?? 0,
-      fee: 1.0,
-      minWithdraw: 10,
-      networks: [BRAND.chainName, 'TRC-20', 'BEP-20', 'ERC-20'],
+      fee: null,
+      minWithdraw: null,
+      networks: [],
     },
     {
       symbol: BRAND.tokenSymbol,
-      name: `${BRAND.chainName} Protocol Token`,
+      name: 'Main wallet native balance from x.money',
       balance: wallets?.mainBalanceNative ?? 0,
-      fee: 0.05,
-      minWithdraw: 0.1,
-      networks: [BRAND.chainNetwork],
-    },
-    {
-      symbol: 'ETH',
-      name: 'Ethereum',
-      balance: 0,
-      fee: 0.002,
-      minWithdraw: 0.01,
-      networks: ['ERC-20', 'Arbitrum'],
-    },
-    {
-      symbol: 'BUSD',
-      name: 'Binance USD',
-      balance: 0,
-      fee: 0.5,
-      minWithdraw: 10,
-      networks: ['BEP-20'],
-    },
-    {
-      symbol: 'TRX',
-      name: 'TRON Native',
-      balance: 0,
-      fee: 5,
-      minWithdraw: 30,
-      networks: ['TRC-20'],
+      fee: null,
+      minWithdraw: null,
+      networks: [],
     },
   ];
 
@@ -109,7 +85,7 @@ export const WithdrawPage: React.FC = () => {
   }, [user?.id]);
 
   const numAmount = parseFloat(amount) || 0;
-  const netAmount = Math.max(0, numAmount - selectedAsset.fee);
+  const netAmount = selectedAsset.fee === null ? null : Math.max(0, numAmount - selectedAsset.fee);
 
   const handleAssetSelect = (asset: CryptoAsset) => {
     setSelectedAsset(asset);
@@ -132,49 +108,7 @@ export const WithdrawPage: React.FC = () => {
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(null);
-
-    if (!recipientAddress || recipientAddress.trim().length < 10) {
-      setErrorMsg('Please enter a valid destination wallet address.');
-      return;
-    }
-
-    if (numAmount < selectedAsset.minWithdraw) {
-      setErrorMsg(`Minimum withdrawal is ${selectedAsset.minWithdraw} ${selectedAsset.symbol}.`);
-      return;
-    }
-
-    if (numAmount > selectedAsset.balance) {
-      setErrorMsg(`Insufficient ${selectedAsset.symbol} balance. Available: ${selectedAsset.balance.toFixed(4)}`);
-      return;
-    }
-
-    if (!passcode || passcode.length < 6) {
-      setErrorMsg('Please enter your 6-digit security passcode to authorize withdrawal.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const verifyRes = await verifyPasscode(passcode);
-      if (!verifyRes.success) {
-        setErrorMsg('Invalid security passcode. Withdrawal rejected.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      setTimeout(async () => {
-        setIsSubmitting(false);
-        showToast(`Withdrawal of ${numAmount} ${selectedAsset.symbol} submitted to blockchain!`, 'success');
-        setAmount('');
-        setRecipientAddress('');
-        setPasscode('');
-        await refreshUserData();
-      }, 1000);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Withdrawal failed. Please try again.');
-      setIsSubmitting(false);
-    }
+    setErrorMsg('Withdrawal submission is disabled. The supplied x.money API has no verified authenticated withdrawal workflow.');
   };
 
   return (
@@ -204,6 +138,9 @@ export const WithdrawPage: React.FC = () => {
         </div>
       </div>
 
+      <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 text-xs text-amber-200" role="status">
+        Read-only test mode. This page displays API balances and withdrawal history only; fee/minimum values are not supplied by x.money and no withdrawal can be submitted.
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (7 Cols): Withdrawal Form */}
         <div className="lg:col-span-7">
@@ -320,7 +257,7 @@ export const WithdrawPage: React.FC = () => {
                   min="0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder={`Min: ${selectedAsset.minWithdraw} ${selectedAsset.symbol}`}
+                  placeholder={selectedAsset.minWithdraw === null ? 'Minimum not provided by API' : `Min: ${selectedAsset.minWithdraw} ${selectedAsset.symbol}`}
                   className="w-full h-11 pl-3.5 pr-16 rounded-xl bg-[#020204] border border-[#18181c] focus:border-[#00e699] text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none transition-colors"
                 />
                 <button
@@ -355,7 +292,7 @@ export const WithdrawPage: React.FC = () => {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={true}
                 className="w-full py-3.5 px-6 rounded-xl bg-[#00e699] hover:bg-[#00ffaa] active:scale-[0.99] text-black font-extrabold text-xs tracking-tight transition-all shadow-lg shadow-[#00e699]/30 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
@@ -390,7 +327,7 @@ export const WithdrawPage: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <span className="text-slate-400 font-sans">Network Gas Fee:</span>
-                <span className="text-amber-400 font-bold">{selectedAsset.fee} {selectedAsset.symbol}</span>
+                <span className="text-amber-400 font-bold">{selectedAsset.fee === null ? 'Not provided by API' : `${selectedAsset.fee} ${selectedAsset.symbol}`}</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -400,7 +337,7 @@ export const WithdrawPage: React.FC = () => {
 
               <div className="border-t border-[#18181c] pt-3 flex items-center justify-between text-sm">
                 <span className="text-slate-300 font-sans font-semibold">Net Payout:</span>
-                <span className="text-[#00e699] font-black">{netAmount.toFixed(4)} {selectedAsset.symbol}</span>
+                <span className="text-[#00e699] font-black">{netAmount === null ? 'Not provided by API' : `${netAmount.toFixed(4)} ${selectedAsset.symbol}`}</span>
               </div>
             </div>
           </div>
