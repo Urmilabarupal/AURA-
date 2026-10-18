@@ -11,7 +11,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
-import { web3Wallet } from '../services/web3Wallet';
 import { cookieService } from '../services/cookieService';
 import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
@@ -50,7 +49,7 @@ interface AuthContextType {
   setSecurityModalOpen: (open: boolean) => void;
   toggleEmptyStateMode: () => void;
   connectRealMetaMask: () => Promise<{ success: boolean; address?: string; error?: string }>;
-  connectMobileWallet: () => Promise<{ success: boolean; address: string }>;
+  connectMobileWallet: () => Promise<{ success: boolean; address: string; error?: string }>;
   register: (data: { walletAddress?: string; referId?: string; country: string; mobile: string; name: string }) => Promise<{ success: boolean; message?: string }>;
   setupPasscode: (passcode: string, advanceToLocked?: boolean) => Promise<{ success: boolean; message?: string }>;
   verifyPasscode: (pin: string) => Promise<{ success: boolean; message?: string }>;
@@ -300,15 +299,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: false, error: res.message || res.error || 'Connection failed' };
   };
 
-  const connectMobileWallet = async (): Promise<{ success: boolean; address: string }> => {
-    const addr = web3Wallet.getOrCreateMobileSessionWallet();
-    setWalletAddress(addr);
-    setIsMetaMaskConnected(true);
-    if (user) {
-      setUser({ ...user, walletAddress: addr });
-    }
-
-    return { success: true, address: addr };
+  const connectMobileWallet = async (): Promise<{ success: boolean; address: string; error?: string }> => {
+    // Never generate/store a client-side wallet in API-only preview mode.
+    return {
+      success: false,
+      address: '',
+      error: 'Mobile wallet creation is disabled in read-only API preview.',
+    };
   };
 
   const register = async (data: {
