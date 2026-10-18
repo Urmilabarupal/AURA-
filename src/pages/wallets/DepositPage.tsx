@@ -108,7 +108,8 @@ export const DepositPage: React.FC = () => {
       const row = response.data[index];
       const depositEnabled = row?.deposit === undefined || Number(row.deposit) === 1 || row.deposit === true;
       const enabled = row?.enable === undefined || Number(row.enable) === 1 || row.enable === true;
-      return Boolean(asset.symbol) && depositEnabled && enabled;
+      const statusEnabled = row?.status === undefined || Number(row.status) === 1;
+      return Boolean(asset.symbol) && depositEnabled && enabled && statusEnabled;
     });
     setSupportedAssets(assets);
     setSelectedAssetSymbol(assets[0]?.symbol || '');
