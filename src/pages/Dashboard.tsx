@@ -139,29 +139,31 @@ export const Dashboard: React.FC = () => {
   const [copiedAddress, setCopiedAddress] = useState<boolean>(false);
   const [copiedReferral, setCopiedReferral] = useState<boolean>(false);
   const [realTransactions, setRealTransactions] = useState<any[]>([]);
+  const [transactionError, setTransactionError] = useState<string>('');
 
-  const referralCode = user?.referId || 'MNX001';
-  const referralLink = `https://moneyx.app/ref/${referralCode}`;
+  const referralCode = user?.referId || '';
+  const referralLink = referralCode ? `https://moneyx.app/ref/${encodeURIComponent(referralCode)}` : '';
 
   const handleCopyReferral = () => {
+    if (!referralLink) return;
     copyToClipboard(referralLink, 'Referral Link');
     setCopiedReferral(true);
     setTimeout(() => setCopiedReferral(false), 2000);
   };
 
   // Authoritative real on-chain & user session balances (Zero fake mock clamping)
-  const fundingBalance = wallets?.fundingBalanceUSDT ?? (wallets?.spotBalanceUSDT ? +(wallets.spotBalanceUSDT * 0.6).toFixed(2) : 0);
+  const fundingBalance = wallets?.fundingBalanceUSDT ?? 0;
   const mainBalance = wallets?.mainBalanceUSDT ?? 0;
-  const rewardBalance = wallets?.spotBalanceUSDT ? +(wallets.spotBalanceUSDT * 0.4).toFixed(2) : 0;
-  const totalBalance = wallets?.totalBalanceUSDT ?? +(fundingBalance + mainBalance + rewardBalance).toFixed(2);
+  const rewardBalance = 0; // No rewards-balance endpoint is available in x.money.
+  const totalBalance = wallets?.totalBalanceUSDT ?? 0;
 
   // Dynamic user metrics strictly calculated from active session
   const userDisplayName = user?.name || (user?.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : 'Valued User');
-  const userDisplayId = user?.id || (user?.walletAddress ? `MX-${user.walletAddress.slice(2, 8).toUpperCase()}` : 'MX-001');
-  const stakedTotal = wallets?.mainBalanceNative ? +(wallets.mainBalanceNative * 0.5 * 337.2).toFixed(2) : 0;
+  const userDisplayId = user?.id || '—';
+  const stakedTotal = 0; // No compatible user-staking summary endpoint is available.
   const totalRewards = wallets?.extraBalanceHXC ? +wallets.extraBalanceHXC.toFixed(2) : 0;
-  const dailyIncome = wallets?.totalBalanceUSDT ? +(wallets.totalBalanceUSDT * 0.005).toFixed(2) : 0;
-  const totalIncome = wallets?.totalDepositUSDT ? +wallets.totalDepositUSDT.toFixed(2) : totalBalance;
+  const dailyIncome = 0; // Never estimate yield without an API ledger record.
+  const totalIncome = 0; // Deposit volume is not income; a separate income endpoint is required.
   const teamIncome = 0;
   const teamMembers = 0;
   const activeTeamToday = 0;
@@ -176,7 +178,14 @@ export const Dashboard: React.FC = () => {
     ApiService.getTransactions({ limit: 5 }).then((res: any) => {
       if (res.success && res.data) {
         setRealTransactions(res.data);
+        setTransactionError(res.data.length ? '' : 'No transaction records were returned by x.money.');
+      } else {
+        setRealTransactions([]);
+        setTransactionError(res.error?.message || res.message || 'Could not load transactions from x.money API.');
       }
+    }).catch((error: unknown) => {
+      setRealTransactions([]);
+      setTransactionError(error instanceof Error ? error.message : 'Could not load transactions from x.money API.');
     });
   }, []);
 
@@ -191,6 +200,10 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 select-none font-sans text-white bg-[#000000]">
       
+      <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 text-xs text-amber-200" role="status">
+        Some reward, staking-yield and team metrics are unavailable from the supplied x.money API. They are not estimated or replaced with sample values.
+      </div>
+
       {/* 1. HERO WELCOME BANNER (With User Details, Deposit & Withdraw buttons) */}
       <section className="relative rounded-3xl bg-gradient-to-r from-[#050807] via-[#080d0a] to-[#040806] border border-[#18181c] p-6 sm:p-8 lg:p-10 overflow-hidden shadow-2xl">
         {/* Subtle Ambient Emerald Glow */}
