@@ -352,6 +352,8 @@ export class UserApiService {
       if (requestUrl.protocol !== 'http:' && requestUrl.protocol !== 'https:') throw new Error('Only HTTP/HTTPS API URLs are supported.');
       if (requestUrl.username || requestUrl.password) throw new Error('API URL must not contain embedded credentials.');
       const localHost = ['localhost', '127.0.0.1', '::1'].includes(requestUrl.hostname.toLowerCase());
+      const localPage = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
+      if (!localHost || !localPage) throw new Error('This connector is restricted to a local XAMPP test environment. Remote API hosts are not allowed.');
       if (requestUrl.protocol === 'http:' && !localHost) throw new Error('For non-local APIs, HTTPS is required.');
       requestUrl.search = '';
       requestUrl.hash = '';
