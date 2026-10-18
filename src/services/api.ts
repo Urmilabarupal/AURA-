@@ -201,6 +201,24 @@ export const ApiService = {
     }
   },
 
+  async getDeposits(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Deposits');
+      return XMoneyApiService.success(rows, rows.length ? 'Deposit records loaded from x.money API.' : 'No deposit records returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
+  },
+
+  async getWithdrawals(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Withdraws');
+      return XMoneyApiService.success(rows, rows.length ? 'Withdrawal records loaded from x.money API.' : 'No withdrawal records returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
+  },
+
   // Trading
   async getMarketTrades(): Promise<ApiResponse<MarketTrade[]>> {
     return XMoneyApiService.success([], 'x.money does not expose a compatible public market-trades endpoint; showing an empty state instead of demo data.');
