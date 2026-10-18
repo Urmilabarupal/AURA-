@@ -167,15 +167,8 @@ export const Dashboard: React.FC = () => {
   const activeTeamToday = 0;
 
   // Dynamic chart data strictly relative to actual user total balance
-  const currentChartData = [
-    { name: 'Point 1', balance: +(totalBalance * 0.88).toFixed(2) },
-    { name: 'Point 2', balance: +(totalBalance * 0.92).toFixed(2) },
-    { name: 'Point 3', balance: +(totalBalance * 0.90).toFixed(2) },
-    { name: 'Point 4', balance: +(totalBalance * 0.95).toFixed(2) },
-    { name: 'Point 5', balance: +(totalBalance * 0.97).toFixed(2) },
-    { name: 'Point 6', balance: +(totalBalance * 0.99).toFixed(2) },
-    { name: 'Current', balance: totalBalance },
-  ];
+  // No historical portfolio-series endpoint exists in the supplied x.money API.
+  const currentChartData: { name: string; balance: number }[] = [];
 
   useEffect(() => {
     realMarketApi.fetchTickers();
@@ -731,6 +724,7 @@ export const Dashboard: React.FC = () => {
 
           {/* Recharts Area Chart */}
           <div className="h-56 sm:h-64 w-full pt-2">
+            {currentChartData.length ? (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={currentChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
@@ -765,6 +759,11 @@ export const Dashboard: React.FC = () => {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center rounded-xl border border-dashed border-[#25252d] p-6 text-center text-xs text-slate-400">
+                Portfolio history is not available from the x.money API yet. No synthetic chart data is shown.
+              </div>
+            )}
           </div>
         </div>
 
