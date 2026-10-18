@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import { UserApiService } from '../src/services/userApiService';
-import { XMoneyApiService } from '../src/services/xMoneyApi';
+import { XMoneyApiService, X_MONEY_READ_ENDPOINTS } from '../src/services/xMoneyApi';
 
 const originalFetch = globalThis.fetch;
 const originalLocalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
@@ -158,4 +158,36 @@ test('blocks a non-local API host before making a network request', async () => 
 
   await assert.rejects(() => XMoneyApiService.request('User'), /restricted to a local XAMPP test environment/);
   assert.equal(fetchCalled, false);
+});
+
+
+test('diagnoses every mapped read endpoint one by one and reports schema metadata', async () => {
+  let activeRequests = 0;
+  let maxConcurrentRequests = 0;
+  installFetch(async (url) => {
+    activeRequests += 1;
+    maxConcurrentRequests = Math.max(maxConcurrentRequests, activeRequests);
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    const endpoint = new URL(url).searchParams.get('Api');
+    activeRequests -= 1;
+
+    if (endpoint === 'User') {
+      return jsonResponse({ status_code: 200, s: 1, data: { ID: 73, display_name: 'Local Test User' } });
+    }
+    if (endpoint === 'Staking_Plans') {
+      return jsonResponse({ status_code: 200, s: 0, o: 'Data empty' });
+    }
+    return jsonResponse({ status_code: 200, s: 1, data: [{ id: 1, name: 'field-only sample' }] });
+  });
+
+  const results = await XMoneyApiService.diagnoseReadEndpoints();
+
+  assert.deepEqual(results.map((row) => row.endpoint), [...X_MONEY_READ_ENDPOINTS]);
+  assert.deepEqual(requests.map(({ url }) => new URL(url).searchParams.get('Api')), [...X_MONEY_READ_ENDPOINTS]);
+  assert.equal(results.length, 11);
+  assert.equal(maxConcurrentRequests, 1, 'endpoint checks must be sequential');
+  assert.equal(results[0].status, 'OK');
+  assert.equal(results[0].fields.includes('ID'), true);
+  assert.equal(results.find((row) => row.endpoint === 'Staking_Plans')?.status, 'EMPTY');
+  assert.equal(results.every((row) => !JSON.stringify(row).includes('Local Test User')), true);
 });
