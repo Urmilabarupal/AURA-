@@ -72,11 +72,12 @@ export const WalletsList: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs font-mono text-slate-400">
-                {activeAddr.slice(0, 8)}...{activeAddr.slice(-6)}
+                {activeAddr ? `${activeAddr.slice(0, 8)}...${activeAddr.slice(-6)}` : 'Wallet address not provided by API'}
               </span>
               <button
                 type="button"
-                onClick={() => copyToClipboard(activeAddr, 'Wallet address copied!')}
+                onClick={() => activeAddr && copyToClipboard(activeAddr, 'Wallet address copied!')}
+                disabled={!activeAddr}
                 className="text-slate-500 hover:text-white transition-colors cursor-pointer"
                 title="Copy Address"
               >
