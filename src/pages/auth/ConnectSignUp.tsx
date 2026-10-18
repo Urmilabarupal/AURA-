@@ -20,7 +20,7 @@
     - Pick Your Country selectable by user
     - Mobile Number starts EMPTY, strictly max 10 digits
     - Robust security & validation before advancing to passcode setup
- 6. Floating "Trying to Auto Sign In..." pill at bottom
+ 6. Registration must succeed on the server before the passcode screen opens
 */
 
 import React, { useState } from 'react';
@@ -160,7 +160,7 @@ export const ConnectSignUp: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      await register({
+      const registration = await register({
         walletAddress: connectedAddress,
         name: cleanName,
         country,
@@ -168,8 +168,14 @@ export const ConnectSignUp: React.FC = () => {
         referId: referId.trim(),
       });
 
-      showToast('Profile registered! Set your passcode.', 'success');
-      // Advance to Passcode Setup Screen
+      if (!registration.success) {
+        setErrorMsg(registration.message || 'Registration failed. No success was reported by the server.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      showToast('Account created by x.money. Set your passcode.', 'success');
+      // Advance only after User_New returns the new database user ID.
       setAuthStage('SETUP_PASSCODE');
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to submit details');

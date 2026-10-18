@@ -324,7 +324,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (res.data.user.walletAddress) {
           setWalletAddress(res.data.user.walletAddress);
         }
-        setAuthStage('SETUP_PASSCODE');
         return { success: true, message: res.message };
       }
       return { success: false, message: res.error?.message || 'Registration failed' };

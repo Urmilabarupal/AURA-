@@ -207,3 +207,65 @@ test('uses a same-origin Vite proxy by default and migrates the previous Apache 
 
   assert.equal(UserApiService.getConfig().endpointUrl, DEFAULT_API_ENDPOINT);
 });
+
+
+test('posts new-user signup fields to User_New without requiring an existing UID', async () => {
+  UserApiService.saveConfig({ userId: '' });
+  installFetch(async () => jsonResponse({
+    status_code: 200,
+    s: 1,
+    data: {
+      ID: 742,
+      user_login: 'new-local-user',
+      display_name: 'Local New User',
+      mobile: '9876543210',
+      country: 'India',
+      wallet_address: '0x1234567890abcdef1234567890abcdef12345678',
+      refer_by: 'REF123',
+    },
+  }));
+
+  const user = await XMoneyApiService.registerUser({
+    walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
+    referId: 'REF123',
+    country: 'India',
+    mobile: '9876543210',
+    name: 'Local New User',
+  });
+
+  assert.equal(user.id, '742');
+  assert.equal(user.name, 'Local New User');
+  assert.equal(user.mobile, '9876543210');
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].init?.method, 'POST');
+  assert.equal(requests[0].init?.credentials, 'omit');
+  const url = new URL(requests[0].url);
+  assert.equal(url.searchParams.get('Api'), 'User_New');
+  assert.equal(url.searchParams.has('uid'), false);
+  const form = new URLSearchParams(String(requests[0].init?.body));
+  assert.equal(form.get('wallet_address'), '0x1234567890abcdef1234567890abcdef12345678');
+  assert.equal(form.get('mobile'), '9876543210');
+  assert.equal(form.get('refer_id'), 'REF123');
+  assert.equal(form.get('country'), 'India');
+  assert.equal(form.get('name'), 'Local New User');
+});
+
+test('does not report registration success if User_New omits the database ID', async () => {
+  UserApiService.saveConfig({ userId: '' });
+  installFetch(async () => jsonResponse({
+    status_code: 200,
+    s: 1,
+    data: { message: 'ok', name: 'Local New User' },
+  }));
+
+  await assert.rejects(
+    () => XMoneyApiService.registerUser({
+      walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
+      referId: '',
+      country: 'India',
+      mobile: '9876543210',
+      name: 'Local New User',
+    }),
+    /did not return the created database user ID/,
+  );
+});

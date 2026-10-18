@@ -89,7 +89,26 @@ export const ApiService = {
     mobile: string;
     name: string;
   }): Promise<ApiResponse<{ user: UserProfile; token: string }>> {
-    return XMoneyApiService.failure<{ user: UserProfile; token: string }>(new Error('Registration is not connected to a secure x.money authentication endpoint. Use Local API preview for read-only testing.'));
+    try {
+      const walletAddress = params.walletAddress?.trim() || '';
+      if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+        throw new Error('Connect a valid EVM wallet address before registering.');
+      }
+      if (params.name.trim().length < 2) throw new Error('Enter your full name.');
+      if (!/^\\d{10}$/.test(params.mobile.trim())) throw new Error('Enter a valid 10-digit mobile number.');
+      if (!params.country.trim()) throw new Error('Choose your country.');
+
+      const user = await XMoneyApiService.registerUser({
+        walletAddress,
+        referId: params.referId?.trim() || '',
+        country: params.country.trim(),
+        mobile: params.mobile.trim(),
+        name: params.name.trim(),
+      });
+      return XMoneyApiService.success({ user, token: '' }, 'User_New accepted registration and returned a database user ID.');
+    } catch (error) {
+      return XMoneyApiService.failure<{ user: UserProfile; token: string }>(error);
+    }
   },
 
   async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode?: string }>> {
