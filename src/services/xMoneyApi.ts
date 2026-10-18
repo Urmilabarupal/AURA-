@@ -169,7 +169,7 @@ export class XMoneyApiService {
     return UserApiService.getConfig();
   }
 
-  private static buildUrl(endpoint: string, extra: Record<string, string | number | undefined> = {}): URL {
+  private static buildUrl(endpoint: string, extra: Record<string, string | number | undefined> = {}, requireUserId = true): URL {
     const config = this.config();
     const rawBase = config.endpointUrl.trim();
     let url: URL;
@@ -184,7 +184,7 @@ export class XMoneyApiService {
     const isLocalPage = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
     if (!isLocalHost || !isLocalPage) throw new Error('This connector is restricted to a local XAMPP test environment. Remote API hosts are not allowed.');
     if (url.protocol === 'http:' && !isLocalHost) throw new Error('For non-local APIs, HTTPS is required.');
-    if (!config.userId?.trim()) throw new Error('Enter the x.money user UID in API Setup before loading account data.');
+    if (requireUserId && !config.userId?.trim()) throw new Error('Enter the x.money user UID in API Setup before loading account data.');
     url.search = '';
     url.hash = '';
     url.searchParams.set('Api', endpoint);
@@ -207,18 +207,27 @@ export class XMoneyApiService {
     return url;
   }
 
-  static async request(endpoint: string, extra: Record<string, string | number | undefined> = {}): Promise<unknown> {
-    const url = this.buildUrl(endpoint, extra);
+  static async request(
+    endpoint: string,
+    extra: Record<string, string | number | undefined> = {},
+    options: { method?: 'GET' | 'POST'; form?: URLSearchParams; requireUserId?: boolean } = {},
+  ): Promise<unknown> {
+    const method = options.method ?? 'GET';
+    const url = this.buildUrl(endpoint, extra, options.requireUserId ?? endpoint !== 'User_New');
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 8000);
     try {
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method,
         mode: 'cors',
         credentials: 'omit',
         cache: 'no-store',
         redirect: 'error',
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          ...(options.form ? { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } : {}),
+        },
+        ...(options.form ? { body: options.form.toString() } : {}),
         signal: controller.signal,
       });
       const bodyText = await response.text();
@@ -247,6 +256,67 @@ export class XMoneyApiService {
     } finally {
       window.clearTimeout(timeout);
     }
+  }
+
+  /**
+   * Creates a new account using the legacy PHP User_New endpoint.
+   * Uses a form-encoded POST so personal fields are not placed in the URL.
+   * The backend must return the created database record ID before the UI
+   * treats registration as successful.
+   */
+  static async registerUser(input: {
+    walletAddress: string;
+    referId: string;
+    country: string;
+    mobile: string;
+    name: string;
+  }): Promise<UserProfile> {
+    const cleanName = input.name.trim();
+    const nameParts = cleanName.split(/\\s+/);
+    const form = new URLSearchParams({
+      name: cleanName,
+      username: cleanName,
+      fname: nameParts[0] ?? cleanName,
+      lname: nameParts.slice(1).join(' '),
+      country: input.country.trim(),
+      mobile: input.mobile.trim(),
+      refer_id: input.referId.trim(),
+      wallet_address: input.walletAddress.trim(),
+    });
+
+    const payload = await this.request('User_New', {}, {
+      method: 'POST',
+      form,
+      requireUserId: false,
+    });
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      throw new Error('User_New returned an invalid response. Check the x.money PHP endpoint before retrying.');
+    }
+
+    const envelope = payload as XMoneyEnvelope;
+    if (envelope.success === false || envelope.s === 0 ||
+        (typeof envelope.status_code === 'number' && envelope.status_code >= 400) ||
+        (typeof envelope.error === 'string' && envelope.error.trim())) {
+      const detail = textFrom(envelope.message, envelope.error, envelope.o, envelope.c);
+      throw new Error(detail || 'x.money rejected the new user request.');
+    }
+
+    const parsed = UserApiService.parseUserData(payload);
+    if (!parsed.user.id) {
+      throw new Error('User_New did not return the created database user ID. Check the database before retrying to avoid creating a duplicate account.');
+    }
+
+    const user: UserProfile = {
+      ...parsed.user,
+      username: parsed.user.username && parsed.user.username !== parsed.user.id ? parsed.user.username : cleanName,
+      name: parsed.user.name || cleanName,
+      mobile: parsed.user.mobile || input.mobile.trim(),
+      country: parsed.user.country || input.country.trim(),
+      walletAddress: parsed.user.walletAddress || input.walletAddress.trim(),
+      referBy: parsed.user.referBy || input.referId.trim(),
+    };
+    this.accountUserId = user.id;
+    return user;
   }
 
   static async getUser(): Promise<{ user: UserProfile; wallets?: UserWallets; raw: unknown }> {
