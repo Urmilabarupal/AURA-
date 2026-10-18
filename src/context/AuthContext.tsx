@@ -12,7 +12,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
 import { web3Wallet } from '../services/web3Wallet';
-import { realMarketApi } from '../services/realMarketApi';
 import { cookieService } from '../services/cookieService';
 import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
@@ -249,31 +248,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (walletsRes.success && walletsRes.data) {
-          // If the profile / API already provided non-zero balances, prioritize them
-          if (walletsRes.data.totalBalanceUSDT > 0 || walletsRes.data.mainBalanceUSDT > 0) {
-            setWallets(walletsRes.data);
-          } else if (profileRes.data.walletAddress) {
-            // Otherwise compute live on-chain balance
-            const onChain = await realMarketApi.fetchOnChainBalance(profileRes.data.walletAddress);
-            const tickers = await realMarketApi.fetchTickers();
-            const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-            const ethPrice = ethPair ? ethPair.price : 2800;
-
-            const actualEth = onChain.balanceEth;
-            const liveUsd = +(actualEth * ethPrice).toFixed(2);
-            setWallets({
-              ...walletsRes.data,
-              mainBalanceNative: actualEth,
-              mainBalanceUSDT: liveUsd,
-              spotBalanceNative: +(actualEth * 0.4).toFixed(6),
-              spotBalanceUSDT: +(liveUsd * 0.4).toFixed(2),
-              fundingBalanceNative: +(actualEth * 0.6).toFixed(6),
-              fundingBalanceUSDT: +(liveUsd * 0.6).toFixed(2),
-              totalBalanceUSDT: liveUsd,
-            });
-          } else {
-            setWallets(walletsRes.data);
-          }
+          // Use only explicit values returned by x.money. Never infer or split balances.
+          setWallets(walletsRes.data);
+        } else {
+          setWallets(null);
         }
       } else {
         setUser(null);
@@ -299,20 +277,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) {
           setUser({ ...user, walletAddress: addr });
         }
-        // Update with real on-chain balance
-        const onChain = await realMarketApi.fetchOnChainBalance(addr);
-        const tickers = await realMarketApi.fetchTickers();
-        const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-        const ethPrice = ethPair ? ethPair.price : 2800;
-        const actualEth = onChain.balanceEth;
-        const liveUsd = +(actualEth * ethPrice).toFixed(2);
-
-        setWallets((prev) => prev ? {
-          ...prev,
-          mainBalanceNative: actualEth,
-          mainBalanceUSDT: liveUsd,
-          totalBalanceUSDT: liveUsd,
-        } : null);
       } else {
         setIsMetaMaskConnected(false);
       }
@@ -329,25 +293,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({ ...user, walletAddress: addr });
       }
 
-      // Authoritative on-chain balance query
-      const onChain = await realMarketApi.fetchOnChainBalance(addr);
-      const tickers = await realMarketApi.fetchTickers();
-      const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-      const ethPrice = ethPair ? ethPair.price : 2800;
-      const actualEth = onChain.balanceEth || (res.balance ? parseFloat(res.balance) : 0);
-      const liveUsd = +(actualEth * ethPrice).toFixed(2);
-
-      setWallets((prev) => prev ? {
-        ...prev,
-        mainBalanceNative: actualEth,
-        mainBalanceUSDT: liveUsd,
-        spotBalanceNative: +(actualEth * 0.4).toFixed(6),
-        spotBalanceUSDT: +(liveUsd * 0.4).toFixed(2),
-        fundingBalanceNative: +(actualEth * 0.6).toFixed(6),
-        fundingBalanceUSDT: +(liveUsd * 0.6).toFixed(2),
-        totalBalanceUSDT: liveUsd,
-      } : prev);
-
       return { success: true, address: addr };
     }
     return { success: false, error: res.message || res.error || 'Connection failed' };
@@ -360,21 +305,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) {
       setUser({ ...user, walletAddress: addr });
     }
-
-    // Query real on-chain balance for generated wallet address
-    const onChain = await realMarketApi.fetchOnChainBalance(addr);
-    const tickers = await realMarketApi.fetchTickers();
-    const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-    const ethPrice = ethPair ? ethPair.price : 2800;
-    const actualEth = onChain.balanceEth;
-    const liveUsd = +(actualEth * ethPrice).toFixed(2);
-
-    setWallets((prev) => prev ? {
-      ...prev,
-      mainBalanceNative: actualEth,
-      mainBalanceUSDT: liveUsd,
-      totalBalanceUSDT: liveUsd,
-    } : prev);
 
     return { success: true, address: addr };
   };
