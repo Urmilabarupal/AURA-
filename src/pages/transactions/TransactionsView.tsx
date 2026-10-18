@@ -38,7 +38,7 @@ export const TransactionsView: React.FC = () => {
     } else {
       loadTransactions();
     }
-  }, [emptyStateMode, filterType, limit]);
+  }, [emptyStateMode, filterType, limit, searchQuery]);
 
   const loadTransactions = async () => {
     try {
