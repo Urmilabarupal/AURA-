@@ -110,9 +110,30 @@ export class UserApiService {
       throw new Error('API response is not a valid JSON object');
     }
 
-    // Determine the root data container
-    // Common conventions: payload.data, payload.user, payload.userData, or root payload itself
-    let root = payload.c && typeof payload.c === 'object' ? payload.c : (payload.data || payload.user || payload.userData || payload.result || payload);
+    // PHP endpoints may wrap payloads in data/user/result or the compact c/o envelope.
+    // Locate the actual profile record instead of mistaking a status wrapper for a user.
+    const profileKeys = [
+      'id', 'ID', 'user_id', 'userId', 'uid', 'userid', 'username',
+      'name', 'fullName', 'fullname', 'display_name', 'user_nicename',
+      'user_login', 'user_email', 'email',
+    ];
+    const findProfileRecord = (value: any, depth = 0): any => {
+      if (!value || typeof value !== 'object' || depth > 5) return null;
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          const nested = findProfileRecord(item, depth + 1);
+          if (nested) return nested;
+        }
+        return null;
+      }
+      if (profileKeys.some((key) => value[key] !== undefined && value[key] !== null && value[key] !== '')) return value;
+      for (const key of ['data', 'user', 'userData', 'result', 'profile', 'record', 'o', 'c']) {
+        const nested = findProfileRecord(value[key], depth + 1);
+        if (nested) return nested;
+      }
+      return null;
+    };
+    let root = findProfileRecord(payload) || payload;
 
     // In case payload.data is a stringified JSON
     if (typeof root === 'string') {
@@ -191,7 +212,7 @@ export class UserApiService {
     const walletAddress =
       typeof addressCandidate === 'string' &&
       addressCandidate.trim().length >= 20 &&
-      !/^\\d+$/.test(addressCandidate.trim())
+      !/^\d+$/.test(addressCandidate.trim())
         ? addressCandidate.trim()
         : '';
 
@@ -330,7 +351,6 @@ export class UserApiService {
       requestUrl.hash = '';
       requestUrl.searchParams.set('api', 'User');
       requestUrl.searchParams.set('uid', config.userId.trim());
-      requestUrl.searchParams.set('user', config.userId.trim());
       const response = await fetch(requestUrl.toString(), {
         method: 'GET',
         mode: 'cors',
@@ -366,7 +386,7 @@ export class UserApiService {
         status: 'CONNECTED',
         lastSyncTime: new Date().toISOString(),
         lastError: null,
-        rawResponse: json,
+        rawResponse: null,
       });
 
       return {
@@ -388,7 +408,7 @@ export class UserApiService {
         err.message?.includes('CORS');
 
       const errorMessage = isMixedContent
-        ? `Browser Security Block: HTTPS pages cannot directly call insecure ${targetUrl} (Mixed Content). Use an HTTPS URL/tunnel, or paste the JSON response directly below!`
+        ? `Browser Security Block: HTTPS pages cannot directly call insecure ${targetUrl} (Mixed Content). Open AURA from localhost and use the local XAMPP base URL.`
         : err.name === 'AbortError'
         ? `Request timed out connecting to ${targetUrl}. Ensure your local server is running.`
         : err.message || 'Failed to fetch user data from API';
