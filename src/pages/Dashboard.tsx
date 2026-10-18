@@ -161,7 +161,7 @@ export const Dashboard: React.FC = () => {
   const userDisplayName = user?.name || (user?.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : 'Valued User');
   const userDisplayId = user?.id || '—';
   const stakedTotal = 0; // No compatible user-staking summary endpoint is available.
-  const totalRewards = wallets?.extraBalanceHXC ? +wallets.extraBalanceHXC.toFixed(2) : 0;
+  const totalRewards = 0; // HXC balance is not a verified rewards-income figure.
   const dailyIncome = 0; // Never estimate yield without an API ledger record.
   const totalIncome = 0; // Deposit volume is not income; a separate income endpoint is required.
   const teamIncome = 0;
