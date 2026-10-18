@@ -128,7 +128,6 @@ export class UserApiService {
       root.user_id ||
       root.userId ||
       root.uid ||
-      root.username ||
       payload.id ||
       '';
 
