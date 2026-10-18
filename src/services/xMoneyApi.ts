@@ -99,6 +99,69 @@ const mapType = (row: Record<string, unknown>): TransactionType => {
   return 'APP_TRANSFER';
 };
 
+export type XMoneyEndpointStatus = 'OK' | 'EMPTY' | 'ERROR';
+
+export interface XMoneyEndpointDiagnostic {
+  endpoint: string;
+  status: XMoneyEndpointStatus;
+  rowCount: number | null;
+  fields: string[];
+  message: string;
+  elapsedMs: number;
+}
+
+export const X_MONEY_READ_ENDPOINTS = [
+  'User',
+  'Transactions',
+  'Deposits',
+  'Withdraws',
+  'Spot_Wallets',
+  'Funding_Wallets',
+  'Staking_Wallets',
+  'Currencys',
+  'Referes',
+  'Trades',
+  'Staking_Plans',
+] as const;
+
+const payloadFields = (input: unknown, depth = 0): string[] => {
+  let value = input;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try { value = JSON.parse(trimmed) as unknown; } catch { return []; }
+    } else {
+      return [];
+    }
+  }
+  if (!value || typeof value !== 'object' || depth > 6) return [];
+  if (Array.isArray(value)) {
+    const firstRecord = value.find((item) => !!item && typeof item === 'object' && !Array.isArray(item));
+    return firstRecord ? Object.keys(firstRecord as Record<string, unknown>).sort() : [];
+  }
+
+  const record = value as Record<string, unknown>;
+  const containerKeys = ['o', 'c', 'data', 'result', 'user', 'profile', 'records', 'rows', 'items', 'list', 'transactions', 'deposits', 'withdrawals', 'orders'];
+  for (const key of containerKeys) {
+    if (record[key] === undefined || record[key] === value) continue;
+    const fields = payloadFields(record[key], depth + 1);
+    if (fields.length) return fields;
+  }
+
+  return Object.keys(record)
+    .filter((key) => !['status_code', 's', 'message', 'success', 'status'].includes(key))
+    .sort();
+};
+
+const payloadMessage = (payload: unknown): string => {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return '';
+  const record = payload as Record<string, unknown>;
+  for (const key of ['message', 'error', 'o', 'c']) {
+    if (typeof record[key] === 'string' && record[key].trim()) return (record[key] as string).trim();
+  }
+  return '';
+};
+
 export class XMoneyApiService {
   private static accountUserId = '';
 
@@ -252,6 +315,54 @@ export class XMoneyApiService {
       wallets.totalBalanceUSDT = wallets.mainBalanceUSDT + wallets.spotBalanceUSDT + wallets.fundingBalanceUSDT + wallets.jackpotBalanceUSDT + (stakingUsd ?? 0);
     }
     return wallets;
+  }
+
+  /**
+   * Executes every currently mapped read-only endpoint sequentially and reports
+   * schema metadata only. It deliberately never calls write endpoints.
+   */
+  static async diagnoseReadEndpoints(): Promise<XMoneyEndpointDiagnostic[]> {
+    const results: XMoneyEndpointDiagnostic[] = [];
+    for (const endpoint of X_MONEY_READ_ENDPOINTS) {
+      const startedAt = Date.now();
+      try {
+        const payload = await this.request(endpoint);
+        const detail = payloadMessage(payload);
+        if (/unknown api|api\\s*(?:not found|invalid)|invalid endpoint|unsupported endpoint/i.test(detail)) {
+          throw new Error(detail);
+        }
+
+        let profileFound = false;
+        if (endpoint === 'User') {
+          const parsed = UserApiService.parseUserData(payload);
+          profileFound = Boolean(parsed.user.id);
+          if (!profileFound) throw new Error('The User endpoint returned JSON but no usable profile ID was found.');
+        }
+        const records = envelopeRecords(payload);
+        const fields = records.length ? Object.keys(records[0]).sort() : payloadFields(payload);
+        const rowCount = records.length || (profileFound || fields.length > 0 ? 1 : 0);
+        results.push({
+          endpoint,
+          status: rowCount > 0 ? 'OK' : 'EMPTY',
+          rowCount,
+          fields,
+          message: rowCount > 0
+            ? 'Endpoint returned valid JSON; field names only are shown.'
+            : detail || 'Endpoint returned valid JSON but no records were detected.',
+          elapsedMs: Date.now() - startedAt,
+        });
+      } catch (error) {
+        results.push({
+          endpoint,
+          status: 'ERROR',
+          rowCount: null,
+          fields: [],
+          message: error instanceof Error ? error.message : 'Endpoint request failed.',
+          elapsedMs: Date.now() - startedAt,
+        });
+      }
+    }
+    return results;
   }
 
   static success<T>(data: T, message: string): ApiResponse<T> {
