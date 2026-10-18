@@ -87,7 +87,8 @@ export const DepositPage: React.FC = () => {
       setCurrencyError(response.error?.message || response.message || 'Could not load currencies from x.money API.');
       return;
     }
-    const assets: CryptoAsset[] = response.data.map((row) => {
+    const currencyRows = response.data;
+    const assets: CryptoAsset[] = currencyRows.map((row) => {
       const symbol = String(row.ccc ?? row.symbol ?? row.currency ?? '').trim();
       const networkValue = row.networks ?? row.network ?? row.chain ?? row.platform;
       const networks = Array.isArray(networkValue)
@@ -105,7 +106,7 @@ export const DepositPage: React.FC = () => {
         confirmations: Number.isFinite(confirmations) ? confirmations : 0,
       };
     }).filter((asset, index) => {
-      const row = response.data[index];
+      const row = currencyRows[index];
       const depositEnabled = row?.deposit === undefined || Number(row.deposit) === 1 || row.deposit === true;
       const enabled = row?.enable === undefined || Number(row.enable) === 1 || row.enable === true;
       const statusEnabled = row?.status === undefined || Number(row.status) === 1;
