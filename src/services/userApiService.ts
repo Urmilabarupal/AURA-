@@ -117,7 +117,16 @@ export class UserApiService {
       'name', 'fullName', 'fullname', 'display_name', 'user_nicename',
       'user_login', 'user_email', 'email',
     ];
-    const findProfileRecord = (value: any, depth = 0): any => {
+    const findProfileRecord = (input: any, depth = 0): any => {
+      let value = input;
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          try { value = JSON.parse(trimmed); } catch { return null; }
+        } else {
+          return null;
+        }
+      }
       if (!value || typeof value !== 'object' || depth > 5) return null;
       if (Array.isArray(value)) {
         for (const item of value) {
@@ -349,7 +358,7 @@ export class UserApiService {
       if (requestUrl.protocol === 'http:' && !localHost) throw new Error('For non-local APIs, HTTPS is required.');
       requestUrl.search = '';
       requestUrl.hash = '';
-      requestUrl.searchParams.set('api', 'User');
+      requestUrl.searchParams.set('Api', 'User');
       requestUrl.searchParams.set('uid', config.userId.trim());
       const response = await fetch(requestUrl.toString(), {
         method: 'GET',
