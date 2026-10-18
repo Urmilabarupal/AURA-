@@ -1,0 +1,26 @@
+name: AURA validation
+
+on:
+  push:
+    branches: [main, feature/x-money-readonly-api]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run mocked API integration tests
+        run: npm test
+      - name: Run TypeScript check
+        run: npm run lint
+      - name: Build production bundle
+        run: npm run build
