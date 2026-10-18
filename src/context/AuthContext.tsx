@@ -225,12 +225,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setApiConfigState(ApiService.getUserApiConfig());
     if (res.success && res.user) {
       setUser(res.user);
-      if (res.wallets) {
-        setWallets(res.wallets);
-      }
-      if (res.user.walletAddress) {
-        setWalletAddress(res.user.walletAddress);
-      }
+      if (res.wallets) setWallets(res.wallets);
+      if (res.user.walletAddress) setWalletAddress(res.user.walletAddress);
+      // The x.money API currently lacks server-side authentication. This is a
+      // local-only, read-only development preview, never a production login.
+      const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
+      if (isLocalHost) setAuthStage('AUTHENTICATED');
       return { success: true, raw: res.raw };
     } else {
       return { success: false, error: res.error };
