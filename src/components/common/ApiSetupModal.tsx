@@ -13,6 +13,7 @@ import { DEFAULT_API_ENDPOINT } from '../../services/userApiService';
 import {
   AlertCircle,
   ArrowRight,
+  Check,
   CheckCircle2,
   Code,
   Copy,
