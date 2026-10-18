@@ -87,6 +87,8 @@ export class XMoneyApiService {
     if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Only HTTP/HTTPS API URLs are supported.');
     if (url.username || url.password) throw new Error('API URL must not contain embedded credentials.');
     const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(url.hostname.toLowerCase());
+    const isLocalPage = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
+    if (!isLocalHost || !isLocalPage) throw new Error('This connector is restricted to a local XAMPP test environment. Remote API hosts are not allowed.');
     if (url.protocol === 'http:' && !isLocalHost) throw new Error('For non-local APIs, HTTPS is required.');
     if (!config.userId?.trim()) throw new Error('Enter the x.money user UID in API Setup before loading account data.');
     url.search = '';
