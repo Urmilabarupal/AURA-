@@ -47,8 +47,6 @@ interface AuthContextType {
   setApiModalOpen: (open: boolean) => void;
   updateApiConfig: (config: Partial<ApiConnectionConfig>) => void;
   fetchUserDataFromApi: (url?: string) => Promise<{ success: boolean; error?: string; raw?: any }>;
-  importRawUserJson: (jsonStr: string) => { success: boolean; error?: string };
-  loadSampleUserData: () => void;
   setActiveRoute: (route: string) => void;
   setSecurityModalOpen: (open: boolean) => void;
   toggleEmptyStateMode: () => void;
@@ -234,37 +232,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true, raw: res.raw };
     } else {
       return { success: false, error: res.error };
-    }
-  };
-
-  const importRawUserJson = (jsonStr: string): { success: boolean; error?: string } => {
-    const res = ApiService.importRawUserJson(jsonStr);
-    setApiConfigState(ApiService.getUserApiConfig());
-    if (res.success && res.user) {
-      setUser(res.user);
-      if (res.wallets) {
-        setWallets(res.wallets);
-      }
-      if (res.user.walletAddress) {
-        setWalletAddress(res.user.walletAddress);
-      }
-      return { success: true };
-    } else {
-      return { success: false, error: res.error };
-    }
-  };
-
-  const loadSampleUserData = () => {
-    const res = ApiService.loadSampleUserData();
-    setApiConfigState(ApiService.getUserApiConfig());
-    if (res.user) {
-      setUser(res.user);
-      if (res.wallets) {
-        setWallets(res.wallets);
-      }
-      if (res.user.walletAddress) {
-        setWalletAddress(res.user.walletAddress);
-      }
     }
   };
 
@@ -551,8 +518,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setApiModalOpen,
         updateApiConfig,
         fetchUserDataFromApi,
-        importRawUserJson,
-        loadSampleUserData,
         setActiveRoute,
         setSecurityModalOpen,
         toggleEmptyStateMode,
