@@ -10,7 +10,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from './Toast';
 import { DEFAULT_API_ENDPOINT } from '../../services/userApiService';
+import { XMoneyApiService, type XMoneyEndpointDiagnostic } from '../../services/xMoneyApi';
 import {
+  Activity,
   AlertCircle,
   ArrowRight,
   Check,
@@ -44,8 +46,10 @@ export const ApiSetupModal: React.FC = () => {
   const { showToast, copyToClipboard } = useToast();
 
   const [urlInput, setUrlInput] = useState<string>(apiConfig.endpointUrl || DEFAULT_API_ENDPOINT);
-  const [activeTab, setActiveTab] = useState<'endpoint' | 'preview'>('endpoint');
+  const [activeTab, setActiveTab] = useState<'endpoint' | 'diagnostics' | 'preview'>('endpoint');
   const [isTesting, setIsTesting] = useState<boolean>(false);
+  const [isDiagnosing, setIsDiagnosing] = useState<boolean>(false);
+  const [diagnosticRows, setDiagnosticRows] = useState<XMoneyEndpointDiagnostic[]>([]);
   const [copiedJson, setCopiedJson] = useState<boolean>(false);
   const [localFeedback, setLocalFeedback] = useState<{ type: 'success' | 'error' | 'info'; msg: string } | null>(null);
 
@@ -77,6 +81,26 @@ export const ApiSetupModal: React.FC = () => {
       });
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  const handleDiagnoseEndpoints = async () => {
+    setLocalFeedback(null);
+    setIsDiagnosing(true);
+    setDiagnosticRows([]);
+    try {
+      const rows = await XMoneyApiService.diagnoseReadEndpoints();
+      setDiagnosticRows(rows);
+      const errors = rows.filter((row) => row.status === 'ERROR').length;
+      const empties = rows.filter((row) => row.status === 'EMPTY').length;
+      setLocalFeedback({
+        type: errors ? 'error' : empties ? 'info' : 'success',
+        msg: `Checked ${rows.length} mapped read endpoints sequentially: ${rows.length - errors - empties} with records, ${empties} empty/schema-unrecognized, ${errors} request errors. These checks never call write APIs.`,
+      });
+    } catch (err: any) {
+      setLocalFeedback({ type: 'error', msg: err?.message || 'Could not complete endpoint diagnostics.' });
+    } finally {
+      setIsDiagnosing(false);
     }
   };
 
@@ -175,6 +199,19 @@ export const ApiSetupModal: React.FC = () => {
           </button>
 
 
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('diagnostics')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'diagnostics'
+                ? 'bg-[#00ffa3] text-black shadow-md shadow-[#00ffa3]/20'
+                : 'text-slate-400 hover:text-white bg-[#0a0a0e]'
+            }`}
+          >
+            <Activity size={13} />
+            <span>Endpoint Tests</span>
+          </button>
 
           <button
             type="button"
@@ -341,6 +378,81 @@ export const ApiSetupModal: React.FC = () => {
             </div>
           )}
 
+          {/* Read-only endpoint diagnostics: field names only, no record values */}
+          {activeTab === 'diagnostics' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-[#030305] border border-[#18181c] space-y-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-white">Read-only API endpoint diagnostics</h3>
+                    <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-slate-400">
+                      Tests the 11 read endpoints mapped in AURA one by one, in sequence. It shows response status, row counts and field names only. No write endpoint is called and no money is moved.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDiagnoseEndpoints}
+                    disabled={isDiagnosing || !apiConfig.userId?.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-[#00ffa3] hover:bg-[#00e699] disabled:opacity-50 text-black font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    {isDiagnosing ? <Loader2 size={14} className="animate-spin" /> : <Activity size={14} />}
+                    <span>{isDiagnosing ? 'Testing endpoints...' : 'Test all 11 reads'}</span>
+                  </button>
+                </div>
+                {!apiConfig.userId?.trim() && (
+                  <p className="text-[11px] text-amber-300">Enter the x.money UID on the API Endpoint tab before running these checks.</p>
+                )}
+              </div>
+
+              {diagnosticRows.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-[#030305] border border-dashed border-[#24242b] text-center">
+                  <Activity size={22} className="mx-auto text-slate-500" />
+                  <p className="mt-2 text-xs font-bold text-slate-200">No endpoint checks yet</p>
+                  <p className="mt-1 text-[11px] text-slate-500">Start the local XAMPP server, enter your test UID, and run the checks.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-[#18181c]">
+                  <table className="w-full min-w-[760px] text-left text-[11px] font-mono">
+                    <thead className="bg-[#030305] text-slate-500 uppercase tracking-wider">
+                      <tr>
+                        <th className="p-3">Endpoint</th>
+                        <th className="p-3">Result</th>
+                        <th className="p-3 text-right">Rows</th>
+                        <th className="p-3">Returned field names</th>
+                        <th className="p-3">Detail</th>
+                        <th className="p-3 text-right">Time</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#18181c]">
+                      {diagnosticRows.map((row) => (
+                        <tr key={row.endpoint} className="align-top hover:bg-[#0d0d11]">
+                          <td className="p-3 font-bold text-slate-200">{row.endpoint}</td>
+                          <td className="p-3">
+                            <span className={`rounded-md border px-2 py-1 ${
+                              row.status === 'OK'
+                                ? 'border-emerald-500/30 bg-emerald-950/30 text-emerald-300'
+                                : row.status === 'EMPTY'
+                                  ? 'border-amber-500/30 bg-amber-950/30 text-amber-300'
+                                  : 'border-rose-500/30 bg-rose-950/30 text-rose-300'
+                            }`}>{row.status}</span>
+                          </td>
+                          <td className="p-3 text-right text-slate-300">{row.rowCount ?? '—'}</td>
+                          <td className="p-3 max-w-xs break-words text-slate-400">{row.fields.length ? row.fields.join(', ') : '—'}</td>
+                          <td className="p-3 max-w-sm whitespace-normal break-words text-slate-400">{row.message}</td>
+                          <td className="p-3 text-right text-slate-500">{row.elapsedMs} ms</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                These are AURA's currently mapped candidate endpoint names, not a confirmed inventory of every route in the separate x.money repository. A response marked EMPTY may mean there are no records or the backend uses a different schema/name.
+              </p>
+            </div>
+          )}
+
           {/* TAB 3: LIVE DATA & RAW JSON VIEWER */}
           {activeTab === 'preview' && (
             <div className="space-y-4">
@@ -388,7 +500,7 @@ export const ApiSetupModal: React.FC = () => {
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#08080a] border border-[#141418]">
                     <span className="text-slate-400">Wallet Address:</span>
                     <span className="text-white truncate max-w-[160px]">
-                      {user?.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : '0x7acc...f2b9'}
+                      {user?.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : 'Not provided by API'}
                     </span>
                   </div>
                 </div>
