@@ -232,6 +232,12 @@ export class XMoneyApiService {
       if (!response.ok || (typeof env.status_code === 'number' && env.status_code >= 400)) {
         throw new Error(`x.money API ${endpoint} failed (HTTP ${response.status || env.status_code}).`);
       }
+      if (typeof env.error === 'string' && env.error.trim()) {
+        throw new Error(`x.money API ${endpoint}: ${env.error.trim()}`);
+      }
+      if (env.success === false) {
+        throw new Error(`x.money API ${endpoint}: ${typeof env.message === 'string' ? env.message : 'the server reported failure'}`);
+      }
       if (env.s === 0) {
         const detail = typeof env.o === 'string' ? env.o : typeof env.c === 'string' ? env.c : '';
         if (/not found|data empty|empty list|no data|^empty$/i.test(detail)) return payload;
@@ -337,6 +343,7 @@ export class XMoneyApiService {
           const parsed = UserApiService.parseUserData(payload);
           profileFound = Boolean(parsed.user.id);
           if (!profileFound) throw new Error('The User endpoint returned JSON but no usable profile ID was found.');
+          this.accountUserId = parsed.user.id;
         }
         const records = envelopeRecords(payload);
         const fields = records.length ? Object.keys(records[0]).sort() : payloadFields(payload);
