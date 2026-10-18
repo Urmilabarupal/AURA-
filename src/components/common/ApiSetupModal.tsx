@@ -9,11 +9,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from './Toast';
-import { DEFAULT_API_ENDPOINT, SAMPLE_API_USER_JSON } from '../../services/userApiService';
+import { DEFAULT_API_ENDPOINT } from '../../services/userApiService';
 import {
   AlertCircle,
   ArrowRight,
-  Check,
   CheckCircle2,
   Code,
   Copy,
@@ -24,8 +23,6 @@ import {
   Loader2,
   RefreshCw,
   Server,
-  Terminal,
-  Upload,
   User,
   Wallet,
   X,
@@ -39,8 +36,6 @@ export const ApiSetupModal: React.FC = () => {
     apiConfig,
     updateApiConfig,
     fetchUserDataFromApi,
-    importRawUserJson,
-    loadSampleUserData,
     user,
     wallets,
   } = useAuth();
@@ -48,8 +43,7 @@ export const ApiSetupModal: React.FC = () => {
   const { showToast, copyToClipboard } = useToast();
 
   const [urlInput, setUrlInput] = useState<string>(apiConfig.endpointUrl || DEFAULT_API_ENDPOINT);
-  const [jsonInput, setJsonInput] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'endpoint' | 'json' | 'preview'>('endpoint');
+  const [activeTab, setActiveTab] = useState<'endpoint' | 'preview'>('endpoint');
   const [isTesting, setIsTesting] = useState<boolean>(false);
   const [copiedJson, setCopiedJson] = useState<boolean>(false);
   const [localFeedback, setLocalFeedback] = useState<{ type: 'success' | 'error' | 'info'; msg: string } | null>(null);
@@ -83,41 +77,6 @@ export const ApiSetupModal: React.FC = () => {
     } finally {
       setIsTesting(false);
     }
-  };
-
-  const handleImportJson = () => {
-    setLocalFeedback(null);
-    if (!jsonInput.trim()) {
-      setLocalFeedback({ type: 'error', msg: 'Please paste your JSON response first.' });
-      return;
-    }
-
-    const res = importRawUserJson(jsonInput);
-    if (res.success) {
-      setLocalFeedback({
-        type: 'success',
-        msg: 'User data successfully updated from imported JSON!',
-      });
-      showToast('User Data Updated from JSON!', 'success');
-      setActiveTab('preview');
-    } else {
-      setLocalFeedback({
-        type: 'error',
-        msg: res.error || 'Invalid JSON format.',
-      });
-    }
-  };
-
-  const handleLoadSample = () => {
-    loadSampleUserData();
-    setUrlInput(DEFAULT_API_ENDPOINT);
-    setJsonInput(JSON.stringify(SAMPLE_API_USER_JSON, null, 2));
-    setLocalFeedback({
-      type: 'success',
-      msg: 'Loaded sample Money X ?Api=User schema! User & wallets synchronized.',
-    });
-    showToast('Sample API User Data Loaded!', 'info');
-    setActiveTab('preview');
   };
 
   const handleCopyRawJson = () => {
@@ -214,18 +173,7 @@ export const ApiSetupModal: React.FC = () => {
             <span>API Endpoint</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('json')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === 'json'
-                ? 'bg-[#00ffa3] text-black shadow-md shadow-[#00ffa3]/20'
-                : 'text-slate-400 hover:text-white bg-[#0a0a0e]'
-            }`}
-          >
-            <Upload size={13} />
-            <span>Paste / Import JSON</span>
-          </button>
+
 
           <button
             type="button"
@@ -345,14 +293,7 @@ export const ApiSetupModal: React.FC = () => {
                   If this app is running in an online HTTPS preview, modern web browsers block direct calls to insecure HTTP localhost (<code className="font-mono text-amber-100">http://localhost/x.money/</code>) due to <strong>Mixed Content</strong> and <strong>CORS</strong> policies.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('json')}
-                    className="px-3 py-1.5 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-bold text-[11px] border border-amber-400/40 transition-colors cursor-pointer flex items-center gap-1"
-                  >
-                    <Upload size={12} />
-                    <span>Paste API JSON Directly (Recommended for Localhost)</span>
-                  </button>
+
 
                 </div>
               </div>
@@ -396,58 +337,6 @@ export const ApiSetupModal: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* TAB 2: PASTE / IMPORT JSON */}
-          {activeTab === 'json' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-[#030305] border border-[#18181c] space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Terminal size={14} className="text-[#00ffa3]" />
-                    <span>Paste API Response JSON</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setJsonInput(JSON.stringify(SAMPLE_API_USER_JSON, null, 2))}
-                    className="text-[11px] text-[#00ffa3] hover:underline cursor-pointer"
-                  >
-                    Insert Example JSON
-                  </button>
-                </div>
-
-                <p className="text-[11px] text-slate-400">
-                  Open <code className="text-slate-200 font-mono">http://localhost/x.money/?api=User&amp;uid=YOUR_UID</code> in your browser, copy the JSON output, and paste it here:
-                </p>
-
-                <textarea
-                  rows={8}
-                  value={jsonInput}
-                  onChange={(e) => setJsonInput(e.target.value)}
-                  placeholder={`{\n  "status": "success",\n  "data": {\n    "id": "MNX7729104",\n    "name": "Sandeep Kumar",\n    "mobile": "9876543210",\n    "refer_by": "SPONSOR01",\n    "wallet_address": "0x7acc..."\n  }\n}`}
-                  className="w-full p-3 rounded-xl bg-[#08080a] border border-[#1c1c24] text-xs font-mono text-emerald-300 placeholder-slate-600 focus:outline-none focus:border-[#00ffa3] transition-colors leading-relaxed"
-                />
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleImportJson}
-                    className="px-5 py-2.5 rounded-xl bg-[#00ffa3] hover:bg-[#00e699] text-black font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-md shadow-[#00ffa3]/20"
-                  >
-                    <Check size={14} className="stroke-[3]" />
-                    <span>Apply & Synchronize User Data</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setJsonInput('')}
-                    className="text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    Clear Input
-                  </button>
-                </div>
-              </div>
             </div>
           )}
 
