@@ -16,7 +16,6 @@
 */
 
 import { UserProfile, UserWallets } from '../types';
-import { BRAND } from '../config/brand';
 
 export interface ApiConnectionConfig {
   endpointUrl: string;
@@ -31,42 +30,6 @@ export interface ApiConnectionConfig {
 const STORAGE_KEY_API_CONFIG = 'moneyx_api_config_v1';
 
 export const DEFAULT_API_ENDPOINT = 'http://localhost/x.money/';
-
-// Sample JSON matching authentic PHP/REST ?Api=User endpoints
-export const SAMPLE_API_USER_JSON = {
-  status: 'success',
-  message: 'User details fetched successfully',
-  data: {
-    id: 'MNX7729104',
-    user_id: 'MNX7729104',
-    username: 'sandeep_crypto',
-    name: 'Sandeep Kumar',
-    first_name: 'Sandeep',
-    last_name: 'Kumar',
-    email: 'sandeepaliens01@gmail.com',
-    mobile: '9876543210',
-    country: 'India (+91)',
-    wallet_address: '0x7acc4892c9b4e1837015e5ae4f4d3c5237f2b90',
-    refer_id: 'MNX992',
-    refer_by: 'SPONSOR_MNX01',
-    kyc_status: 'VERIFIED',
-    account_status: 'ACTIVE',
-    created_at: '2026-03-15T10:30:00Z',
-    balances: {
-      total_balance_usdt: 12500.0,
-      main_balance_usdt: 7500.0,
-      main_balance_native: 2.85,
-      spot_balance_usdt: 3200.0,
-      spot_balance_native: 1.25,
-      funding_balance_usdt: 1800.0,
-      funding_balance_native: 0.65,
-      jackpot_balance_usdt: 0.0,
-      extra_balance_hxc: 450.0,
-      total_deposit_usdt: 15000.0,
-      total_withdraw_usdt: 2500.0,
-    },
-  },
-};
 
 export class UserApiService {
   /**
@@ -428,44 +391,4 @@ export class UserApiService {
     }
   }
 
-  /**
-   * Direct JSON importer: Allows the user to paste their API response directly
-   * (Solves mixed-content / local XAMPP / localhost CORS restrictions during cloud preview)
-   */
-  public static importRawJson(jsonInput: string | object): {
-    success: boolean;
-    user?: UserProfile;
-    wallets?: UserWallets;
-    error?: string;
-  } {
-    try {
-      let parsedObj = typeof jsonInput === 'string' ? JSON.parse(jsonInput.trim()) : jsonInput;
-      const { user, wallets } = this.parseUserData(parsedObj);
-
-      this.saveConfig({
-        status: 'IMPORTED',
-        lastSyncTime: new Date().toISOString(),
-        lastError: null,
-        rawResponse: parsedObj,
-      });
-
-      return {
-        success: true,
-        user,
-        wallets,
-      };
-    } catch (err: any) {
-      return {
-        success: false,
-        error: `JSON parsing error: ${err.message}`,
-      };
-    }
-  }
-
-  /**
-   * Loads sample API user data for testing and instant preview
-   */
-  public static loadSampleData(): { user: UserProfile; wallets?: UserWallets } {
-    return this.importRawJson(SAMPLE_API_USER_JSON) as any;
-  }
 }
