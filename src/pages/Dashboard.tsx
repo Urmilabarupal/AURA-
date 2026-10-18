@@ -877,15 +877,15 @@ export const Dashboard: React.FC = () => {
                 <div>
                   <p className="text-xs font-bold text-white">No Transactions Yet</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Your real on-chain transaction history will appear here.
+                    {transactionError || 'The x.money API returned no transaction records for this UID.'}
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setDepositModalOpen(true)}
+                  onClick={() => setApiModalOpen(true)}
                   className="px-4 py-2 rounded-xl bg-[#00ffa3] hover:bg-[#72ff36] text-black font-extrabold text-xs transition-all cursor-pointer shadow-md shadow-[#00ffa3]/20"
                 >
-                  Make First Deposit
+                  Check API Connection
                 </button>
               </div>
             ) : (
