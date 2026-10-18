@@ -36,16 +36,10 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Hard Security Gate: Dashboard only mounts for authenticated sessions
+  // If a stale client-side session exists without an API-loaded profile,
+  // return to the landing screen instead of hanging on an infinite spinner.
   if (authStage === 'AUTHENTICATED' && !user) {
-    return (
-      <div className="min-h-screen w-full bg-[#000000] flex flex-col items-center justify-center text-slate-300 space-y-3">
-        <Loader2 size={32} className="animate-spin text-[#00e699]" />
-        <span className="text-xs font-sans font-medium text-slate-400">
-          Entering Money X Dashboard...
-        </span>
-      </div>
-    );
+    return <LandingPage />;
   }
 
   switch (authStage) {
