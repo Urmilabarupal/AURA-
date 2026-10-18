@@ -149,7 +149,7 @@ const payloadFields = (input: unknown, depth = 0): string[] => {
   }
 
   return Object.keys(record)
-    .filter((key) => !['status_code', 's', 'message', 'success', 'status'].includes(key))
+    .filter((key) => !['status_code', 's', 'message', 'success', 'status', 'o', 'c', 'data', 'result'].includes(key))
     .sort();
 };
 
