@@ -2,7 +2,7 @@ name: AURA validation
 
 on:
   push:
-    branches: [main, feature/x-money-readonly-api]
+    branches: [main, feature/x-money-readonly-api, feature/user-new-signup-api]
   pull_request:
     branches: [main]
 
