@@ -90,7 +90,8 @@ export const ApiService = {
     name: string;
   }): Promise<ApiResponse<{ user: UserProfile; token: string }>> {
     try {
-      if (!/^0x[a-fA-F0-9]{40}$/.test(params.walletAddress?.trim() || '')) {
+      const walletAddress = params.walletAddress?.trim() || '';
+      if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
         throw new Error('Connect a valid EVM wallet address before registering.');
       }
       if (params.name.trim().length < 2) throw new Error('Enter your full name.');
@@ -98,7 +99,7 @@ export const ApiService = {
       if (!params.country.trim()) throw new Error('Choose your country.');
 
       const user = await XMoneyApiService.registerUser({
-        walletAddress: params.walletAddress.trim(),
+        walletAddress,
         referId: params.referId?.trim() || '',
         country: params.country.trim(),
         mobile: params.mobile.trim(),
