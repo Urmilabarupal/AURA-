@@ -142,7 +142,7 @@ export class XMoneyApiService {
       }
       if (env.s === 0) {
         const detail = typeof env.o === 'string' ? env.o : typeof env.c === 'string' ? env.c : '';
-        if (/not found|data empty|empty list|no data/i.test(detail)) return payload;
+        if (/not found|data empty|empty list|no data|^empty$/i.test(detail)) return payload;
         if (detail) throw new Error(`x.money API ${endpoint}: ${detail}`);
       }
       return payload;
