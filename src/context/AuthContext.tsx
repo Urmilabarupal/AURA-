@@ -258,6 +258,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setUser(null);
         setWallets(null);
+        cookieService.clearAuthSession();
       }
       setCreatedPasscode(ApiService.getLastCreatedPasscode());
     } catch (err) {
