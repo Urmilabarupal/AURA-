@@ -125,9 +125,11 @@ export class UserApiService {
 
     const id =
       root.id ||
+      root.ID ||
       root.user_id ||
       root.userId ||
       root.uid ||
+      root.userid ||
       payload.id ||
       '';
 
@@ -135,6 +137,10 @@ export class UserApiService {
       root.name ||
       root.fullName ||
       root.fullname ||
+      root.display_name ||
+      root.user_nicename ||
+      root.user_login ||
+      (root.fname ? `${root.fname} ${root.lname || ''}`.trim() : '') ||
       (root.first_name ? `${root.first_name} ${root.last_name || ''}`.trim() : '') ||
       root.username ||
       '';
@@ -142,12 +148,14 @@ export class UserApiService {
     const firstName =
       root.first_name ||
       root.firstName ||
+      root.fname ||
       name.split(' ')[0] ||
       '';
 
     const lastName =
       root.last_name ||
       root.lastName ||
+      root.lname ||
       name.split(' ').slice(1).join(' ') ||
       '';
 
@@ -171,14 +179,21 @@ export class UserApiService {
       root.location ||
       '';
 
-    const walletAddress =
+    const addressCandidate =
       root.wallet_address ||
       root.walletAddress ||
-      root.wallet ||
       root.address ||
       root.eth_address ||
       root.bsc_address ||
+      root.TRX ||
+      root.BTC ||
       '';
+    const walletAddress =
+      typeof addressCandidate === 'string' &&
+      addressCandidate.trim().length >= 20 &&
+      !/^\\d+$/.test(addressCandidate.trim())
+        ? addressCandidate.trim()
+        : '';
 
     const referId =
       root.refer_id ||
@@ -202,6 +217,8 @@ export class UserApiService {
       root.createdAt ||
       root.join_date ||
       root.registered_at ||
+      root.user_registered ||
+      root.created ||
       '';
 
     const kycRaw = (root.kyc_status || root.kycStatus || '').toString().toUpperCase();
