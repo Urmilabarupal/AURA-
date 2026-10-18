@@ -224,6 +224,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(res.user);
       if (res.wallets) setWallets(res.wallets);
       if (res.user.walletAddress) setWalletAddress(res.user.walletAddress);
+      // Load all supported read-only records after UID validation.
+      await refreshUserData();
       // The x.money API currently lacks server-side authentication. This is a
       // local-only, read-only development preview, never a production login.
       const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
