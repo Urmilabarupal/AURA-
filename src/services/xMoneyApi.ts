@@ -1,0 +1,215 @@
+import type { ApiConnectionConfig } from './userApiService';
+import { UserApiService } from './userApiService';
+import type { ApiResponse, Transaction, TransactionStatus, TransactionType, UserProfile, UserWallets } from '../types';
+
+type XMoneyEnvelope = {
+  status_code?: number;
+  s?: number;
+  c?: unknown;
+  o?: unknown;
+  data?: unknown;
+  message?: string;
+  [key: string]: unknown;
+};
+
+const zeroWallets = (): UserWallets => ({
+  spotBalanceUSDT: 0,
+  spotBalanceNative: 0,
+  mainBalanceUSDT: 0,
+  mainBalanceNative: 0,
+  fundingBalanceUSDT: 0,
+  fundingBalanceNative: 0,
+  jackpotBalanceUSDT: 0,
+  extraBalanceHXC: 0,
+  totalBalanceUSDT: 0,
+  totalDepositUSDT: 0,
+  totalWithdrawUSDT: 0,
+});
+
+const numberFrom = (...values: unknown[]): number | undefined => {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') continue;
+    const parsed = typeof value === 'number' ? value : Number(String(value).replace(/,/g, ''));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+};
+
+const textFrom = (...values: unknown[]): string => {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number') return String(value);
+  }
+  return '';
+};
+
+const envelopeRecords = (payload: unknown): Record<string, unknown>[] => {
+  if (Array.isArray(payload)) return payload.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object');
+  if (!payload || typeof payload !== 'object') return [];
+  const env = payload as XMoneyEnvelope;
+  const candidate = Array.isArray(env.o) ? env.o : Array.isArray(env.c) ? env.c : Array.isArray(env.data) ? env.data : Array.isArray(env.result) ? env.result : null;
+  if (candidate) return candidate.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object');
+  return [];
+};
+
+const mapStatus = (value: unknown): TransactionStatus => {
+  const status = String(value ?? '').toUpperCase();
+  if (status.includes('FAIL') || status.includes('REJECT')) return 'FAILED';
+  if (status.includes('PROCESS')) return 'PROCESSING';
+  if (status.includes('PEND') || status.includes('WAIT')) return 'PENDING';
+  return status.includes('COMPLETE') || status.includes('SUCCESS') || status === '1' || status === 'APPROVED' ? 'COMPLETED' : 'PENDING';
+};
+
+const mapType = (row: Record<string, unknown>): TransactionType => {
+  const raw = textFrom(row.ttype, row.type, row.transaction_type, row.app).toUpperCase();
+  if (raw.includes('DEPOSIT')) return 'DEPOSIT';
+  if (raw.includes('WITHDRAW')) return 'WITHDRAW';
+  if (raw.includes('SELL')) return 'TRADE_SELL';
+  if (raw.includes('BUY') || raw.includes('TRADE')) return 'TRADE_BUY';
+  if (raw.includes('CONVERT')) return 'CONVERT_DIRECT';
+  return 'APP_TRANSFER';
+};
+
+export class XMoneyApiService {
+  private static config(): ApiConnectionConfig {
+    return UserApiService.getConfig();
+  }
+
+  private static buildUrl(endpoint: string, extra: Record<string, string | number | undefined> = {}): URL {
+    const config = this.config();
+    const rawBase = config.endpointUrl.trim();
+    let url: URL;
+    try {
+      url = new URL(rawBase);
+    } catch {
+      throw new Error('API base URL is invalid. Example: http://localhost/x.money/');
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Only HTTP/HTTPS API URLs are supported.');
+    if (url.username || url.password) throw new Error('API URL must not contain embedded credentials.');
+    const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(url.hostname.toLowerCase());
+    if (url.protocol === 'http:' && !isLocalHost) throw new Error('For non-local APIs, HTTPS is required.');
+    if (!config.userId?.trim()) throw new Error('Enter the x.money user UID in API Setup before loading account data.');
+    url.search = '';
+    url.hash = '';
+    url.searchParams.set('api', endpoint);
+    url.searchParams.set('uid', config.userId.trim());
+    // The legacy API uses both uid and user filters on several list endpoints.
+    url.searchParams.set('user', config.userId.trim());
+    for (const [key, value] of Object.entries(extra)) {
+      if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
+    }
+    return url;
+  }
+
+  static async request(endpoint: string, extra: Record<string, string | number | undefined> = {}): Promise<unknown> {
+    const url = this.buildUrl(endpoint, extra);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 8000);
+    try {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store',
+        redirect: 'error',
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      const bodyText = await response.text();
+      let payload: unknown;
+      try {
+        payload = JSON.parse(bodyText);
+      } catch {
+        throw new Error('The x.money API did not return valid JSON.');
+      }
+      const env = payload && typeof payload === 'object' ? payload as XMoneyEnvelope : {};
+      if (!response.ok || (typeof env.status_code === 'number' && env.status_code >= 400)) {
+        throw new Error(`x.money API ${endpoint} failed (HTTP ${response.status || env.status_code}).`);
+      }
+      if (env.s === 0) {
+        const detail = typeof env.o === 'string' ? env.o : typeof env.c === 'string' ? env.c : '';
+        if (/not found|data empty|empty list|no data/i.test(detail)) return payload;
+        if (detail) throw new Error(`x.money API ${endpoint}: ${detail}`);
+      }
+      return payload;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  static async getUser(): Promise<{ user: UserProfile; wallets?: UserWallets; raw: unknown }> {
+    const raw = await this.request('User');
+    const parsed = UserApiService.parseUserData(raw);
+    // Do not let the requested UID silently resolve to a demo/default identity.
+    const expectedUid = this.config().userId.trim();
+    if (!parsed.user.id || parsed.user.id === 'User' || parsed.user.id === expectedUid && !parsed.user.name) {
+      throw new Error('The API response did not contain a usable user profile.');
+    }
+    return { ...parsed, raw };
+  }
+
+  static async getTransactions(limit = 100): Promise<Transaction[]> {
+    const payload = await this.request('Transactions', { limit: Math.min(Math.max(limit, 1), 100) });
+    return envelopeRecords(payload).map((row, index) => {
+      const amount = numberFrom(row.amount, row.fnamount, row.value) ?? 0;
+      const rawDate = textFrom(row.created_at, row.createdAt, row.time, row.date, row.timestamp);
+      const timestamp = rawDate ? (Number.isFinite(Date.parse(rawDate)) ? new Date(rawDate).toISOString() : rawDate) : '';
+      return {
+        id: textFrom(row.id, row.transaction_id, row.orderid) || `xmoney-tx-${index}`,
+        userId: textFrom(row.uid, row.user),
+        type: mapType(row),
+        typeLabel: textFrom(row.ttype, row.type, row.app) || 'Transaction',
+        amount,
+        currency: textFrom(row.ccc, row.currency) || '—',
+        amountUSD: numberFrom(row.amount_usd, row.amountUSD, row.usd_value) ?? amount,
+        status: mapStatus(row.status),
+        timestamp,
+        referenceId: textFrom(row.orderid, row.reference, row.id),
+        description: textFrom(row.description, row.name, row.ttype, row.app) || 'x.money transaction',
+        toAddress: textFrom(row.to, row.address) || undefined,
+      };
+    });
+  }
+
+  static async getCollection(endpoint: string, limit = 100): Promise<Record<string, unknown>[]> {
+    const payload = await this.request(endpoint, { limit: Math.min(Math.max(limit, 1), 100) });
+    return envelopeRecords(payload);
+  }
+
+  static async getWallets(): Promise<UserWallets> {
+    const { wallets: fromProfile } = await this.getUser();
+    const wallets = { ...zeroWallets(), ...(fromProfile ?? {}) };
+    // Wallet APIs expose records separately; only use explicit numeric balance fields.
+    const [spot, funding, staking] = await Promise.allSettled([
+      this.getCollection('Spot_Wallets'),
+      this.getCollection('Funding_Wallets'),
+      this.getCollection('Staking_Wallets'),
+    ]);
+    const sumBalance = (records: Record<string, unknown>[]) => records.reduce((sum, row) => {
+      const amount = numberFrom(row.balance, row.amount, row.available, row.wallet_balance);
+      return sum + (amount ?? 0);
+    }, 0);
+    const spotRows = spot.status === 'fulfilled' ? spot.value : [];
+    const fundingRows = funding.status === 'fulfilled' ? funding.value : [];
+    const stakingRows = staking.status === 'fulfilled' ? staking.value : [];
+    if (spotRows.length) wallets.spotBalanceUSDT = sumBalance(spotRows);
+    if (fundingRows.length) wallets.fundingBalanceUSDT = sumBalance(fundingRows);
+    // Do not guess native-coin prices or split balances into synthetic wallets.
+    if (wallets.totalBalanceUSDT === 0) {
+      wallets.totalBalanceUSDT = wallets.mainBalanceUSDT + wallets.spotBalanceUSDT + wallets.fundingBalanceUSDT + wallets.jackpotBalanceUSDT;
+    }
+    if (stakingRows.length && wallets.mainBalanceUSDT === 0) {
+      wallets.mainBalanceUSDT = sumBalance(stakingRows);
+      wallets.totalBalanceUSDT += wallets.mainBalanceUSDT;
+    }
+    return wallets;
+  }
+
+  static success<T>(data: T, message: string): ApiResponse<T> {
+    return { success: true, data, message };
+  }
+
+  static failure<T>(error: unknown): ApiResponse<T> {
+    return { success: false, error: { code: 'X_MONEY_API_ERROR', message: error instanceof Error ? error.message : 'x.money API request failed.' } };
+  }
+}
