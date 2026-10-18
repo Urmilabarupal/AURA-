@@ -19,19 +19,18 @@ export const WalletsList: React.FC = () => {
   const { wallets, user, walletAddress, isMetaMaskConnected, setActiveRoute, emptyStateMode } = useAuth();
   const { copyToClipboard } = useToast();
 
-  const activeAddr = user?.walletAddress || walletAddress || '0x0000000000000000000000000000000000000000';
+  const activeAddr = user?.walletAddress || walletAddress || '';
   const nativeBalance = emptyStateMode ? 0 : (wallets?.mainBalanceNative ?? 0);
   const usdtBalance = emptyStateMode ? 0 : (wallets?.fundingBalanceUSDT ?? 0);
-  const ethBalance = emptyStateMode ? 0 : (wallets?.spotBalanceNative ?? 0);
-  const totalChainValueUSD = emptyStateMode ? 0 : (wallets?.totalBalanceUSDT ?? +(usdtBalance + nativeBalance * 337.2 + ethBalance * 2800).toFixed(2));
+  const totalChainValueUSD = emptyStateMode ? 0 : (wallets?.totalBalanceUSDT ?? 0);
 
   const assets = [
     {
       id: 'native',
-      symbol: BRAND.tokenSymbol,
-      name: `${BRAND.chainName} Protocol Token`,
+      symbol: 'Main wallet',
+      name: 'Native balance reported by x.money',
       balance: nativeBalance.toFixed(4),
-      usdValue: `$${(nativeBalance * 337.2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      usdValue: 'USD value not provided by API',
       isNative: true,
       icon: (
         <div className="w-8 h-8 rounded-xl bg-[#00e699]/15 border border-[#00e699]/30 flex items-center justify-center text-[#00e699] font-black text-xs">
@@ -42,61 +41,12 @@ export const WalletsList: React.FC = () => {
     {
       id: 'usdt',
       symbol: 'USDT',
-      name: 'Tether USD (Multi-Chain)',
+      name: 'Funding wallet · USDT balance',
       balance: usdtBalance.toFixed(2),
       usdValue: `$${usdtBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: (
         <div className="w-8 h-8 rounded-full bg-[#26a17b] flex items-center justify-center text-white font-extrabold text-sm shadow-sm">
           ₮
-        </div>
-      ),
-    },
-    {
-      id: 'eth',
-      symbol: 'ETH',
-      name: 'Ethereum Native',
-      balance: ethBalance.toFixed(4),
-      usdValue: `$${(ethBalance * 2800).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      icon: (
-        <div className="w-8 h-8 flex items-center justify-center">
-          <svg className="w-6 h-7" viewBox="0 0 784.37 1277.39" fill="none">
-            <path d="M392.07 0L383.5 29.11V874.74L392.07 883.29L784.13 651.54L392.07 0Z" fill="#9ba8c0" />
-            <path d="M392.07 0L0 651.54L392.07 883.29V472.33V0Z" fill="#718096" />
-            <path d="M392.07 956.52L387.24 962.41V1258.97L392.07 1277.38L784.37 724.89L392.07 956.52Z" fill="#9ba8c0" />
-            <path d="M392.07 1277.38V956.52L0 724.89L392.07 1277.38Z" fill="#718096" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'busd',
-      symbol: 'BNB / BSC',
-      name: 'BNB Smart Chain',
-      balance: '0.0000',
-      usdValue: '$0.00',
-      icon: (
-        <div className="w-8 h-8 flex items-center justify-center text-[#f3ba2f]">
-          <svg className="w-7 h-7" viewBox="0 0 124 124" fill="none">
-            <path d="M62 0L86.8 24.8L43.4 68.2L18.6 43.4L62 0Z" fill="#f3ba2f" />
-            <path d="M80.6 62L105.4 37.2L124 55.8L99.2 80.6L80.6 62Z" fill="#f3ba2f" />
-            <path d="M62 86.8L80.6 68.2L99.2 86.8L62 124L24.8 86.8L43.4 68.2L62 86.8Z" fill="#f3ba2f" />
-            <path d="M0 62L18.6 43.4L37.2 62L18.6 80.6L0 62Z" fill="#f3ba2f" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'trx',
-      symbol: 'TRX',
-      name: 'TRON TRC-20',
-      balance: '0.00',
-      usdValue: '$0.00',
-      icon: (
-        <div className="w-8 h-8 flex items-center justify-center text-[#ef0027]">
-          <svg className="w-7 h-7" viewBox="0 0 100 100" fill="none">
-            <path d="M12 18L88 32L65 88L12 18Z" fill="#ef0027" />
-            <path d="M12 18L58 48L65 88L12 18Z" fill="#c4001f" opacity="0.6" />
-          </svg>
         </div>
       ),
     },
@@ -122,11 +72,12 @@ export const WalletsList: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs font-mono text-slate-400">
-                {activeAddr.slice(0, 8)}...{activeAddr.slice(-6)}
+                {activeAddr ? `${activeAddr.slice(0, 8)}...${activeAddr.slice(-6)}` : 'Wallet address not provided by API'}
               </span>
               <button
                 type="button"
-                onClick={() => copyToClipboard(activeAddr, 'Wallet address copied!')}
+                onClick={() => activeAddr && copyToClipboard(activeAddr, 'Wallet address copied!')}
+                disabled={!activeAddr}
                 className="text-slate-500 hover:text-white transition-colors cursor-pointer"
                 title="Copy Address"
               >

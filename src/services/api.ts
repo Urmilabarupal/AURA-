@@ -36,6 +36,7 @@
 
 import { AuthoritativeBackend } from './backendEngine';
 import { UserApiService, ApiConnectionConfig } from './userApiService';
+import { XMoneyApiService } from './xMoneyApi';
 import {
   ApiResponse,
   CommunityLevelData,
@@ -80,33 +81,6 @@ export const ApiService = {
     return res;
   },
 
-  importRawUserJson(jsonInput: string | object): {
-    success: boolean;
-    user?: UserProfile;
-    wallets?: UserWallets;
-    error?: string;
-  } {
-    const res = UserApiService.importRawJson(jsonInput);
-    if (res.success && res.user) {
-      AuthoritativeBackend.setUser(res.user);
-      if (res.wallets) {
-        AuthoritativeBackend.setWallets(res.wallets);
-      }
-    }
-    return res;
-  },
-
-  loadSampleUserData(): { user: UserProfile; wallets?: UserWallets } {
-    const res = UserApiService.loadSampleData();
-    if (res.user) {
-      AuthoritativeBackend.setUser(res.user);
-      if (res.wallets) {
-        AuthoritativeBackend.setWallets(res.wallets);
-      }
-    }
-    return res;
-  },
-
   // Auth & Profile
   async register(params: {
     walletAddress?: string;
@@ -115,32 +89,45 @@ export const ApiService = {
     mobile: string;
     name: string;
   }): Promise<ApiResponse<{ user: UserProfile; token: string }>> {
-    return AuthoritativeBackend.register(params);
+    return XMoneyApiService.failure<{ user: UserProfile; token: string }>(new Error('Registration is not connected to a secure x.money authentication endpoint. Use Local API preview for read-only testing.'));
   },
 
   async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode?: string }>> {
-    return AuthoritativeBackend.setupPasscode(passcode);
+    return XMoneyApiService.failure<{ success: boolean; passcode?: string }>(new Error('Passcode setup is local-only and is disabled in read-only API preview.'));
   },
 
   getLastCreatedPasscode(): string {
-    return AuthoritativeBackend.getLastCreatedPasscode();
+    return '';
   },
 
   async verifyPasscode(pin: string): Promise<ApiResponse<{ verified: boolean }>> {
-    return AuthoritativeBackend.verifyPasscode(pin);
+    return XMoneyApiService.failure<{ verified: boolean }>(new Error('No secure server-side authentication endpoint is available; passcode verification is disabled.'));
   },
 
   async getProfile(): Promise<ApiResponse<UserProfile>> {
-    return AuthoritativeBackend.getProfile();
+    try {
+      const result = await XMoneyApiService.getUser();
+      AuthoritativeBackend.setUser(result.user);
+      if (result.wallets) AuthoritativeBackend.setWallets(result.wallets);
+      return XMoneyApiService.success(result.user, 'Profile loaded from x.money API.');
+    } catch (error) {
+      return XMoneyApiService.failure<UserProfile>(error);
+    }
   },
 
   async updateProfile(data: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
-    return AuthoritativeBackend.updateProfile(data);
+    return XMoneyApiService.failure<UserProfile>(new Error('Profile updates are disabled until x.money provides an authenticated write API.'));
   },
 
   // Wallets
   async getWallets(): Promise<ApiResponse<UserWallets>> {
-    return AuthoritativeBackend.getWallets();
+    try {
+      const wallets = await XMoneyApiService.getWallets();
+      AuthoritativeBackend.setWallets(wallets);
+      return XMoneyApiService.success(wallets, 'Wallet data loaded from x.money API.');
+    } catch (error) {
+      return XMoneyApiService.failure<UserWallets>(error);
+    }
   },
 
   async deposit(params: {
@@ -148,7 +135,7 @@ export const ApiService = {
     amountUSDT: number;
     currency: string;
   }): Promise<ApiResponse<{ wallets: UserWallets; tx: Transaction }>> {
-    return AuthoritativeBackend.deposit(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets; tx: Transaction }>(new Error('Deposit submission is disabled: the supplied x.money API does not securely authenticate users or validate payment status.'));
   },
 
   async withdraw(params: {
@@ -157,7 +144,7 @@ export const ApiService = {
     toAddress: string;
     chain: string;
   }): Promise<ApiResponse<{ wallets: UserWallets; tx: Transaction }>> {
-    return AuthoritativeBackend.withdraw(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets; tx: Transaction }>(new Error('Withdrawal submission is disabled until server-side authorization and payment controls are verified.'));
   },
 
   async transferInternal(params: {
@@ -165,7 +152,7 @@ export const ApiService = {
     toWallet: 'spot' | 'main' | 'funding';
     amountUSDT: number;
   }): Promise<ApiResponse<{ wallets: UserWallets }>> {
-    return AuthoritativeBackend.transferInternal(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets }>(new Error('Transfers are disabled until x.money provides an authenticated write API.'));
   },
 
   // Transactions
@@ -174,16 +161,58 @@ export const ApiService = {
     search?: string;
     limit?: number;
   }): Promise<ApiResponse<Transaction[]>> {
-    return AuthoritativeBackend.getTransactions(params);
+    try {
+      let rows = await XMoneyApiService.getTransactions(params?.limit ?? 100);
+      if (params?.type) rows = rows.filter((row) => row.type === params.type || row.typeLabel.toLowerCase().includes(params.type!.toLowerCase()));
+      if (params?.search) {
+        const q = params.search.toLowerCase();
+        rows = rows.filter((row) => [row.id, row.typeLabel, row.description, row.referenceId].some((value) => value.toLowerCase().includes(q)));
+      }
+      return XMoneyApiService.success(rows, rows.length ? 'Transactions loaded from x.money API.' : 'No transactions were returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Transaction[]>(error);
+    }
+  },
+
+  async getReferrals(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Referes');
+      return XMoneyApiService.success(rows, rows.length ? 'Referral records loaded from x.money API.' : 'No referral records returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
+  },
+
+  async getCurrencies(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Currencys');
+      return XMoneyApiService.success(rows, rows.length ? 'Currencies loaded from x.money API.' : 'No currencies returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
+  },
+
+  async getDeposits(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Deposits');
+      return XMoneyApiService.success(rows, rows.length ? 'Deposit records loaded from x.money API.' : 'No deposit records returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
+  },
+
+  async getWithdrawals(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Withdraws');
+      return XMoneyApiService.success(rows, rows.length ? 'Withdrawal records loaded from x.money API.' : 'No withdrawal records returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
   },
 
   // Trading
   async getMarketTrades(): Promise<ApiResponse<MarketTrade[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.MARKET_TRADES,
-      message: 'Market trades retrieved.',
-    };
+    return XMoneyApiService.success([], 'x.money does not expose a compatible public market-trades endpoint; showing an empty state instead of demo data.');
   },
 
   async submitTradeOrder(params: {
@@ -192,79 +221,104 @@ export const ApiService = {
     price: number;
     amount: number;
   }): Promise<ApiResponse<{ order: TradeOrder; wallets: UserWallets }>> {
-    return AuthoritativeBackend.submitOrder(params);
+    return XMoneyApiService.failure<{ order: TradeOrder; wallets: UserWallets }>(new Error('Trading is read-only because no authenticated order API is available.'));
   },
 
   async getTradeOrders(): Promise<ApiResponse<TradeOrder[]>> {
-    return AuthoritativeBackend.getOrders();
+    try {
+      const rows = await XMoneyApiService.getCollection('Trades');
+      const orders: TradeOrder[] = rows.map((row, index) => {
+        const side = String(row.side ?? row.ttype ?? row.type ?? '').toUpperCase().includes('SELL') ? 'SELL' : 'BUY';
+        const price = Number(row.price ?? 0) || 0;
+        const amount = Number(row.amount ?? 0) || 0;
+        return {
+          id: String(row.id ?? row.orderid ?? `xmoney-order-${index}`),
+          userId: String(row.uid ?? row.user ?? ''),
+          pair: String(row.pair ?? row.ccc ?? '—'),
+          side,
+          walletSource: 'spot',
+          price,
+          amount,
+          total: Number(row.total ?? row.value ?? price * amount) || 0,
+          status: String(row.status ?? 'OPEN').toUpperCase().includes('FILL') ? 'FILLED' : String(row.status ?? '').toUpperCase().includes('CANCEL') ? 'CANCELLED' : 'OPEN',
+          timestamp: String(row.created_at ?? row.date ?? row.time ?? ''),
+        };
+      });
+      return XMoneyApiService.success(orders, orders.length ? 'Orders loaded from x.money API.' : 'No trade orders found.');
+    } catch (error) {
+      return XMoneyApiService.failure<TradeOrder[]>(error);
+    }
   },
 
   // Staking
   async getStakingPlans(): Promise<ApiResponse<StakingPlan[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.STAKING_PLANS,
-      message: 'Staking plans retrieved.',
-    };
+    try {
+      const rows = await XMoneyApiService.getCollection('Staking_Plans');
+      const plans: StakingPlan[] = rows
+        .filter((row) => row.status === undefined || Number(row.status) === 1)
+        .map((row, index) => ({
+          id: String(row.id ?? row.plan_id ?? `staking-plan-${index}`),
+          name: String(row.name ?? row.title ?? row.plan ?? 'Staking plan'),
+          durationDays: Number(row.period ?? row.duration ?? row.duration_days ?? row.days ?? 0) || 0,
+          aprPercent: Number(row.roi ?? row.apr ?? row.apy ?? row.percent ?? row.rate ?? 0) || 0,
+          minAmount: Number(row.minamount ?? row.min_amount ?? row.minimum ?? row.min ?? 0) || 0,
+          maxAmount: Number(row.maxamount ?? row.max_amount ?? row.maximum ?? row.max ?? 0) || 0,
+          currency: String(row.ccc ?? row.currency ?? '—'),
+          periodType: String(row.ttype ?? row.period_type ?? 'days'),
+          description: String(row.description ?? ''),
+          features: [],
+        }));
+      return XMoneyApiService.success(plans, plans.length ? 'Staking plans loaded from x.money API.' : 'No staking plans returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<StakingPlan[]>(error);
+    }
   },
 
   async stake(params: {
     planId: string;
     amountAURA: number;
   }): Promise<ApiResponse<{ wallets: UserWallets }>> {
-    return AuthoritativeBackend.stake(params);
+    return XMoneyApiService.failure<{ wallets: UserWallets }>(new Error('Staking writes are disabled until server-side authorization and ledger controls are verified.'));
   },
 
   // Farming
   async getFarmingPlans(): Promise<ApiResponse<FarmingPlan[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.FARMING_PLANS,
-      message: 'Farming plans retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible farming-plans endpoint exists in the supplied x.money API; demo plans are disabled.');
   },
 
   // Rewards, Ranks, SIP
   async getRankAchievements(): Promise<ApiResponse<RankAchievement[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.RANK_ACHIEVEMENTS,
-      message: 'Rank achievements retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible rank-achievements endpoint is available; demo rewards are disabled.');
   },
 
   async getSipBonusTiers(): Promise<ApiResponse<SipBonusTier[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.SIP_TIERS,
-      message: 'SIP bonus tiers retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible SIP bonus endpoint is available; demo rewards are disabled.');
   },
 
   // Tickets
   async getTickets(): Promise<ApiResponse<LotteryTicket[]>> {
-    return AuthoritativeBackend.getTickets();
+    return XMoneyApiService.success([], 'No compatible lottery-ticket endpoint exists in x.money; demo tickets are disabled.');
   },
 
   async buyTickets(params: {
     quantity: number;
     walletSource: 'funding' | 'spot';
   }): Promise<ApiResponse<{ tickets: LotteryTicket[]; wallets: UserWallets }>> {
-    return AuthoritativeBackend.buyTickets(params);
+    return XMoneyApiService.failure<{ tickets: LotteryTicket[]; wallets: UserWallets }>(new Error('Ticket purchases are disabled in read-only API preview.'));
   },
 
   // Redeem
   async redeemEarnings(amountUSDT: number): Promise<ApiResponse<{ redeemed: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.redeemEarnings(amountUSDT);
+    return XMoneyApiService.failure<{ redeemed: number; wallets: UserWallets }>(new Error('Redeeming is disabled in read-only API preview.'));
   },
 
   // Conversions
   async convertXah(amountXAH: number): Promise<ApiResponse<{ receivedUSDT: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.convertXah(amountXAH);
+    return XMoneyApiService.failure<{ receivedUSDT: number; wallets: UserWallets }>(new Error('Conversions are disabled until x.money provides an authenticated write API.'));
   },
 
   async convertHxc(amountHXC: number): Promise<ApiResponse<{ receivedUSDT: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.convertHxc(amountHXC);
+    return XMoneyApiService.failure<{ receivedUSDT: number; wallets: UserWallets }>(new Error('Conversions are disabled until x.money provides an authenticated write API.'));
   },
 
   async convertDirect(params: {
@@ -272,33 +326,25 @@ export const ApiService = {
     toCurrency: string;
     amount: number;
   }): Promise<ApiResponse<{ received: number; wallets: UserWallets }>> {
-    return AuthoritativeBackend.convertDirect(params as any);
+    return XMoneyApiService.failure<{ received: number; wallets: UserWallets }>(new Error('Conversions are disabled until x.money provides an authenticated write API.'));
   },
 
   // Community
   async getCommunityLevels(): Promise<ApiResponse<CommunityLevelData[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.COMMUNITY_LEVELS,
-      message: 'Community levels retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible community-levels endpoint is available; demo community metrics are disabled.');
   },
 
   // Jackpot
   async getJackpotWinners(): Promise<ApiResponse<JackpotDrawWinner[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.JACKPOT_WINNERS,
-      message: 'Jackpot winners retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible jackpot-winners endpoint exists in x.money; demo winners are disabled.');
   },
 
   // Testing utilities for Populated vs Empty data states
   resetSeedData() {
-    AuthoritativeBackend.resetToSeed();
+    // No seed/demo values in API mode.
   },
 
   clearDataForEmptyState() {
-    AuthoritativeBackend.clearDataForEmptyStateTesting();
+    // API data is not mutated by frontend test toggles.
   },
 };

@@ -9,8 +9,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from './Toast';
-import { DEFAULT_API_ENDPOINT, SAMPLE_API_USER_JSON } from '../../services/userApiService';
+import { DEFAULT_API_ENDPOINT } from '../../services/userApiService';
+import { XMoneyApiService, type XMoneyEndpointDiagnostic } from '../../services/xMoneyApi';
 import {
+  Activity,
   AlertCircle,
   ArrowRight,
   Check,
@@ -24,8 +26,6 @@ import {
   Loader2,
   RefreshCw,
   Server,
-  Terminal,
-  Upload,
   User,
   Wallet,
   X,
@@ -39,8 +39,6 @@ export const ApiSetupModal: React.FC = () => {
     apiConfig,
     updateApiConfig,
     fetchUserDataFromApi,
-    importRawUserJson,
-    loadSampleUserData,
     user,
     wallets,
   } = useAuth();
@@ -48,9 +46,10 @@ export const ApiSetupModal: React.FC = () => {
   const { showToast, copyToClipboard } = useToast();
 
   const [urlInput, setUrlInput] = useState<string>(apiConfig.endpointUrl || DEFAULT_API_ENDPOINT);
-  const [jsonInput, setJsonInput] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'endpoint' | 'json' | 'preview'>('endpoint');
+  const [activeTab, setActiveTab] = useState<'endpoint' | 'diagnostics' | 'preview'>('endpoint');
   const [isTesting, setIsTesting] = useState<boolean>(false);
+  const [isDiagnosing, setIsDiagnosing] = useState<boolean>(false);
+  const [diagnosticRows, setDiagnosticRows] = useState<XMoneyEndpointDiagnostic[]>([]);
   const [copiedJson, setCopiedJson] = useState<boolean>(false);
   const [localFeedback, setLocalFeedback] = useState<{ type: 'success' | 'error' | 'info'; msg: string } | null>(null);
 
@@ -85,39 +84,24 @@ export const ApiSetupModal: React.FC = () => {
     }
   };
 
-  const handleImportJson = () => {
+  const handleDiagnoseEndpoints = async () => {
     setLocalFeedback(null);
-    if (!jsonInput.trim()) {
-      setLocalFeedback({ type: 'error', msg: 'Please paste your JSON response first.' });
-      return;
-    }
-
-    const res = importRawUserJson(jsonInput);
-    if (res.success) {
+    setIsDiagnosing(true);
+    setDiagnosticRows([]);
+    try {
+      const rows = await XMoneyApiService.diagnoseReadEndpoints();
+      setDiagnosticRows(rows);
+      const errors = rows.filter((row) => row.status === 'ERROR').length;
+      const empties = rows.filter((row) => row.status === 'EMPTY').length;
       setLocalFeedback({
-        type: 'success',
-        msg: 'User data successfully updated from imported JSON!',
+        type: errors ? 'error' : empties ? 'info' : 'success',
+        msg: `Checked ${rows.length} mapped read endpoints sequentially: ${rows.length - errors - empties} with records, ${empties} empty/schema-unrecognized, ${errors} request errors. These checks never call write APIs.`,
       });
-      showToast('User Data Updated from JSON!', 'success');
-      setActiveTab('preview');
-    } else {
-      setLocalFeedback({
-        type: 'error',
-        msg: res.error || 'Invalid JSON format.',
-      });
+    } catch (err: any) {
+      setLocalFeedback({ type: 'error', msg: err?.message || 'Could not complete endpoint diagnostics.' });
+    } finally {
+      setIsDiagnosing(false);
     }
-  };
-
-  const handleLoadSample = () => {
-    loadSampleUserData();
-    setUrlInput(DEFAULT_API_ENDPOINT);
-    setJsonInput(JSON.stringify(SAMPLE_API_USER_JSON, null, 2));
-    setLocalFeedback({
-      type: 'success',
-      msg: 'Loaded sample Money X ?Api=User schema! User & wallets synchronized.',
-    });
-    showToast('Sample API User Data Loaded!', 'info');
-    setActiveTab('preview');
   };
 
   const handleCopyRawJson = () => {
@@ -185,7 +169,7 @@ export const ApiSetupModal: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                Target: <span className="text-[#00ffa3]">{apiConfig.endpointUrl}</span>
+                API base: <span className="text-[#00ffa3]">{apiConfig.endpointUrl}</span>
               </p>
             </div>
           </div>
@@ -214,17 +198,19 @@ export const ApiSetupModal: React.FC = () => {
             <span>API Endpoint</span>
           </button>
 
+
+
           <button
             type="button"
-            onClick={() => setActiveTab('json')}
+            onClick={() => setActiveTab('diagnostics')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === 'json'
+              activeTab === 'diagnostics'
                 ? 'bg-[#00ffa3] text-black shadow-md shadow-[#00ffa3]/20'
                 : 'text-slate-400 hover:text-white bg-[#0a0a0e]'
             }`}
           >
-            <Upload size={13} />
-            <span>Paste / Import JSON</span>
+            <Activity size={13} />
+            <span>Endpoint Tests</span>
           </button>
 
           <button
@@ -269,7 +255,7 @@ export const ApiSetupModal: React.FC = () => {
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-[#030305] border border-[#18181c] space-y-3">
                 <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                  <span>User API URL (?Api=User)</span>
+                  <span>x.money API Base URL</span>
                   <span className="text-[10px] text-slate-500 font-mono">GET / JSON</span>
                 </label>
                 <div className="flex gap-2">
@@ -279,7 +265,7 @@ export const ApiSetupModal: React.FC = () => {
                       type="text"
                       value={urlInput}
                       onChange={(e) => setUrlInput(e.target.value)}
-                      placeholder="http://localhost/x.money/?Api=User"
+                      placeholder="http://localhost/x.money/"
                       className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#08080a] border border-[#1c1c24] text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-[#00ffa3] transition-colors"
                     />
                   </div>
@@ -303,10 +289,27 @@ export const ApiSetupModal: React.FC = () => {
                   </button>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-end">
+                  <div className="space-y-1.5">
+                    <label htmlFor="xmoney-user-uid" className="text-xs font-semibold text-slate-300">x.money User UID (required)</label>
+                    <input
+                      id="xmoney-user-uid"
+                      type="text"
+                      autoComplete="off"
+                      spellCheck={false}
+                      value={apiConfig.userId || ''}
+                      onChange={(e) => updateApiConfig({ userId: e.target.value })}
+                      placeholder="Enter the real UID from your x.money database"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#08080a] border border-[#1c1c24] text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-[#00ffa3]"
+                    />
+                  </div>
+                  <p className="text-[10px] text-amber-300 leading-relaxed max-w-xs">Use only your own test account. The legacy API needs server-side access controls before exposing real user data.</p>
+                </div>
+
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
                   <span className="flex items-center gap-1">
                     <Info size={12} className="text-[#00ffa3]" />
-                    <span>Default: <code className="text-slate-300 font-mono">http://localhost/x.money/?Api=User</code></span>
+                    <span>Default: <code className="text-slate-300 font-mono">http://localhost/x.money/</code></span>
                   </span>
                   <button
                     type="button"
@@ -325,26 +328,11 @@ export const ApiSetupModal: React.FC = () => {
                   <span>Testing with Localhost (XAMPP / PHP / Apache)?</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-amber-200/80">
-                  If this app is running in an online HTTPS preview, modern web browsers block direct calls to insecure HTTP localhost (<code className="font-mono text-amber-100">http://localhost/x.money/?Api=User</code>) due to <strong>Mixed Content</strong> and <strong>CORS</strong> policies.
+                  If this app is running in an online HTTPS preview, modern web browsers block direct calls to insecure HTTP localhost (<code className="font-mono text-amber-100">http://localhost/x.money/</code>) due to <strong>Mixed Content</strong> and <strong>CORS</strong> policies.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('json')}
-                    className="px-3 py-1.5 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-bold text-[11px] border border-amber-400/40 transition-colors cursor-pointer flex items-center gap-1"
-                  >
-                    <Upload size={12} />
-                    <span>Paste API JSON Directly (Recommended for Localhost)</span>
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={handleLoadSample}
-                    className="px-3 py-1.5 rounded-lg bg-[#00ffa3]/20 hover:bg-[#00ffa3]/30 text-[#00ffa3] font-bold text-[11px] border border-[#00ffa3]/40 transition-colors cursor-pointer flex items-center gap-1"
-                  >
-                    <Zap size={12} />
-                    <span>Load Preset Sample Data</span>
-                  </button>
+
                 </div>
               </div>
 
@@ -390,55 +378,78 @@ export const ApiSetupModal: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 2: PASTE / IMPORT JSON */}
-          {activeTab === 'json' && (
+          {/* Read-only endpoint diagnostics: field names only, no record values */}
+          {activeTab === 'diagnostics' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-[#030305] border border-[#18181c] space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Terminal size={14} className="text-[#00ffa3]" />
-                    <span>Paste API Response JSON</span>
-                  </label>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-white">Read-only API endpoint diagnostics</h3>
+                    <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-slate-400">
+                      Tests the 11 read endpoints mapped in AURA one by one, in sequence. It shows response status, row counts and field names only. No write endpoint is called and no money is moved.
+                    </p>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setJsonInput(JSON.stringify(SAMPLE_API_USER_JSON, null, 2))}
-                    className="text-[11px] text-[#00ffa3] hover:underline cursor-pointer"
+                    onClick={handleDiagnoseEndpoints}
+                    disabled={isDiagnosing || !apiConfig.userId?.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-[#00ffa3] hover:bg-[#00e699] disabled:opacity-50 text-black font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                   >
-                    Insert Example JSON
+                    {isDiagnosing ? <Loader2 size={14} className="animate-spin" /> : <Activity size={14} />}
+                    <span>{isDiagnosing ? 'Testing endpoints...' : 'Test all 11 reads'}</span>
                   </button>
                 </div>
-
-                <p className="text-[11px] text-slate-400">
-                  Open <code className="text-slate-200 font-mono">http://localhost/x.money/?Api=User</code> in your browser, copy the JSON output, and paste it here:
-                </p>
-
-                <textarea
-                  rows={8}
-                  value={jsonInput}
-                  onChange={(e) => setJsonInput(e.target.value)}
-                  placeholder={`{\n  "status": "success",\n  "data": {\n    "id": "MNX7729104",\n    "name": "Sandeep Kumar",\n    "mobile": "9876543210",\n    "refer_by": "SPONSOR01",\n    "wallet_address": "0x7acc..."\n  }\n}`}
-                  className="w-full p-3 rounded-xl bg-[#08080a] border border-[#1c1c24] text-xs font-mono text-emerald-300 placeholder-slate-600 focus:outline-none focus:border-[#00ffa3] transition-colors leading-relaxed"
-                />
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleImportJson}
-                    className="px-5 py-2.5 rounded-xl bg-[#00ffa3] hover:bg-[#00e699] text-black font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-md shadow-[#00ffa3]/20"
-                  >
-                    <Check size={14} className="stroke-[3]" />
-                    <span>Apply & Synchronize User Data</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setJsonInput('')}
-                    className="text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    Clear Input
-                  </button>
-                </div>
+                {!apiConfig.userId?.trim() && (
+                  <p className="text-[11px] text-amber-300">Enter the x.money UID on the API Endpoint tab before running these checks.</p>
+                )}
               </div>
+
+              {diagnosticRows.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-[#030305] border border-dashed border-[#24242b] text-center">
+                  <Activity size={22} className="mx-auto text-slate-500" />
+                  <p className="mt-2 text-xs font-bold text-slate-200">No endpoint checks yet</p>
+                  <p className="mt-1 text-[11px] text-slate-500">Start the local XAMPP server, enter your test UID, and run the checks.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-[#18181c]">
+                  <table className="w-full min-w-[760px] text-left text-[11px] font-mono">
+                    <thead className="bg-[#030305] text-slate-500 uppercase tracking-wider">
+                      <tr>
+                        <th className="p-3">Endpoint</th>
+                        <th className="p-3">Result</th>
+                        <th className="p-3 text-right">Rows</th>
+                        <th className="p-3">Returned field names</th>
+                        <th className="p-3">Detail</th>
+                        <th className="p-3 text-right">Time</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#18181c]">
+                      {diagnosticRows.map((row) => (
+                        <tr key={row.endpoint} className="align-top hover:bg-[#0d0d11]">
+                          <td className="p-3 font-bold text-slate-200">{row.endpoint}</td>
+                          <td className="p-3">
+                            <span className={`rounded-md border px-2 py-1 ${
+                              row.status === 'OK'
+                                ? 'border-emerald-500/30 bg-emerald-950/30 text-emerald-300'
+                                : row.status === 'EMPTY'
+                                  ? 'border-amber-500/30 bg-amber-950/30 text-amber-300'
+                                  : 'border-rose-500/30 bg-rose-950/30 text-rose-300'
+                            }`}>{row.status}</span>
+                          </td>
+                          <td className="p-3 text-right text-slate-300">{row.rowCount ?? '—'}</td>
+                          <td className="p-3 max-w-xs break-words text-slate-400">{row.fields.length ? row.fields.join(', ') : '—'}</td>
+                          <td className="p-3 max-w-sm whitespace-normal break-words text-slate-400">{row.message}</td>
+                          <td className="p-3 text-right text-slate-500">{row.elapsedMs} ms</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                These are AURA's currently mapped candidate endpoint names, not a confirmed inventory of every route in the separate x.money repository. A response marked EMPTY may mean there are no records or the backend uses a different schema/name.
+              </p>
             </div>
           )}
 
@@ -489,7 +500,7 @@ export const ApiSetupModal: React.FC = () => {
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#08080a] border border-[#141418]">
                     <span className="text-slate-400">Wallet Address:</span>
                     <span className="text-white truncate max-w-[160px]">
-                      {user?.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : '0x7acc...f2b9'}
+                      {user?.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : 'Not provided by API'}
                     </span>
                   </div>
                 </div>

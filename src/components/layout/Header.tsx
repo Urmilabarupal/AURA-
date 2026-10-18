@@ -5,7 +5,7 @@
  Top Header exactly matching the reference design in file_0000000012b082439e9a2fc938785f05.png:
  - Desktop View:
    * Left: "Search anything..." search box with search icon
-   * Right: Notification Bell (with red unread dot), Globe icon, Connected Wallet Pill (Avatar + 0x3a56...7F2B + Chevron)
+   * Right: Notification Bell, API status, and the API-provided wallet address when available
  - Mobile View:
    * Left: Hamburger Menu icon
    * Center: Authentic Green Infinity Logo + "Money X"
@@ -43,11 +43,12 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
 
   const displayAddress = walletAddress
     ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-    : '0x3a56...7F2B';
+    : 'Wallet not connected';
 
-  const fullAddress = walletAddress || '0x3a56D4869c9b4e1837015E5aE4F4D3C5237F2B';
+  const fullAddress = walletAddress || '';
 
   const handleCopy = () => {
+    if (!fullAddress) return;
     navigator.clipboard.writeText(fullAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -209,6 +210,7 @@ export const Header: React.FC<HeaderProps> = ({ mobileMenuOpen, setMobileMenuOpe
                     <button
                       type="button"
                       onClick={handleCopy}
+                      disabled={!fullAddress}
                       className="p-1 rounded text-slate-400 hover:text-white cursor-pointer"
                     >
                       {copied ? <Check size={12} className="text-[#00e699]" /> : <Copy size={12} />}

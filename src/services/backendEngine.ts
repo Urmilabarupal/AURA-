@@ -44,8 +44,6 @@ import {
 import { BRAND } from '../config/brand';
 
 // Storage keys
-const STORAGE_KEY_USER = 'aura_auth_user_v1';
-const STORAGE_KEY_WALLETS = 'aura_wallets_v1';
 const STORAGE_KEY_TXS = 'aura_transactions_v1';
 const STORAGE_KEY_ORDERS = 'aura_orders_v1';
 const STORAGE_KEY_STAKING = 'aura_staking_v1';
@@ -99,29 +97,9 @@ function hashPasscode(pin: string): string {
 }
 
 export class AuthoritativeBackend {
-  private static user: UserProfile = (() => {
-    if (typeof localStorage !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY_USER);
-        if (stored) return JSON.parse(stored);
-      } catch {
-        // fallback
-      }
-    }
-    return { ...DEFAULT_USER };
-  })();
+  private static user: UserProfile = { ...DEFAULT_USER };
 
-  private static wallets: UserWallets = (() => {
-    if (typeof localStorage !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY_WALLETS);
-        if (stored) return JSON.parse(stored);
-      } catch {
-        // fallback
-      }
-    }
-    return { ...DEFAULT_WALLETS };
-  })();
+  private static wallets: UserWallets = { ...DEFAULT_WALLETS };
 
   private static transactions: Transaction[] = [...DEFAULT_TRANSACTIONS];
   private static passHash: string = hashPasscode('1234');
@@ -129,17 +107,13 @@ export class AuthoritativeBackend {
   private static authToken: string | null = 'demo_session_token_xyz987';
 
   public static setUser(newUser: UserProfile): void {
+    // API-sourced personal data stays in memory only; do not persist PII in localStorage.
     this.user = { ...newUser };
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
-    }
   }
 
   public static setWallets(newWallets: UserWallets): void {
+    // API-sourced balances stay in memory only; do not persist financial data in localStorage.
     this.wallets = { ...newWallets };
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_WALLETS, JSON.stringify(this.wallets));
-    }
   }
 
   // Staking Plans
@@ -384,10 +358,6 @@ export class AuthoritativeBackend {
 
     this.authToken = `aura_sess_${Date.now()}_${randomHex}`;
 
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
-      localStorage.setItem(STORAGE_KEY_WALLETS, JSON.stringify(this.wallets));
-    }
 
     return {
       success: true,
@@ -475,9 +445,6 @@ export class AuthoritativeBackend {
 
     this.user.name = `${this.user.firstName || ''} ${this.user.lastName || ''}`.trim() || this.user.name;
 
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
-    }
 
     return {
       success: true,

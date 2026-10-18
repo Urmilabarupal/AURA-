@@ -73,7 +73,7 @@ import { TermsView } from '../../pages/info/TermsView';
 import { SalesPolicyView } from '../../pages/info/SalesPolicyView';
 
 export const MainLayout: React.FC = () => {
-  const { activeRoute, securityModalOpen, setSecurityModalOpen } = useAuth();
+  const { activeRoute, securityModalOpen, setSecurityModalOpen, apiConfig } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
 
@@ -206,6 +206,11 @@ export const MainLayout: React.FC = () => {
         ) : (
           <SubpageHeader currentRoute={activeRoute} />
         )}
+
+        {/* This is deliberately a local development preview: the supplied PHP APIs do not authenticate UIDs. */}
+        <div className="mx-3.5 sm:mx-5 lg:mx-6 mt-3 p-3 rounded-xl border border-amber-500/40 bg-amber-950/30 text-amber-200 text-xs leading-relaxed" role="status">
+          <strong>LOCAL READ-ONLY API PREVIEW</strong> · API status: {apiConfig.status}. The supplied x.money endpoints do not securely authenticate the requested UID. Use only a local test database with non-sensitive data. Deposits, withdrawals, trading and other financial writes are disabled in this preview.
+        </div>
 
         {/* Page Content Container */}
         <main className="flex-1 p-3.5 sm:p-5 lg:p-6 w-full mx-auto max-w-[1600px] pb-24 lg:pb-8">

@@ -11,9 +11,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
-import { web3Wallet } from '../services/web3Wallet';
-import { realMarketApi } from '../services/realMarketApi';
 import { cookieService } from '../services/cookieService';
+import { web3Wallet } from '../services/web3Wallet';
 import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
 
@@ -47,13 +46,11 @@ interface AuthContextType {
   setApiModalOpen: (open: boolean) => void;
   updateApiConfig: (config: Partial<ApiConnectionConfig>) => void;
   fetchUserDataFromApi: (url?: string) => Promise<{ success: boolean; error?: string; raw?: any }>;
-  importRawUserJson: (jsonStr: string) => { success: boolean; error?: string };
-  loadSampleUserData: () => void;
   setActiveRoute: (route: string) => void;
   setSecurityModalOpen: (open: boolean) => void;
   toggleEmptyStateMode: () => void;
   connectRealMetaMask: () => Promise<{ success: boolean; address?: string; error?: string }>;
-  connectMobileWallet: () => Promise<{ success: boolean; address: string }>;
+  connectMobileWallet: () => Promise<{ success: boolean; address: string; error?: string }>;
   register: (data: { walletAddress?: string; referId?: string; country: string; mobile: string; name: string }) => Promise<{ success: boolean; message?: string }>;
   setupPasscode: (passcode: string, advanceToLocked?: boolean) => Promise<{ success: boolean; message?: string }>;
   verifyPasscode: (pin: string) => Promise<{ success: boolean; message?: string }>;
@@ -201,9 +198,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
   const [createdPasscode, setCreatedPasscode] = useState<string>(() => {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('xah_custom_passcode') || '';
-    }
+    // Remove legacy client-side PIN storage from previous demo versions.
+    if (typeof localStorage !== 'undefined') localStorage.removeItem('xah_custom_passcode');
     return '';
   });
   const [walletAddress, setWalletAddress] = useState<string>('');
@@ -222,49 +218,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const targetUrl = url || apiConfig.endpointUrl;
     setApiConfigState((prev) => ({ ...prev, status: 'CONNECTING', lastError: null }));
     const res = await ApiService.fetchUserDataFromApi(targetUrl);
-    setApiConfigState(ApiService.getUserApiConfig());
+    setApiConfigState({ ...ApiService.getUserApiConfig(), rawResponse: res.success ? res.raw ?? null : null });
     if (res.success && res.user) {
       setUser(res.user);
-      if (res.wallets) {
-        setWallets(res.wallets);
-      }
-      if (res.user.walletAddress) {
-        setWalletAddress(res.user.walletAddress);
-      }
+      if (res.wallets) setWallets(res.wallets);
+      if (res.user.walletAddress) setWalletAddress(res.user.walletAddress);
+      // Load all supported read-only records after UID validation.
+      await refreshUserData();
+      // The x.money API currently lacks server-side authentication. This is a
+      // local-only, read-only development preview, never a production login.
+      const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
+      if (isLocalHost) setAuthStage('AUTHENTICATED');
       return { success: true, raw: res.raw };
     } else {
       return { success: false, error: res.error };
-    }
-  };
-
-  const importRawUserJson = (jsonStr: string): { success: boolean; error?: string } => {
-    const res = ApiService.importRawUserJson(jsonStr);
-    setApiConfigState(ApiService.getUserApiConfig());
-    if (res.success && res.user) {
-      setUser(res.user);
-      if (res.wallets) {
-        setWallets(res.wallets);
-      }
-      if (res.user.walletAddress) {
-        setWalletAddress(res.user.walletAddress);
-      }
-      return { success: true };
-    } else {
-      return { success: false, error: res.error };
-    }
-  };
-
-  const loadSampleUserData = () => {
-    const res = ApiService.loadSampleUserData();
-    setApiConfigState(ApiService.getUserApiConfig());
-    if (res.user) {
-      setUser(res.user);
-      if (res.wallets) {
-        setWallets(res.wallets);
-      }
-      if (res.user.walletAddress) {
-        setWalletAddress(res.user.walletAddress);
-      }
     }
   };
 
@@ -282,35 +249,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (walletsRes.success && walletsRes.data) {
-          // If the profile / API already provided non-zero balances, prioritize them
-          if (walletsRes.data.totalBalanceUSDT > 0 || walletsRes.data.mainBalanceUSDT > 0) {
-            setWallets(walletsRes.data);
-          } else if (profileRes.data.walletAddress) {
-            // Otherwise compute live on-chain balance
-            const onChain = await realMarketApi.fetchOnChainBalance(profileRes.data.walletAddress);
-            const tickers = await realMarketApi.fetchTickers();
-            const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-            const ethPrice = ethPair ? ethPair.price : 2800;
-
-            const actualEth = onChain.balanceEth;
-            const liveUsd = +(actualEth * ethPrice).toFixed(2);
-            setWallets({
-              ...walletsRes.data,
-              mainBalanceNative: actualEth,
-              mainBalanceUSDT: liveUsd,
-              spotBalanceNative: +(actualEth * 0.4).toFixed(6),
-              spotBalanceUSDT: +(liveUsd * 0.4).toFixed(2),
-              fundingBalanceNative: +(actualEth * 0.6).toFixed(6),
-              fundingBalanceUSDT: +(liveUsd * 0.6).toFixed(2),
-              totalBalanceUSDT: liveUsd,
-            });
-          } else {
-            setWallets(walletsRes.data);
-          }
+          // Use only explicit values returned by x.money. Never infer or split balances.
+          setWallets(walletsRes.data);
+        } else {
+          setWallets(null);
         }
       } else {
         setUser(null);
         setWallets(null);
+        cookieService.clearAuthSession();
       }
       setCreatedPasscode(ApiService.getLastCreatedPasscode());
     } catch (err) {
@@ -332,20 +279,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) {
           setUser({ ...user, walletAddress: addr });
         }
-        // Update with real on-chain balance
-        const onChain = await realMarketApi.fetchOnChainBalance(addr);
-        const tickers = await realMarketApi.fetchTickers();
-        const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-        const ethPrice = ethPair ? ethPair.price : 2800;
-        const actualEth = onChain.balanceEth;
-        const liveUsd = +(actualEth * ethPrice).toFixed(2);
-
-        setWallets((prev) => prev ? {
-          ...prev,
-          mainBalanceNative: actualEth,
-          mainBalanceUSDT: liveUsd,
-          totalBalanceUSDT: liveUsd,
-        } : null);
       } else {
         setIsMetaMaskConnected(false);
       }
@@ -362,54 +295,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({ ...user, walletAddress: addr });
       }
 
-      // Authoritative on-chain balance query
-      const onChain = await realMarketApi.fetchOnChainBalance(addr);
-      const tickers = await realMarketApi.fetchTickers();
-      const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-      const ethPrice = ethPair ? ethPair.price : 2800;
-      const actualEth = onChain.balanceEth || (res.balance ? parseFloat(res.balance) : 0);
-      const liveUsd = +(actualEth * ethPrice).toFixed(2);
-
-      setWallets((prev) => prev ? {
-        ...prev,
-        mainBalanceNative: actualEth,
-        mainBalanceUSDT: liveUsd,
-        spotBalanceNative: +(actualEth * 0.4).toFixed(6),
-        spotBalanceUSDT: +(liveUsd * 0.4).toFixed(2),
-        fundingBalanceNative: +(actualEth * 0.6).toFixed(6),
-        fundingBalanceUSDT: +(liveUsd * 0.6).toFixed(2),
-        totalBalanceUSDT: liveUsd,
-      } : prev);
-
       return { success: true, address: addr };
     }
     return { success: false, error: res.message || res.error || 'Connection failed' };
   };
 
-  const connectMobileWallet = async (): Promise<{ success: boolean; address: string }> => {
-    const addr = web3Wallet.getOrCreateMobileSessionWallet();
-    setWalletAddress(addr);
-    setIsMetaMaskConnected(true);
-    if (user) {
-      setUser({ ...user, walletAddress: addr });
-    }
-
-    // Query real on-chain balance for generated wallet address
-    const onChain = await realMarketApi.fetchOnChainBalance(addr);
-    const tickers = await realMarketApi.fetchTickers();
-    const ethPair = tickers.find((t) => t.symbol === 'ETHUSDT');
-    const ethPrice = ethPair ? ethPair.price : 2800;
-    const actualEth = onChain.balanceEth;
-    const liveUsd = +(actualEth * ethPrice).toFixed(2);
-
-    setWallets((prev) => prev ? {
-      ...prev,
-      mainBalanceNative: actualEth,
-      mainBalanceUSDT: liveUsd,
-      totalBalanceUSDT: liveUsd,
-    } : prev);
-
-    return { success: true, address: addr };
+  const connectMobileWallet = async (): Promise<{ success: boolean; address: string; error?: string }> => {
+    // Never generate/store a client-side wallet in API-only preview mode.
+    return {
+      success: false,
+      address: '',
+      error: 'Mobile wallet creation is disabled in read-only API preview.',
+    };
   };
 
   const register = async (data: {
@@ -442,9 +339,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await ApiService.setupPasscode(passcode);
       if (res.success) {
         setCreatedPasscode(passcode);
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('xah_custom_passcode', passcode);
-        }
         if (user) {
           setUser({ ...user, passcodeConfigured: true });
         }
@@ -462,44 +356,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyPasscode = async (pin: string) => {
     setIsLoading(true);
     try {
-      const targetPass = createdPasscode || (typeof localStorage !== 'undefined' ? localStorage.getItem('xah_custom_passcode') : '');
-      if (targetPass && pin === targetPass) {
-        await refreshUserData();
-        setAuthStage('AUTHENTICATED');
-        setSecurityModalOpen(false);
-
-        // Save authentic frontend session cookies
-        const activeAddr = walletAddress || user?.walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
-        const activeUserId = user?.id || `MX-${Date.now().toString().slice(-6)}`;
-        cookieService.saveAuthSession({
-          token: `moneyx_sec_${Date.now()}`,
-          walletAddress: activeAddr,
-          passcodeConfigured: true,
-          userId: activeUserId,
-        });
-
-        return { success: true };
-      }
-
+      // The supplied x.money repository has no verified server-side login endpoint.
+      // Never accept a PIN stored in localStorage or mint a client-side session token.
       const res = await ApiService.verifyPasscode(pin);
       if (res.success && res.data?.verified) {
         await refreshUserData();
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
-
-        // Save authentic frontend session cookies
-        const activeAddr = walletAddress || user?.walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
-        const activeUserId = user?.id || `MX-${Date.now().toString().slice(-6)}`;
-        cookieService.saveAuthSession({
-          token: `moneyx_sec_${Date.now()}`,
-          walletAddress: activeAddr,
-          passcodeConfigured: true,
-          userId: activeUserId,
-        });
-
         return { success: true };
       }
-      return { success: false, message: res.error?.message || 'Incorrect passcode. Please try again.' };
+      return { success: false, message: res.error?.message || 'Server-side authentication is unavailable; use local read-only API preview.' };
     } finally {
       setIsLoading(false);
     }
@@ -551,8 +417,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setApiModalOpen,
         updateApiConfig,
         fetchUserDataFromApi,
-        importRawUserJson,
-        loadSampleUserData,
         setActiveRoute,
         setSecurityModalOpen,
         toggleEmptyStateMode,

@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { MoneyXLogo } from '../../components/common/MoneyXLogo';
+import { ApiSetupModal } from '../../components/common/ApiSetupModal';
 import heroWomenImg from '../../assets/images/moneyx_hero_women_1791117275763.jpg';
 import ecosystemPhonesImg from '../../assets/images/moneyx_ecosystem_phones_1791117300782.jpg';
 import infinitySculptureImg from '../../assets/images/moneyx_infinity_sculpture_1791117317826.jpg';
@@ -41,12 +42,13 @@ import {
   Trophy,
   Users,
   Wallet,
+  Server,
   X,
   Zap,
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
-  const { user, setAuthStage, setActiveRoute } = useAuth();
+  const { user, setAuthStage, setActiveRoute, setApiModalOpen } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [activeCommunityIndex, setActiveCommunityIndex] = useState<number>(0);
   const [subscribeEmail, setSubscribeEmail] = useState<string>('');
@@ -142,6 +144,17 @@ export const LandingPage: React.FC = () => {
             >
               <Globe size={14} className="text-slate-400" />
               <span className="text-[10px] text-slate-500">•</span>
+            </button>
+
+            {/* Local XAMPP read-only API preview */}
+            <button
+              type="button"
+              onClick={() => setApiModalOpen(true)}
+              className="px-3 py-2.5 rounded-xl bg-[#080d0a] border border-[#00e699]/40 text-[#00e699] font-bold text-xs flex items-center gap-2 hover:bg-[#0b1710] cursor-pointer"
+              title="Connect your local x.money XAMPP API"
+            >
+              <Server size={14} />
+              <span className="hidden sm:inline">Local API</span>
             </button>
 
             {/* Primary Connect Wallet Button */}
@@ -1267,6 +1280,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </footer>
 
+      <ApiSetupModal />
     </div>
   );
 };

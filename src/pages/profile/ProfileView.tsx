@@ -37,7 +37,6 @@ import {
   User,
   Wallet,
   X,
-  Zap,
 } from 'lucide-react';
 
 export const ProfileView: React.FC = () => {
@@ -50,7 +49,6 @@ export const ProfileView: React.FC = () => {
     apiConfig,
     setApiModalOpen,
     fetchUserDataFromApi,
-    loadSampleUserData,
   } = useAuth();
 
   const { copyToClipboard, showToast } = useToast();
@@ -615,14 +613,6 @@ export const ProfileView: React.FC = () => {
                   <span>Paste / Import JSON</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={loadSampleUserData}
-                  className="px-4 py-2.5 rounded-xl bg-[#020204] hover:bg-[#121216] border border-[#18181c] text-[#00ffa3] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Zap size={14} />
-                  <span>Load Sample Preset</span>
-                </button>
               </div>
             </div>
 

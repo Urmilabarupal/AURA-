@@ -54,7 +54,6 @@ import {
   ActionButtonBuyTicketSvg,
   ActionButtonRedeemSvg,
   ActionButtonConvertSvg,
-  VectorQrCodeSvg,
 } from '../components/common/CryptoIcons';
 import infinitySculptureImg from '../assets/images/moneyx_infinity_sculpture_1791117317826.jpg';
 import {
@@ -139,43 +138,38 @@ export const Dashboard: React.FC = () => {
   const [copiedAddress, setCopiedAddress] = useState<boolean>(false);
   const [copiedReferral, setCopiedReferral] = useState<boolean>(false);
   const [realTransactions, setRealTransactions] = useState<any[]>([]);
+  const [transactionError, setTransactionError] = useState<string>('');
 
-  const referralCode = user?.referId || 'MNX001';
-  const referralLink = `https://moneyx.app/ref/${referralCode}`;
+  const referralCode = user?.referId || '';
+  const referralLink = referralCode ? `https://moneyx.app/ref/${encodeURIComponent(referralCode)}` : '';
 
   const handleCopyReferral = () => {
+    if (!referralLink) return;
     copyToClipboard(referralLink, 'Referral Link');
     setCopiedReferral(true);
     setTimeout(() => setCopiedReferral(false), 2000);
   };
 
   // Authoritative real on-chain & user session balances (Zero fake mock clamping)
-  const fundingBalance = wallets?.fundingBalanceUSDT ?? (wallets?.spotBalanceUSDT ? +(wallets.spotBalanceUSDT * 0.6).toFixed(2) : 0);
+  const fundingBalance = wallets?.fundingBalanceUSDT ?? 0;
   const mainBalance = wallets?.mainBalanceUSDT ?? 0;
-  const rewardBalance = wallets?.spotBalanceUSDT ? +(wallets.spotBalanceUSDT * 0.4).toFixed(2) : 0;
-  const totalBalance = wallets?.totalBalanceUSDT ?? +(fundingBalance + mainBalance + rewardBalance).toFixed(2);
+  const rewardBalance = 0; // No rewards-balance endpoint is available in x.money.
+  const totalBalance = wallets?.totalBalanceUSDT ?? 0;
 
   // Dynamic user metrics strictly calculated from active session
   const userDisplayName = user?.name || (user?.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : 'Valued User');
-  const userDisplayId = user?.id || (user?.walletAddress ? `MX-${user.walletAddress.slice(2, 8).toUpperCase()}` : 'MX-001');
-  const stakedTotal = wallets?.mainBalanceNative ? +(wallets.mainBalanceNative * 0.5 * 337.2).toFixed(2) : 0;
-  const totalRewards = wallets?.extraBalanceHXC ? +wallets.extraBalanceHXC.toFixed(2) : 0;
-  const dailyIncome = wallets?.totalBalanceUSDT ? +(wallets.totalBalanceUSDT * 0.005).toFixed(2) : 0;
-  const totalIncome = wallets?.totalDepositUSDT ? +wallets.totalDepositUSDT.toFixed(2) : totalBalance;
+  const userDisplayId = user?.id || '—';
+  const stakedTotal = 0; // No compatible user-staking summary endpoint is available.
+  const totalRewards = 0; // HXC balance is not a verified rewards-income figure.
+  const dailyIncome = 0; // Never estimate yield without an API ledger record.
+  const totalIncome = 0; // Deposit volume is not income; a separate income endpoint is required.
   const teamIncome = 0;
   const teamMembers = 0;
   const activeTeamToday = 0;
 
   // Dynamic chart data strictly relative to actual user total balance
-  const currentChartData = [
-    { name: 'Point 1', balance: +(totalBalance * 0.88).toFixed(2) },
-    { name: 'Point 2', balance: +(totalBalance * 0.92).toFixed(2) },
-    { name: 'Point 3', balance: +(totalBalance * 0.90).toFixed(2) },
-    { name: 'Point 4', balance: +(totalBalance * 0.95).toFixed(2) },
-    { name: 'Point 5', balance: +(totalBalance * 0.97).toFixed(2) },
-    { name: 'Point 6', balance: +(totalBalance * 0.99).toFixed(2) },
-    { name: 'Current', balance: totalBalance },
-  ];
+  // No historical portfolio-series endpoint exists in the supplied x.money API.
+  const currentChartData: { name: string; balance: number }[] = [];
 
   useEffect(() => {
     realMarketApi.fetchTickers();
@@ -183,7 +177,14 @@ export const Dashboard: React.FC = () => {
     ApiService.getTransactions({ limit: 5 }).then((res: any) => {
       if (res.success && res.data) {
         setRealTransactions(res.data);
+        setTransactionError(res.data.length ? '' : 'No transaction records were returned by x.money.');
+      } else {
+        setRealTransactions([]);
+        setTransactionError(res.error?.message || res.message || 'Could not load transactions from x.money API.');
       }
+    }).catch((error: unknown) => {
+      setRealTransactions([]);
+      setTransactionError(error instanceof Error ? error.message : 'Could not load transactions from x.money API.');
     });
   }, []);
 
@@ -198,6 +199,10 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 select-none font-sans text-white bg-[#000000]">
       
+      <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 text-xs text-amber-200" role="status">
+        Some reward, staking-yield and team metrics are unavailable from the supplied x.money API. They are not estimated or replaced with sample values.
+      </div>
+
       {/* 1. HERO WELCOME BANNER (With User Details, Deposit & Withdraw buttons) */}
       <section className="relative rounded-3xl bg-gradient-to-r from-[#050807] via-[#080d0a] to-[#040806] border border-[#18181c] p-6 sm:p-8 lg:p-10 overflow-hidden shadow-2xl">
         {/* Subtle Ambient Emerald Glow */}
@@ -413,12 +418,13 @@ export const Dashboard: React.FC = () => {
                 <div className="w-2 h-2 rounded-full bg-[#00ffa3] animate-pulse shrink-0" />
                 <span className="text-xs text-slate-400 font-medium">Wallet:</span>
                 <span className="text-xs font-mono text-slate-200 truncate">
-                  {user?.walletAddress ? `${user.walletAddress.slice(0, 10)}...${user.walletAddress.slice(-6)}` : '0x71C2...3948'}
+                  {user?.walletAddress ? `${user.walletAddress.slice(0, 10)}...${user.walletAddress.slice(-6)}` : 'Wallet address not provided by API'}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyWallet}
+                disabled={!user?.walletAddress}
                 className="text-xs text-[#00ffa3] hover:underline flex items-center gap-1 font-semibold cursor-pointer shrink-0 ml-2"
               >
                 <Copy size={12} />
@@ -731,6 +737,7 @@ export const Dashboard: React.FC = () => {
 
           {/* Recharts Area Chart */}
           <div className="h-56 sm:h-64 w-full pt-2">
+            {currentChartData.length ? (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={currentChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
@@ -765,6 +772,11 @@ export const Dashboard: React.FC = () => {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center rounded-xl border border-dashed border-[#25252d] p-6 text-center text-xs text-slate-400">
+                Portfolio history is not available from the x.money API yet. No synthetic chart data is shown.
+              </div>
+            )}
           </div>
         </div>
 
@@ -865,15 +877,15 @@ export const Dashboard: React.FC = () => {
                 <div>
                   <p className="text-xs font-bold text-white">No Transactions Yet</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Your real on-chain transaction history will appear here.
+                    {transactionError || 'The x.money API returned no transaction records for this UID.'}
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setDepositModalOpen(true)}
+                  onClick={() => setApiModalOpen(true)}
                   className="px-4 py-2 rounded-xl bg-[#00ffa3] hover:bg-[#72ff36] text-black font-extrabold text-xs transition-all cursor-pointer shadow-md shadow-[#00ffa3]/20"
                 >
-                  Make First Deposit
+                  Check API Connection
                 </button>
               </div>
             ) : (
@@ -1071,22 +1083,23 @@ export const Dashboard: React.FC = () => {
 
             {/* Vector QR Code */}
             <div className="flex justify-center py-2">
-              <VectorQrCodeSvg size={160} />
+              <div className="w-40 h-40 rounded-xl border border-dashed border-amber-500/40 flex items-center justify-center p-4 text-center text-xs text-amber-200">No verified deposit-address API is available. QR is disabled.</div>
             </div>
 
             {/* Network Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00e699]/10 border border-[#00e699]/30 text-xs text-[#00e699] font-bold">
-              <span>Network: EVM / Money X Chain</span>
+              <span>Network details not provided by API</span>
             </div>
 
             {/* Address Box */}
             <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between text-xs">
               <span className="font-mono text-slate-300 truncate max-w-[210px]">
-                {user?.walletAddress || '0x3a56D4869c9b4e1837015E5aE4F4D3C5237F2B'}
+                {user?.walletAddress || 'Wallet address not provided by API'}
               </span>
               <button
                 type="button"
                 onClick={handleCopyWallet}
+                disabled={!user?.walletAddress}
                 className="p-1.5 rounded-lg bg-[#141418] hover:bg-[#202028] text-slate-200 cursor-pointer transition-colors"
                 title="Copy Address"
               >

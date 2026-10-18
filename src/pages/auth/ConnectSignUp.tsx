@@ -50,7 +50,7 @@ export const ConnectSignUp: React.FC = () => {
   const { showToast, copyToClipboard } = useToast();
 
   // Form Fields - clean initial values as requested
-  const [referId, setReferId] = useState<string>(BRAND.defaultReferId || 'MNX001');
+  const [referId, setReferId] = useState<string>('');
   const [country, setCountry] = useState<string>('USA (+1)');
   const [mobileNumber, setMobileNumber] = useState<string>(''); // Empty initially
   const [fullName, setFullName] = useState<string>(''); // Empty initially (no hardcoded name)

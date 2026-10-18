@@ -27,6 +27,7 @@ import {
 export const TransactionsView: React.FC = () => {
   const { emptyStateMode } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [apiError, setApiError] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [limit, setLimit] = useState<number>(10);
@@ -37,10 +38,11 @@ export const TransactionsView: React.FC = () => {
     } else {
       loadTransactions();
     }
-  }, [emptyStateMode, filterType, limit]);
+  }, [emptyStateMode, filterType, limit, searchQuery]);
 
   const loadTransactions = async () => {
     try {
+      setApiError('');
       const res = await ApiService.getTransactions({
         type: filterType === 'ALL' ? undefined : filterType,
         limit,
@@ -57,9 +59,13 @@ export const TransactionsView: React.FC = () => {
           );
         }
         setTransactions(filtered);
+      } else {
+        setTransactions([]);
+        setApiError(res.error?.message || res.message || 'Could not load transactions from x.money API.');
       }
     } catch (err) {
-      console.error(err);
+      setTransactions([]);
+      setApiError(err instanceof Error ? err.message : 'Could not load transactions from x.money API.');
     }
   };
 
@@ -79,6 +85,8 @@ export const TransactionsView: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {apiError && <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 text-xs text-amber-200" role="status">{apiError}</div>}
 
       <div className="p-5 sm:p-6 rounded-2xl bg-[#08080a] border border-[#18181c] shadow-2xl space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18181c] pb-4">
