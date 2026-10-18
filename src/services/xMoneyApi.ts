@@ -187,22 +187,30 @@ export class XMoneyApiService {
       this.getCollection('Funding_Wallets'),
       this.getCollection('Staking_Wallets'),
     ]);
-    const sumBalance = (records: Record<string, unknown>[]) => records.reduce((sum, row) => {
-      const amount = numberFrom(row.balance, row.amount, row.available, row.wallet_balance);
-      return sum + (amount ?? 0);
-    }, 0);
+    const sumUsdBalance = (records: Record<string, unknown>[]): number | undefined => {
+      const values = records.map((row) => {
+        const explicitUsd = numberFrom(row.balance_usdt, row.amount_usdt, row.usd_value, row.usdValue, row.balanceUSDT);
+        if (explicitUsd !== undefined) return explicitUsd;
+        const currency = textFrom(row.ccc, row.currency, row.symbol).toUpperCase();
+        if (currency === 'USDT' || currency === 'USDC') return numberFrom(row.balance, row.amount, row.available);
+        return undefined;
+      }).filter((value): value is number => value !== undefined);
+      return values.length ? values.reduce((sum, value) => sum + value, 0) : undefined;
+    };
     const spotRows = spot.status === 'fulfilled' ? spot.value : [];
     const fundingRows = funding.status === 'fulfilled' ? funding.value : [];
     const stakingRows = staking.status === 'fulfilled' ? staking.value : [];
-    if (spotRows.length) wallets.spotBalanceUSDT = sumBalance(spotRows);
-    if (fundingRows.length) wallets.fundingBalanceUSDT = sumBalance(fundingRows);
+    const spotUsd = sumUsdBalance(spotRows);
+    const fundingUsd = sumUsdBalance(fundingRows);
+    const stakingUsd = sumUsdBalance(stakingRows);
+    if (spotUsd !== undefined) wallets.spotBalanceUSDT = spotUsd;
+    if (fundingUsd !== undefined) wallets.fundingBalanceUSDT = fundingUsd;
     // Do not guess native-coin prices or split balances into synthetic wallets.
     if (wallets.totalBalanceUSDT === 0) {
       wallets.totalBalanceUSDT = wallets.mainBalanceUSDT + wallets.spotBalanceUSDT + wallets.fundingBalanceUSDT + wallets.jackpotBalanceUSDT;
     }
-    if (stakingRows.length && wallets.mainBalanceUSDT === 0) {
-      wallets.mainBalanceUSDT = sumBalance(stakingRows);
-      wallets.totalBalanceUSDT += wallets.mainBalanceUSDT;
+    if (stakingUsd !== undefined && wallets.mainBalanceUSDT === 0) {
+      wallets.mainBalanceUSDT = stakingUsd;
     }
     return wallets;
   }
