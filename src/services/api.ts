@@ -81,33 +81,6 @@ export const ApiService = {
     return res;
   },
 
-  importRawUserJson(jsonInput: string | object): {
-    success: boolean;
-    user?: UserProfile;
-    wallets?: UserWallets;
-    error?: string;
-  } {
-    const res = UserApiService.importRawJson(jsonInput);
-    if (res.success && res.user) {
-      AuthoritativeBackend.setUser(res.user);
-      if (res.wallets) {
-        AuthoritativeBackend.setWallets(res.wallets);
-      }
-    }
-    return res;
-  },
-
-  loadSampleUserData(): { user: UserProfile; wallets?: UserWallets } {
-    const res = UserApiService.loadSampleData();
-    if (res.user) {
-      AuthoritativeBackend.setUser(res.user);
-      if (res.wallets) {
-        AuthoritativeBackend.setWallets(res.wallets);
-      }
-    }
-    return res;
-  },
-
   // Auth & Profile
   async register(params: {
     walletAddress?: string;
