@@ -254,18 +254,20 @@ export const ApiService = {
   async getStakingPlans(): Promise<ApiResponse<StakingPlan[]>> {
     try {
       const rows = await XMoneyApiService.getCollection('Staking_Plans');
-      const plans: StakingPlan[] = rows.map((row, index) => ({
-        id: String(row.id ?? row.plan_id ?? `staking-plan-${index}`),
-        name: String(row.name ?? row.title ?? row.plan ?? 'Staking plan'),
-        durationDays: Number(row.duration ?? row.duration_days ?? row.days ?? 0) || 0,
-        aprPercent: Number(row.apr ?? row.apy ?? row.percent ?? row.rate ?? 0) || 0,
-        minAmount: Number(row.min_amount ?? row.minimum ?? row.min ?? 0) || 0,
-        maxAmount: Number(row.max_amount ?? row.maximum ?? row.max ?? 0) || 0,
-        currency: String(row.ccc ?? row.currency ?? '—'),
-        periodType: String(row.period ?? row.period_type ?? 'days'),
-        description: String(row.description ?? ''),
-        features: [],
-      }));
+      const plans: StakingPlan[] = rows
+        .filter((row) => row.status === undefined || Number(row.status) === 1)
+        .map((row, index) => ({
+          id: String(row.id ?? row.plan_id ?? `staking-plan-${index}`),
+          name: String(row.name ?? row.title ?? row.plan ?? 'Staking plan'),
+          durationDays: Number(row.period ?? row.duration ?? row.duration_days ?? row.days ?? 0) || 0,
+          aprPercent: Number(row.roi ?? row.apr ?? row.apy ?? row.percent ?? row.rate ?? 0) || 0,
+          minAmount: Number(row.minamount ?? row.min_amount ?? row.minimum ?? row.min ?? 0) || 0,
+          maxAmount: Number(row.maxamount ?? row.max_amount ?? row.maximum ?? row.max ?? 0) || 0,
+          currency: String(row.ccc ?? row.currency ?? '—'),
+          periodType: String(row.ttype ?? row.period_type ?? 'days'),
+          description: String(row.description ?? ''),
+          features: [],
+        }));
       return XMoneyApiService.success(plans, plans.length ? 'Staking plans loaded from x.money API.' : 'No staking plans returned by x.money.');
     } catch (error) {
       return XMoneyApiService.failure<StakingPlan[]>(error);
