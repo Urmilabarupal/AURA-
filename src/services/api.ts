@@ -174,6 +174,15 @@ export const ApiService = {
     }
   },
 
+  async getReferrals(): Promise<ApiResponse<Record<string, unknown>[]>> {
+    try {
+      const rows = await XMoneyApiService.getCollection('Referes');
+      return XMoneyApiService.success(rows, rows.length ? 'Referral records loaded from x.money API.' : 'No referral records returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Record<string, unknown>[]>(error);
+    }
+  },
+
   async getCurrencies(): Promise<ApiResponse<Record<string, unknown>[]>> {
     try {
       const rows = await XMoneyApiService.getCollection('Currencys');
