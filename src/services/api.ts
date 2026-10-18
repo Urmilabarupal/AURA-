@@ -36,6 +36,7 @@
 
 import { AuthoritativeBackend } from './backendEngine';
 import { UserApiService, ApiConnectionConfig } from './userApiService';
+import { XMoneyApiService } from './xMoneyApi';
 import {
   ApiResponse,
   CommunityLevelData,
@@ -131,7 +132,14 @@ export const ApiService = {
   },
 
   async getProfile(): Promise<ApiResponse<UserProfile>> {
-    return AuthoritativeBackend.getProfile();
+    try {
+      const result = await XMoneyApiService.getUser();
+      AuthoritativeBackend.setUser(result.user);
+      if (result.wallets) AuthoritativeBackend.setWallets(result.wallets);
+      return XMoneyApiService.success(result.user, 'Profile loaded from x.money API.');
+    } catch (error) {
+      return XMoneyApiService.failure<UserProfile>(error);
+    }
   },
 
   async updateProfile(data: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
@@ -140,7 +148,13 @@ export const ApiService = {
 
   // Wallets
   async getWallets(): Promise<ApiResponse<UserWallets>> {
-    return AuthoritativeBackend.getWallets();
+    try {
+      const wallets = await XMoneyApiService.getWallets();
+      AuthoritativeBackend.setWallets(wallets);
+      return XMoneyApiService.success(wallets, 'Wallet data loaded from x.money API.');
+    } catch (error) {
+      return XMoneyApiService.failure<UserWallets>(error);
+    }
   },
 
   async deposit(params: {
@@ -174,16 +188,22 @@ export const ApiService = {
     search?: string;
     limit?: number;
   }): Promise<ApiResponse<Transaction[]>> {
-    return AuthoritativeBackend.getTransactions(params);
+    try {
+      let rows = await XMoneyApiService.getTransactions(params?.limit ?? 100);
+      if (params?.type) rows = rows.filter((row) => row.type === params.type || row.typeLabel.toLowerCase().includes(params.type!.toLowerCase()));
+      if (params?.search) {
+        const q = params.search.toLowerCase();
+        rows = rows.filter((row) => [row.id, row.typeLabel, row.description, row.referenceId].some((value) => value.toLowerCase().includes(q)));
+      }
+      return XMoneyApiService.success(rows, rows.length ? 'Transactions loaded from x.money API.' : 'No transactions were returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<Transaction[]>(error);
+    }
   },
 
   // Trading
   async getMarketTrades(): Promise<ApiResponse<MarketTrade[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.MARKET_TRADES,
-      message: 'Market trades retrieved.',
-    };
+    return XMoneyApiService.success([], 'x.money does not expose a compatible public market-trades endpoint; showing an empty state instead of demo data.');
   },
 
   async submitTradeOrder(params: {
@@ -196,16 +216,51 @@ export const ApiService = {
   },
 
   async getTradeOrders(): Promise<ApiResponse<TradeOrder[]>> {
-    return AuthoritativeBackend.getOrders();
+    try {
+      const rows = await XMoneyApiService.getCollection('Trades');
+      const orders: TradeOrder[] = rows.map((row, index) => {
+        const side = String(row.side ?? row.ttype ?? row.type ?? '').toUpperCase().includes('SELL') ? 'SELL' : 'BUY';
+        const price = Number(row.price ?? 0) || 0;
+        const amount = Number(row.amount ?? 0) || 0;
+        return {
+          id: String(row.id ?? row.orderid ?? `xmoney-order-${index}`),
+          userId: String(row.uid ?? row.user ?? ''),
+          pair: String(row.pair ?? row.ccc ?? '—'),
+          side,
+          walletSource: 'spot',
+          price,
+          amount,
+          total: Number(row.total ?? row.value ?? price * amount) || 0,
+          status: String(row.status ?? 'OPEN').toUpperCase().includes('FILL') ? 'FILLED' : String(row.status ?? '').toUpperCase().includes('CANCEL') ? 'CANCELLED' : 'OPEN',
+          timestamp: String(row.created_at ?? row.date ?? row.time ?? ''),
+        };
+      });
+      return XMoneyApiService.success(orders, orders.length ? 'Orders loaded from x.money API.' : 'No trade orders found.');
+    } catch (error) {
+      return XMoneyApiService.failure<TradeOrder[]>(error);
+    }
   },
 
   // Staking
   async getStakingPlans(): Promise<ApiResponse<StakingPlan[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.STAKING_PLANS,
-      message: 'Staking plans retrieved.',
-    };
+    try {
+      const rows = await XMoneyApiService.getCollection('Staking_Plans');
+      const plans: StakingPlan[] = rows.map((row, index) => ({
+        id: String(row.id ?? row.plan_id ?? `staking-plan-${index}`),
+        name: String(row.name ?? row.title ?? row.plan ?? 'Staking plan'),
+        durationDays: Number(row.duration ?? row.duration_days ?? row.days ?? 0) || 0,
+        aprPercent: Number(row.apr ?? row.apy ?? row.percent ?? row.rate ?? 0) || 0,
+        minAmount: Number(row.min_amount ?? row.minimum ?? row.min ?? 0) || 0,
+        maxAmount: Number(row.max_amount ?? row.maximum ?? row.max ?? 0) || 0,
+        currency: String(row.ccc ?? row.currency ?? '—'),
+        periodType: String(row.period ?? row.period_type ?? 'days'),
+        description: String(row.description ?? ''),
+        features: [],
+      }));
+      return XMoneyApiService.success(plans, plans.length ? 'Staking plans loaded from x.money API.' : 'No staking plans returned by x.money.');
+    } catch (error) {
+      return XMoneyApiService.failure<StakingPlan[]>(error);
+    }
   },
 
   async stake(params: {
@@ -217,33 +272,21 @@ export const ApiService = {
 
   // Farming
   async getFarmingPlans(): Promise<ApiResponse<FarmingPlan[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.FARMING_PLANS,
-      message: 'Farming plans retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible farming-plans endpoint exists in the supplied x.money API; demo plans are disabled.');
   },
 
   // Rewards, Ranks, SIP
   async getRankAchievements(): Promise<ApiResponse<RankAchievement[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.RANK_ACHIEVEMENTS,
-      message: 'Rank achievements retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible rank-achievements endpoint is available; demo rewards are disabled.');
   },
 
   async getSipBonusTiers(): Promise<ApiResponse<SipBonusTier[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.SIP_TIERS,
-      message: 'SIP bonus tiers retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible SIP bonus endpoint is available; demo rewards are disabled.');
   },
 
   // Tickets
   async getTickets(): Promise<ApiResponse<LotteryTicket[]>> {
-    return AuthoritativeBackend.getTickets();
+    return XMoneyApiService.success([], 'No compatible lottery-ticket endpoint exists in x.money; demo tickets are disabled.');
   },
 
   async buyTickets(params: {
@@ -277,20 +320,12 @@ export const ApiService = {
 
   // Community
   async getCommunityLevels(): Promise<ApiResponse<CommunityLevelData[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.COMMUNITY_LEVELS,
-      message: 'Community levels retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible community-levels endpoint is available; demo community metrics are disabled.');
   },
 
   // Jackpot
   async getJackpotWinners(): Promise<ApiResponse<JackpotDrawWinner[]>> {
-    return {
-      success: true,
-      data: AuthoritativeBackend.JACKPOT_WINNERS,
-      message: 'Jackpot winners retrieved.',
-    };
+    return XMoneyApiService.success([], 'No compatible jackpot-winners endpoint exists in x.money; demo winners are disabled.');
   },
 
   // Testing utilities for Populated vs Empty data states
