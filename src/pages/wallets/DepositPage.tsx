@@ -95,7 +95,7 @@ export const DepositPage: React.FC = () => {
         : typeof networkValue === 'string'
           ? networkValue.split(/[;,|]/).map((value) => value.trim()).filter(Boolean)
           : [];
-      const minimum = row.min_deposit ?? row.minimum_deposit ?? row.min ?? row.minimum;
+      const minimum = row.mindeposit ?? row.min_deposit ?? row.minimum_deposit ?? row.min ?? row.minimum;
       const confirmations = Number(row.confirmations ?? row.confirmation ?? 0);
       return {
         symbol,
@@ -104,7 +104,12 @@ export const DepositPage: React.FC = () => {
         minDeposit: minimum === undefined || minimum === null || minimum === '' ? 'Not provided by API' : String(minimum),
         confirmations: Number.isFinite(confirmations) ? confirmations : 0,
       };
-    }).filter((asset) => asset.symbol);
+    }).filter((asset, index) => {
+      const row = response.data[index];
+      const depositEnabled = row?.deposit === undefined || Number(row.deposit) === 1 || row.deposit === true;
+      const enabled = row?.enable === undefined || Number(row.enable) === 1 || row.enable === true;
+      return Boolean(asset.symbol) && depositEnabled && enabled;
+    });
     setSupportedAssets(assets);
     setSelectedAssetSymbol(assets[0]?.symbol || '');
     setSelectedNetwork(assets[0]?.networks[0] || '');
