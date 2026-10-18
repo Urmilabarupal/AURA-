@@ -12,7 +12,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
-import { BRAND } from '../../config/brand';
 import { ApiService } from '../../services/api';
 import {
   AlertCircle,
@@ -36,33 +35,33 @@ interface CryptoAsset {
   confirmations: number;
 }
 
-const SUPPORTED_ASSETS: CryptoAsset[] = [
-  { symbol: 'USDT', name: 'Tether USD', networks: [BRAND.chainName, 'TRC-20', 'BEP-20', 'ERC-20'], minDeposit: '10 USDT', confirmations: 12 },
-  { symbol: BRAND.tokenSymbol, name: `${BRAND.chainName} Protocol Token`, networks: [BRAND.chainNetwork], minDeposit: `1 ${BRAND.tokenSymbol}`, confirmations: 6 },
-  { symbol: 'ETH', name: 'Ethereum', networks: ['ERC-20', 'Arbitrum'], minDeposit: '0.005 ETH', confirmations: 12 },
-  { symbol: 'BUSD', name: 'Binance USD', networks: ['BEP-20'], minDeposit: '10 BUSD', confirmations: 15 },
-  { symbol: 'TRX', name: 'TRON Native', networks: ['TRC-20'], minDeposit: '20 TRX', confirmations: 19 },
-];
-
 export const DepositPage: React.FC = () => {
-  const { user, walletAddress, isMetaMaskConnected } = useAuth();
+  const { user } = useAuth();
   const { copyToClipboard, showToast } = useToast();
 
-  const [selectedAsset, setSelectedAsset] = useState<CryptoAsset>(SUPPORTED_ASSETS[0]);
-  const [selectedNetwork, setSelectedNetwork] = useState<string>(SUPPORTED_ASSETS[0].networks[0]);
+  const [supportedAssets, setSupportedAssets] = useState<CryptoAsset[]>([]);
+  const [selectedAssetSymbol, setSelectedAssetSymbol] = useState<string>('');
+  const [selectedNetwork, setSelectedNetwork] = useState<string>('');
+  const selectedAsset = supportedAssets.find((asset) => asset.symbol === selectedAssetSymbol) || supportedAssets[0] || null;
+  const [currencyError, setCurrencyError] = useState<string>('');
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [recentDeposits, setRecentDeposits] = useState<Record<string, unknown>[]>([]);
   const [historyError, setHistoryError] = useState<string>('');
 
-  const depositAddress = user?.walletAddress || walletAddress || '';
+  // x.money does not provide a verified deposit-address endpoint; never reuse a profile wallet as a deposit address.
+  const depositAddress = '';
 
   const handleAssetSelect = (asset: CryptoAsset) => {
-    setSelectedAsset(asset);
-    setSelectedNetwork(asset.networks[0]);
+    setSelectedAssetSymbol(asset.symbol);
+    setSelectedNetwork(asset.networks[0] || '');
   };
 
   const handleCopy = () => {
-    copyToClipboard(depositAddress, `${selectedAsset.symbol} deposit address copied!`);
+    if (!depositAddress) {
+      showToast('x.money has not provided a verified deposit address. Do not send funds from this screen.', 'info');
+      return;
+    }
+    copyToClipboard(depositAddress, `${selectedAsset?.symbol || 'Crypto'} deposit address copied!`);
   };
 
   const loadDepositHistory = async () => {
@@ -78,8 +77,43 @@ export const DepositPage: React.FC = () => {
     setIsVerifying(false);
   };
 
+  const loadCurrencies = async () => {
+    setCurrencyError('');
+    const response = await ApiService.getCurrencies();
+    if (!response.success || !response.data) {
+      setSupportedAssets([]);
+      setSelectedAssetSymbol('');
+      setSelectedNetwork('');
+      setCurrencyError(response.error?.message || response.message || 'Could not load currencies from x.money API.');
+      return;
+    }
+    const assets: CryptoAsset[] = response.data.map((row) => {
+      const symbol = String(row.ccc ?? row.symbol ?? row.currency ?? '').trim();
+      const networkValue = row.networks ?? row.network ?? row.chain ?? row.platform;
+      const networks = Array.isArray(networkValue)
+        ? networkValue.map(String).filter(Boolean)
+        : typeof networkValue === 'string'
+          ? networkValue.split(/[;,|]/).map((value) => value.trim()).filter(Boolean)
+          : [];
+      const minimum = row.min_deposit ?? row.minimum_deposit ?? row.min ?? row.minimum;
+      const confirmations = Number(row.confirmations ?? row.confirmation ?? 0);
+      return {
+        symbol,
+        name: String(row.name ?? row.title ?? symbol),
+        networks,
+        minDeposit: minimum === undefined || minimum === null || minimum === '' ? 'Not provided by API' : String(minimum),
+        confirmations: Number.isFinite(confirmations) ? confirmations : 0,
+      };
+    }).filter((asset) => asset.symbol);
+    setSupportedAssets(assets);
+    setSelectedAssetSymbol(assets[0]?.symbol || '');
+    setSelectedNetwork(assets[0]?.networks[0] || '');
+    if (!assets.length) setCurrencyError('The x.money API returned no usable currency records.');
+  };
+
   useEffect(() => {
     void loadDepositHistory();
+    void loadCurrencies();
   }, [user?.id]);
 
   const qrSvgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(depositAddress)}&color=00e699&bgcolor=08080a`;
@@ -124,13 +158,13 @@ export const DepositPage: React.FC = () => {
                 1. Select Asset
               </h3>
               <span className="text-xs text-slate-400">
-                Target: <strong className="text-[#00e699]">{selectedAsset.symbol}</strong>
+                Target: <strong className="text-[#00e699]">{selectedAsset?.symbol || "—"}</strong>
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {SUPPORTED_ASSETS.map((asset) => {
-                const isSelected = selectedAsset.symbol === asset.symbol;
+              {supportedAssets.map((asset) => {
+                const isSelected = selectedAsset?.symbol === asset.symbol;
                 return (
                   <button
                     key={asset.symbol}
@@ -168,7 +202,7 @@ export const DepositPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5">
-              {selectedAsset.networks.map((net) => {
+              {(selectedAsset?.networks || []).map((net) => {
                 const isSelected = selectedNetwork === net;
                 return (
                   <button
@@ -191,7 +225,7 @@ export const DepositPage: React.FC = () => {
             <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 leading-relaxed flex items-start gap-2">
               <ShieldAlert size={16} className="shrink-0 mt-0.5 text-amber-400" />
               <span>
-                Sending {selectedAsset.symbol} over any network other than{' '}
+                Sending {selectedAsset?.symbol || 'the selected asset'} over any network other than{' '}
                 <strong className="text-white underline">{selectedNetwork}</strong> may result in permanent loss.
               </span>
             </div>
@@ -219,7 +253,7 @@ export const DepositPage: React.FC = () => {
                   No wallet address was returned by the API.
                 </div>
               )}
-              <p className="text-[10px] text-slate-500 mt-2 font-mono">Scan to deposit via Mobile Wallet</p>
+              <p className="text-[10px] text-slate-500 mt-2 font-mono">QR appears only when a verified deposit address is supplied by the API.</p>
             </div>
 
             {/* Address Box */}
@@ -247,11 +281,11 @@ export const DepositPage: React.FC = () => {
             <div className="space-y-2 text-xs font-mono text-slate-400 border-t border-[#18181c] pt-4 text-left">
               <div className="flex justify-between">
                 <span>Minimum Deposit:</span>
-                <span className="text-white font-bold">{selectedAsset.minDeposit}</span>
+                <span className="text-white font-bold">{selectedAsset?.minDeposit || 'Not provided by API'}</span>
               </div>
               <div className="flex justify-between">
                 <span>Expected Confirmations:</span>
-                <span className="text-white font-bold">{selectedAsset.confirmations} Blocks</span>
+                <span className="text-white font-bold">{selectedAsset?.confirmations ? `${selectedAsset.confirmations} Blocks` : 'Not provided by API'}</span>
               </div>
               <div className="flex justify-between">
                 <span>Contract Security:</span>
@@ -271,6 +305,14 @@ export const DepositPage: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+      {(currencyError || !supportedAssets.length) && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 text-xs text-amber-200" role="status">
+          {currencyError || 'No currencies were returned by the x.money API.'}
+        </div>
+      )}
+      <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 text-xs text-amber-200" role="status">
+        The supplied x.money API has no verified deposit-address endpoint. This page is read-only; do not send funds to the profile wallet address.
       </div>
       <div className="rounded-2xl bg-[#08080a] border border-[#18181c] p-5 space-y-3">
         <div className="flex items-center justify-between border-b border-[#18181c] pb-3">
