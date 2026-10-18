@@ -155,11 +155,8 @@ export class XMoneyApiService {
     const raw = await this.request('User');
     const parsed = UserApiService.parseUserData(raw);
     this.accountUserId = parsed.user.id;
-    // Do not let the requested UID silently resolve to a demo/default identity.
-    const expectedUid = this.config().userId.trim();
-    if (!parsed.user.id || parsed.user.id === 'User' || parsed.user.id === expectedUid && !parsed.user.name) {
-      throw new Error('The API response did not contain a usable user profile.');
-    }
+    // Only accept an ID that was actually returned by the API; no demo identity fallback.
+    if (!parsed.user.id) throw new Error('The API response did not contain a usable user profile.');
     return { ...parsed, raw };
   }
 
