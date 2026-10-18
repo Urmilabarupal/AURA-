@@ -156,14 +156,17 @@ export class XMoneyApiService {
       const amount = numberFrom(row.amount, row.fnamount, row.value) ?? 0;
       const rawDate = textFrom(row.created_at, row.createdAt, row.time, row.date, row.timestamp);
       const timestamp = rawDate ? (Number.isFinite(Date.parse(rawDate)) ? new Date(rawDate).toISOString() : rawDate) : '';
+      const currency = textFrom(row.ccc, row.currency) || '—';
+      const explicitUsd = numberFrom(row.amount_usd, row.amountUSD, row.usd_value);
+      const amountUSD = explicitUsd ?? (['USDT', 'USDC'].includes(currency.toUpperCase()) ? amount : 0);
       return {
         id: textFrom(row.id, row.transaction_id, row.orderid) || `xmoney-tx-${index}`,
         userId: textFrom(row.uid, row.user),
         type: mapType(row),
         typeLabel: textFrom(row.ttype, row.type, row.app) || 'Transaction',
         amount,
-        currency: textFrom(row.ccc, row.currency) || '—',
-        amountUSD: numberFrom(row.amount_usd, row.amountUSD, row.usd_value) ?? amount,
+        currency,
+        amountUSD,
         status: mapStatus(row.status),
         timestamp,
         referenceId: textFrom(row.orderid, row.reference, row.id),
