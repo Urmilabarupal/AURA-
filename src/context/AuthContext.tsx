@@ -429,44 +429,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyPasscode = async (pin: string) => {
     setIsLoading(true);
     try {
-      const targetPass = createdPasscode || (typeof localStorage !== 'undefined' ? localStorage.getItem('xah_custom_passcode') : '');
-      if (targetPass && pin === targetPass) {
-        await refreshUserData();
-        setAuthStage('AUTHENTICATED');
-        setSecurityModalOpen(false);
-
-        // Save authentic frontend session cookies
-        const activeAddr = walletAddress || user?.walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
-        const activeUserId = user?.id || `MX-${Date.now().toString().slice(-6)}`;
-        cookieService.saveAuthSession({
-          token: `moneyx_sec_${Date.now()}`,
-          walletAddress: activeAddr,
-          passcodeConfigured: true,
-          userId: activeUserId,
-        });
-
-        return { success: true };
-      }
-
+      // The supplied x.money repository has no verified server-side login endpoint.
+      // Never accept a PIN stored in localStorage or mint a client-side session token.
       const res = await ApiService.verifyPasscode(pin);
       if (res.success && res.data?.verified) {
         await refreshUserData();
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
-
-        // Save authentic frontend session cookies
-        const activeAddr = walletAddress || user?.walletAddress || '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
-        const activeUserId = user?.id || `MX-${Date.now().toString().slice(-6)}`;
-        cookieService.saveAuthSession({
-          token: `moneyx_sec_${Date.now()}`,
-          walletAddress: activeAddr,
-          passcodeConfigured: true,
-          userId: activeUserId,
-        });
-
         return { success: true };
       }
-      return { success: false, message: res.error?.message || 'Incorrect passcode. Please try again.' };
+      return { success: false, message: res.error?.message || 'Server-side authentication is unavailable; use local read-only API preview.' };
     } finally {
       setIsLoading(false);
     }
