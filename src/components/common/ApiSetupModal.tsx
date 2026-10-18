@@ -2,7 +2,7 @@
  FILE: src/components/common/ApiSetupModal.tsx
 
  PURPOSE:
- Interactive modal for configuring the User API endpoint (e.g. http://localhost/x.money/?Api=User),
+ Interactive modal for configuring the User API endpoint (e.g. http://localhost:3000/x.money/?Api=User),
  testing live connectivity, pasting / importing raw JSON responses, and inspecting live user data.
 */
 
@@ -265,7 +265,7 @@ export const ApiSetupModal: React.FC = () => {
                       type="text"
                       value={urlInput}
                       onChange={(e) => setUrlInput(e.target.value)}
-                      placeholder="http://localhost/x.money/"
+                      placeholder="http://localhost:3000/x.money/"
                       className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#08080a] border border-[#1c1c24] text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-[#00ffa3] transition-colors"
                     />
                   </div>
@@ -309,7 +309,7 @@ export const ApiSetupModal: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
                   <span className="flex items-center gap-1">
                     <Info size={12} className="text-[#00ffa3]" />
-                    <span>Default: <code className="text-slate-300 font-mono">http://localhost/x.money/</code></span>
+                    <span>Default: <code className="text-slate-300 font-mono">http://localhost:3000/x.money/</code></span>
                   </span>
                   <button
                     type="button"
@@ -328,7 +328,7 @@ export const ApiSetupModal: React.FC = () => {
                   <span>Testing with Localhost (XAMPP / PHP / Apache)?</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-amber-200/80">
-                  If this app is running in an online HTTPS preview, modern web browsers block direct calls to insecure HTTP localhost (<code className="font-mono text-amber-100">http://localhost/x.money/</code>) due to <strong>Mixed Content</strong> and <strong>CORS</strong> policies.
+                  Start AURA with <code className="font-mono text-amber-100">npm run dev</code> on <code className="font-mono text-amber-100">http://localhost:3000</code>. The default <code className="font-mono text-amber-100">/x.money/</code> URL is forwarded by Vite to local Apache, keeping the browser request same-origin without changing x.money PHP/CORS settings. If you serve AURA itself from XAMPP instead, use <code className="font-mono text-amber-100">http://localhost/x.money/</code>. Do not use an online preview for this local-only connector.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
 
