@@ -44,12 +44,41 @@ const textFrom = (...values: unknown[]): string => {
 };
 
 const envelopeRecords = (payload: unknown): Record<string, unknown>[] => {
-  if (Array.isArray(payload)) return payload.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object');
-  if (!payload || typeof payload !== 'object') return [];
-  const env = payload as XMoneyEnvelope;
-  const candidate = Array.isArray(env.o) ? env.o : Array.isArray(env.c) ? env.c : Array.isArray(env.data) ? env.data : Array.isArray(env.result) ? env.result : null;
-  if (candidate) return candidate.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object');
-  return [];
+  const decode = (value: unknown): unknown => {
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    if (!trimmed || (trimmed[0] !== '[' && trimmed[0] !== '{')) return value;
+    try {
+      return JSON.parse(trimmed) as unknown;
+    } catch {
+      return value;
+    }
+  };
+
+  const findRecords = (input: unknown, depth = 0): Record<string, unknown>[] | null => {
+    const value = decode(input);
+    if (!value || typeof value !== 'object' || depth > 6) return null;
+    if (Array.isArray(value)) {
+      const records = value.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object' && !Array.isArray(item));
+      if (records.length || value.length === 0) return records;
+      for (const item of value) {
+        const nested = findRecords(item, depth + 1);
+        if (nested) return nested;
+      }
+      return null;
+    }
+
+    const record = value as Record<string, unknown>;
+    // Prefer explicit list keys so arbitrary nested objects are never treated as rows.
+    for (const key of ['o', 'c', 'data', 'result', 'records', 'rows', 'items', 'list', 'transactions', 'deposits', 'withdrawals', 'orders']) {
+      if (record[key] === undefined || record[key] === value) continue;
+      const nested = findRecords(record[key], depth + 1);
+      if (nested) return nested;
+    }
+    return null;
+  };
+
+  return findRecords(payload) ?? [];
 };
 
 const mapStatus = (value: unknown): TransactionStatus => {
@@ -95,7 +124,7 @@ export class XMoneyApiService {
     if (!config.userId?.trim()) throw new Error('Enter the x.money user UID in API Setup before loading account data.');
     url.search = '';
     url.hash = '';
-    url.searchParams.set('api', endpoint);
+    url.searchParams.set('Api', endpoint);
     const userScopedEndpoints = new Set([
       'User', 'Transactions', 'Deposits', 'Withdraws',
       'Spot_Wallets', 'Funding_Wallets', 'Staking_Wallets',
