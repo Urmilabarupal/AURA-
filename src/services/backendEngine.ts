@@ -129,17 +129,13 @@ export class AuthoritativeBackend {
   private static authToken: string | null = 'demo_session_token_xyz987';
 
   public static setUser(newUser: UserProfile): void {
+    // API-sourced personal data stays in memory only; do not persist PII in localStorage.
     this.user = { ...newUser };
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
-    }
   }
 
   public static setWallets(newWallets: UserWallets): void {
+    // API-sourced balances stay in memory only; do not persist financial data in localStorage.
     this.wallets = { ...newWallets };
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_WALLETS, JSON.stringify(this.wallets));
-    }
   }
 
   // Staking Plans
