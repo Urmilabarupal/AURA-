@@ -54,7 +54,6 @@ import {
   ActionButtonBuyTicketSvg,
   ActionButtonRedeemSvg,
   ActionButtonConvertSvg,
-  VectorQrCodeSvg,
 } from '../components/common/CryptoIcons';
 import infinitySculptureImg from '../assets/images/moneyx_infinity_sculpture_1791117317826.jpg';
 import {
@@ -419,12 +418,13 @@ export const Dashboard: React.FC = () => {
                 <div className="w-2 h-2 rounded-full bg-[#00ffa3] animate-pulse shrink-0" />
                 <span className="text-xs text-slate-400 font-medium">Wallet:</span>
                 <span className="text-xs font-mono text-slate-200 truncate">
-                  {user?.walletAddress ? `${user.walletAddress.slice(0, 10)}...${user.walletAddress.slice(-6)}` : '0x71C2...3948'}
+                  {user?.walletAddress ? `${user.walletAddress.slice(0, 10)}...${user.walletAddress.slice(-6)}` : 'Wallet address not provided by API'}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyWallet}
+                disabled={!user?.walletAddress}
                 className="text-xs text-[#00ffa3] hover:underline flex items-center gap-1 font-semibold cursor-pointer shrink-0 ml-2"
               >
                 <Copy size={12} />
@@ -1083,22 +1083,23 @@ export const Dashboard: React.FC = () => {
 
             {/* Vector QR Code */}
             <div className="flex justify-center py-2">
-              <VectorQrCodeSvg size={160} />
+              <div className="w-40 h-40 rounded-xl border border-dashed border-amber-500/40 flex items-center justify-center p-4 text-center text-xs text-amber-200">No verified deposit-address API is available. QR is disabled.</div>
             </div>
 
             {/* Network Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00e699]/10 border border-[#00e699]/30 text-xs text-[#00e699] font-bold">
-              <span>Network: EVM / Money X Chain</span>
+              <span>Network details not provided by API</span>
             </div>
 
             {/* Address Box */}
             <div className="p-3 rounded-xl bg-[#020204] border border-[#18181c] flex items-center justify-between text-xs">
               <span className="font-mono text-slate-300 truncate max-w-[210px]">
-                {user?.walletAddress || '0x3a56D4869c9b4e1837015E5aE4F4D3C5237F2B'}
+                {user?.walletAddress || 'Wallet address not provided by API'}
               </span>
               <button
                 type="button"
                 onClick={handleCopyWallet}
+                disabled={!user?.walletAddress}
                 className="p-1.5 rounded-lg bg-[#141418] hover:bg-[#202028] text-slate-200 cursor-pointer transition-colors"
                 title="Copy Address"
               >
