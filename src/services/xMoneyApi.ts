@@ -94,9 +94,17 @@ export class XMoneyApiService {
     url.search = '';
     url.hash = '';
     url.searchParams.set('api', endpoint);
-    url.searchParams.set('uid', config.userId.trim());
-    // The legacy API uses both uid and user filters on several list endpoints.
-    url.searchParams.set('user', config.userId.trim());
+    const userScopedEndpoints = new Set([
+      'User', 'Transactions', 'Deposits', 'Withdraws',
+      'Spot_Wallets', 'Funding_Wallets', 'Staking_Wallets',
+      'Referes', 'Trades',
+    ]);
+    // Only attach UID filters to account-owned records. Global catalogues such as
+    // Currencys and Staking_Plans must not be filtered by a non-existent user column.
+    if (userScopedEndpoints.has(endpoint)) {
+      url.searchParams.set('uid', config.userId.trim());
+      url.searchParams.set('user', config.userId.trim());
+    }
     for (const [key, value] of Object.entries(extra)) {
       if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
     }
