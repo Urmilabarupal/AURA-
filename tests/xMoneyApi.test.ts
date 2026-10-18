@@ -1,0 +1,161 @@
+import assert from 'node:assert/strict';
+import { afterEach, beforeEach, test } from 'node:test';
+import { UserApiService } from '../src/services/userApiService';
+import { XMoneyApiService } from '../src/services/xMoneyApi';
+
+const originalFetch = globalThis.fetch;
+const originalLocalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+let persisted = new Map<string, string>();
+let requests: Array<{ url: string; init?: RequestInit }> = [];
+
+const testStorage = (): Storage => ({
+  get length() { return persisted.size; },
+  clear: () => persisted.clear(),
+  getItem: (key: string) => persisted.get(key) ?? null,
+  key: (index: number) => [...persisted.keys()][index] ?? null,
+  removeItem: (key: string) => { persisted.delete(key); },
+  setItem: (key: string, value: string) => { persisted.set(key, value); },
+});
+
+const jsonResponse = (payload: unknown, status = 200): Response => ({
+  ok: status >= 200 && status < 300,
+  status,
+  statusText: status === 200 ? 'OK' : 'Error',
+  text: async () => JSON.stringify(payload),
+} as Response);
+
+const installFetch = (handler: (url: string, init?: RequestInit) => Promise<Response>) => {
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    requests.push({ url, init });
+    return handler(url, init);
+  }) as typeof fetch;
+};
+
+beforeEach(() => {
+  persisted = new Map<string, string>();
+  requests = [];
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: testStorage() });
+  Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: {
+      location: { hostname: 'localhost', protocol: 'http:' },
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+      clearTimeout: globalThis.clearTimeout.bind(globalThis),
+    } as unknown as Window & typeof globalThis,
+  });
+  UserApiService.saveConfig({
+    endpointUrl: 'http://localhost/x.money/',
+    userId: 'test-uid-73',
+    status: 'IDLE',
+    lastError: null,
+    rawResponse: null,
+  });
+});
+
+afterEach(() => {
+  globalThis.fetch = originalFetch;
+  if (originalLocalStorage) Object.defineProperty(globalThis, 'localStorage', originalLocalStorage);
+  else Reflect.deleteProperty(globalThis, 'localStorage');
+  if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
+  else Reflect.deleteProperty(globalThis, 'window');
+});
+
+test('parses a nested PHP user record and ignores a numeric wallet foreign key', () => {
+  const parsed = UserApiService.parseUserData({
+    status_code: 200,
+    s: 1,
+    data: {
+      ID: 73,
+      user_login: 'sample-account',
+      user_email: 'sample@example.test',
+      wallet_address: '987654321098765432109876',
+      balances: {
+        total_balance_usdt: '12.50',
+        spot_balance: '3',
+      },
+    },
+  });
+
+  assert.equal(parsed.user.id, '73');
+  assert.equal(parsed.user.name, 'sample-account');
+  assert.equal(parsed.user.email, 'sample@example.test');
+  assert.equal(parsed.user.walletAddress, '');
+  assert.equal(parsed.wallets?.totalBalanceUSDT, 12.5);
+  assert.equal(parsed.wallets?.spotBalanceUSDT, 3);
+});
+
+test('does not persist raw API payloads in localStorage', () => {
+  UserApiService.saveConfig({ rawResponse: { private_email: 'do-not-persist@example.test' } });
+  const stored = [...persisted.values()].join('\n');
+
+  assert.equal(stored.includes('do-not-persist@example.test'), false);
+  assert.equal(stored.includes('rawResponse'), false);
+  assert.equal(UserApiService.getConfig().rawResponse, null);
+});
+
+test('requests the PHP Api parameter using expected casing and omits browser credentials', async () => {
+  installFetch(async () => jsonResponse({
+    status_code: 200,
+    s: 1,
+    data: { ID: 73, display_name: 'Local Test User', user_email: 'sample@example.test' },
+  }));
+
+  const result = await UserApiService.fetchUserData();
+
+  assert.equal(result.success, true);
+  assert.equal(requests.length, 1);
+  const url = new URL(requests[0].url);
+  assert.equal(url.searchParams.get('Api'), 'User');
+  assert.equal(url.searchParams.get('uid'), 'test-uid-73');
+  assert.equal(url.searchParams.has('user'), false);
+  assert.equal(requests[0].init?.credentials, 'omit');
+  assert.equal(requests[0].init?.redirect, 'error');
+  assert.equal(requests[0].init?.cache, 'no-store');
+  assert.equal(persisted.get('moneyx_api_config_v1')?.includes('sample@example.test'), false);
+});
+
+test('parses stringified nested record collections and maps transactions', async () => {
+  installFetch(async () => jsonResponse({
+    status_code: 200,
+    s: 1,
+    data: JSON.stringify({
+      transactions: [{
+        id: 991,
+        ttype: 'Deposit',
+        amount: '25.75',
+        ccc: 'USDT',
+        status: 'SUCCESS',
+        orderid: 'deposit-ref-991',
+        created_at: '2026-10-01 12:00:00',
+      }],
+    }),
+  }));
+
+  const rows = await XMoneyApiService.getTransactions(500);
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].id, '991');
+  assert.equal(rows[0].type, 'DEPOSIT');
+  assert.equal(rows[0].amount, 25.75);
+  assert.equal(rows[0].amountUSD, 25.75);
+  assert.equal(rows[0].status, 'COMPLETED');
+  assert.equal(rows[0].referenceId, 'deposit-ref-991');
+  const url = new URL(requests[0].url);
+  assert.equal(url.searchParams.get('Api'), 'Transactions');
+  assert.equal(url.searchParams.get('uid'), 'test-uid-73');
+  assert.equal(url.searchParams.get('limit'), '100');
+});
+
+test('blocks a non-local API host before making a network request', async () => {
+  UserApiService.saveConfig({ endpointUrl: 'https://api.example.test/' });
+  let fetchCalled = false;
+  installFetch(async () => {
+    fetchCalled = true;
+    return jsonResponse({});
+  });
+
+  await assert.rejects(() => XMoneyApiService.request('User'), /restricted to a local XAMPP test environment/);
+  assert.equal(fetchCalled, false);
+});
