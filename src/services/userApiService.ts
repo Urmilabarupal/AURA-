@@ -345,9 +345,10 @@ export class UserApiService {
       lastError: null,
     });
 
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
       const requestUrl = new URL(targetUrl);
       if (requestUrl.protocol !== 'http:' && requestUrl.protocol !== 'https:') throw new Error('Only HTTP/HTTPS API URLs are supported.');
@@ -369,8 +370,6 @@ export class UserApiService {
         headers: { Accept: 'application/json' },
         signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
@@ -433,6 +432,8 @@ export class UserApiService {
         error: errorMessage,
         isCorsOrMixedContent: isMixedContent || isCorsOrNetwork,
       };
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
     }
   }
 
