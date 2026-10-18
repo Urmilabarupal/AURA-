@@ -198,9 +198,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
   const [createdPasscode, setCreatedPasscode] = useState<string>(() => {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('xah_custom_passcode') || '';
-    }
+    // Remove legacy client-side PIN storage from previous demo versions.
+    if (typeof localStorage !== 'undefined') localStorage.removeItem('xah_custom_passcode');
     return '';
   });
   const [walletAddress, setWalletAddress] = useState<string>('');
@@ -342,9 +341,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await ApiService.setupPasscode(passcode);
       if (res.success) {
         setCreatedPasscode(passcode);
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('xah_custom_passcode', passcode);
-        }
         if (user) {
           setUser({ ...user, passcodeConfigured: true });
         }
