@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
-import { UserApiService } from '../src/services/userApiService';
+import { DEFAULT_API_ENDPOINT, UserApiService } from '../src/services/userApiService';
 import { XMoneyApiService, X_MONEY_READ_ENDPOINTS } from '../src/services/xMoneyApi';
 
 const originalFetch = globalThis.fetch;
@@ -190,4 +190,20 @@ test('diagnoses every mapped read endpoint one by one and reports schema metadat
   assert.equal(results[0].fields.includes('ID'), true);
   assert.equal(results.find((row) => row.endpoint === 'Staking_Plans')?.status, 'EMPTY');
   assert.equal(results.every((row) => !JSON.stringify(row).includes('Local Test User')), true);
+});
+
+
+test('uses a same-origin Vite proxy by default and migrates the previous Apache URL', () => {
+  assert.equal(DEFAULT_API_ENDPOINT, 'http://localhost:3000/x.money/');
+
+  persisted.set('moneyx_api_config_v1', JSON.stringify({
+    endpointUrl: 'http://localhost/x.money/',
+    userId: 'test-uid-73',
+    autoSyncOnLoad: true,
+    status: 'CONNECTED',
+    lastSyncTime: null,
+    lastError: null,
+  }));
+
+  assert.equal(UserApiService.getConfig().endpointUrl, DEFAULT_API_ENDPOINT);
 });

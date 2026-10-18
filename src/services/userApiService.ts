@@ -29,9 +29,21 @@ export interface ApiConnectionConfig {
 
 const STORAGE_KEY_API_CONFIG = 'moneyx_api_config_v1';
 
-export const DEFAULT_API_ENDPOINT = 'http://localhost/x.money/';
+export const DEFAULT_API_ENDPOINT = 'http://localhost:3000/x.money/';
 
 export class UserApiService {
+  private static emptyConfig(): ApiConnectionConfig {
+    return {
+      endpointUrl: DEFAULT_API_ENDPOINT,
+      userId: '',
+      autoSyncOnLoad: true,
+      status: 'IDLE',
+      lastSyncTime: null,
+      lastError: null,
+      rawResponse: null,
+    };
+  }
+
   /**
    * Retrieves current API configuration from localStorage
    */
@@ -54,7 +66,11 @@ export class UserApiService {
         const parsed = JSON.parse(stored);
         // Raw API payloads contain personal data; never persist them in browser storage.
         parsed.rawResponse = null;
-        return parsed;
+        // Migrate the previous direct-to-Apache default to the same-origin Vite proxy.
+        if (parsed.endpointUrl === 'http://localhost/x.money/' || parsed.endpointUrl === 'http://127.0.0.1/x.money/') {
+          parsed.endpointUrl = DEFAULT_API_ENDPOINT;
+        }
+        return { ...this.emptyConfig(), ...parsed };
       }
     } catch (err) {
       console.warn('Failed to parse stored API config', err);
