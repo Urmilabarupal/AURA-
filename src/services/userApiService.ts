@@ -29,7 +29,7 @@ export interface ApiConnectionConfig {
 
 const STORAGE_KEY_API_CONFIG = 'moneyx_api_config_v1';
 
-export const DEFAULT_API_ENDPOINT = import.meta.env.VITE_XMONEY_API_BASE_URL?.trim() || '/x.money/';
+export const DEFAULT_API_ENDPOINT = import.meta.env?.VITE_XMONEY_API_BASE_URL?.trim() || '/x.money/';
 
 export class UserApiService {
   private static emptyConfig(): ApiConnectionConfig {
