@@ -9,8 +9,12 @@
 
 ## PHP route naming
 
-The supplied PHP entry point reads the lowercase query key `api`; query keys are case-sensitive. AURA therefore requests `?api=User` for profile reads and `?api=UserNew` for the existing signup route. The frontend sends signup fields as form-encoded POST data and only reports success if the API response contains a created record ID.
+The supplied PHP entry point reads the lowercase query key `api`; query keys are case-sensitive. AURA requests `?api=User` for profile reads and `?api=Register` for new account creation. `UserNew` is a generic ledger-record endpoint and must not be used to create account profiles. The frontend sends signup fields as form-encoded POST data and only reports success if the API response contains a created record ID.
 
-## Signup/database caveat
+## Production setup
 
-This frontend change configures request routing; it does not modify backend PHP or SQL. The currently inspected `UserNew` handler looks like a generic record creation route and has not been verified to insert into the account table `Coinx_users`. Test with a disposable local account and inspect the database before using real signup data. The API must enforce server-side validation and authorization.
+The backend repository must be deployed to a public HTTPS PHP host with a MySQL database; a Vercel page cannot reach the developer's `localhost`/XAMPP database. In Vercel Project Settings → Environment Variables, set `VITE_XMONEY_API_BASE_URL` to the public base URL ending in `/x.money/` (or the actual directory containing `index.php`), then redeploy. The API must allow the exact AURA origin via CORS.
+
+## Signup/database setup
+
+The dedicated `?api=Register` route writes account profiles to `Coinx_users`. Before deploying that route, run `BKD/26.10.00/SQL/register_user_migration.sql` against the `x_money` database to add `wallet_address`, `country`, and `mobile` columns. The existing `WalletAddress` field is numeric and cannot safely store an EVM address. Registration only reports success when MySQL returns the inserted row ID. Wallet ownership still requires a server-verified signature before treating the wallet as a secure login identity.
