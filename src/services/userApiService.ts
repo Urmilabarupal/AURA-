@@ -2,12 +2,12 @@
  FILE: src/services/userApiService.ts
 
  PURPOSE:
- Dedicated service to connect to external User APIs (specifically the ?Api=User endpoint
- such as http://localhost/x.money/?Api=User), parse user ledger data, handle CORS / mixed-content
+ Dedicated service to connect to external User APIs (specifically the ?api=User endpoint
+ such as http://localhost/x.money/?api=User), parse user ledger data, handle CORS / mixed-content
  situations gracefully, and provide a full live data sync bridge.
 
  RESPONSIBILITIES:
- - Store and manage the target API URL (e.g. http://localhost/x.money/?Api=User)
+ - Store and manage the target API URL (e.g. http://localhost/x.money/?api=User)
  - Fetch user data via HTTP GET / POST
  - Intelligently parse arbitrary user JSON schemas (nested data, flat fields, underscore or camelCase)
  - Allow direct pasting / importing of API JSON response payloads
@@ -119,7 +119,7 @@ export class UserApiService {
   }
 
   /**
-   * Intelligently parses whatever JSON payload is returned by ?Api=User
+   * Intelligently parses whatever JSON payload is returned by ?api=User
    */
   public static parseUserData(payload: any): { user: UserProfile; wallets?: UserWallets } {
     if (!payload || typeof payload !== 'object') {
@@ -337,7 +337,7 @@ export class UserApiService {
   }
 
   /**
-   * Fetches user data from the configured ?Api=User endpoint
+   * Fetches user data from the configured ?api=User endpoint
    */
   public static async fetchUserData(endpointUrl?: string): Promise<{
     success: boolean;
@@ -375,7 +375,7 @@ export class UserApiService {
       if (requestUrl.protocol === 'http:' && !localHost) throw new Error('For non-local APIs, HTTPS is required.');
       requestUrl.search = '';
       requestUrl.hash = '';
-      requestUrl.searchParams.set('Api', 'User');
+      requestUrl.searchParams.set('api', 'User');
       requestUrl.searchParams.set('uid', config.userId.trim());
       const response = await fetch(requestUrl.toString(), {
         method: 'GET',

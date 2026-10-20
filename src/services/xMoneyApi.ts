@@ -187,7 +187,7 @@ export class XMoneyApiService {
     if (requireUserId && !config.userId?.trim()) throw new Error('Enter the x.money user UID in API Setup before loading account data.');
     url.search = '';
     url.hash = '';
-    url.searchParams.set('Api', endpoint);
+    url.searchParams.set('api', endpoint);
     const userScopedEndpoints = new Set([
       'User', 'Transactions', 'Deposits', 'Withdraws',
       'Spot_Wallets', 'Funding_Wallets', 'Staking_Wallets',
@@ -213,7 +213,7 @@ export class XMoneyApiService {
     options: { method?: 'GET' | 'POST'; form?: URLSearchParams; requireUserId?: boolean } = {},
   ): Promise<unknown> {
     const method = options.method ?? 'GET';
-    const url = this.buildUrl(endpoint, extra, options.requireUserId ?? endpoint !== 'User_New');
+    const url = this.buildUrl(endpoint, extra, options.requireUserId ?? endpoint !== 'UserNew');
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 8000);
     try {
@@ -272,7 +272,7 @@ export class XMoneyApiService {
     name: string;
   }): Promise<UserProfile> {
     const cleanName = input.name.trim();
-    const nameParts = cleanName.split(/\\s+/);
+    const nameParts = cleanName.split(/\s+/);
     const form = new URLSearchParams({
       name: cleanName,
       username: cleanName,
@@ -284,7 +284,7 @@ export class XMoneyApiService {
       wallet_address: input.walletAddress.trim(),
     });
 
-    const payload = await this.request('User_New', {}, {
+    const payload = await this.request('UserNew', {}, {
       method: 'POST',
       form,
       requireUserId: false,

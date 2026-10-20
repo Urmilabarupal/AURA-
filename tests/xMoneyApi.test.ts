@@ -95,7 +95,7 @@ test('does not persist raw API payloads in localStorage', () => {
   assert.equal(UserApiService.getConfig().rawResponse, null);
 });
 
-test('requests the PHP Api parameter using expected casing and omits browser credentials', async () => {
+test('requests the PHP api parameter using expected casing and omits browser credentials', async () => {
   installFetch(async () => jsonResponse({
     status_code: 200,
     s: 1,
@@ -107,7 +107,7 @@ test('requests the PHP Api parameter using expected casing and omits browser cre
   assert.equal(result.success, true);
   assert.equal(requests.length, 1);
   const url = new URL(requests[0].url);
-  assert.equal(url.searchParams.get('Api'), 'User');
+  assert.equal(url.searchParams.get('api'), 'User');
   assert.equal(url.searchParams.get('uid'), 'test-uid-73');
   assert.equal(url.searchParams.has('user'), false);
   assert.equal(requests[0].init?.credentials, 'omit');
@@ -143,7 +143,7 @@ test('parses stringified nested record collections and maps transactions', async
   assert.equal(rows[0].status, 'COMPLETED');
   assert.equal(rows[0].referenceId, 'deposit-ref-991');
   const url = new URL(requests[0].url);
-  assert.equal(url.searchParams.get('Api'), 'Transactions');
+  assert.equal(url.searchParams.get('api'), 'Transactions');
   assert.equal(url.searchParams.get('uid'), 'test-uid-73');
   assert.equal(url.searchParams.get('limit'), '100');
 });
@@ -168,7 +168,7 @@ test('diagnoses every mapped read endpoint one by one and reports schema metadat
     activeRequests += 1;
     maxConcurrentRequests = Math.max(maxConcurrentRequests, activeRequests);
     await new Promise((resolve) => setTimeout(resolve, 2));
-    const endpoint = new URL(url).searchParams.get('Api');
+    const endpoint = new URL(url).searchParams.get('api');
     activeRequests -= 1;
 
     if (endpoint === 'User') {
@@ -183,7 +183,7 @@ test('diagnoses every mapped read endpoint one by one and reports schema metadat
   const results = await XMoneyApiService.diagnoseReadEndpoints();
 
   assert.deepEqual(results.map((row) => row.endpoint), [...X_MONEY_READ_ENDPOINTS]);
-  assert.deepEqual(requests.map(({ url }) => new URL(url).searchParams.get('Api')), [...X_MONEY_READ_ENDPOINTS]);
+  assert.deepEqual(requests.map(({ url }) => new URL(url).searchParams.get('api')), [...X_MONEY_READ_ENDPOINTS]);
   assert.equal(results.length, 11);
   assert.equal(maxConcurrentRequests, 1, 'endpoint checks must be sequential');
   assert.equal(results[0].status, 'OK');
@@ -209,7 +209,7 @@ test('uses a same-origin Vite proxy by default and migrates the previous Apache 
 });
 
 
-test('posts new-user signup fields to User_New without requiring an existing UID', async () => {
+test('posts new-user signup fields to UserNew without requiring an existing UID', async () => {
   UserApiService.saveConfig({ userId: '' });
   installFetch(async () => jsonResponse({
     status_code: 200,
@@ -240,7 +240,7 @@ test('posts new-user signup fields to User_New without requiring an existing UID
   assert.equal(requests[0].init?.method, 'POST');
   assert.equal(requests[0].init?.credentials, 'omit');
   const url = new URL(requests[0].url);
-  assert.equal(url.searchParams.get('Api'), 'User_New');
+  assert.equal(url.searchParams.get('api'), 'UserNew');
   assert.equal(url.searchParams.has('uid'), false);
   const form = new URLSearchParams(String(requests[0].init?.body));
   assert.equal(form.get('wallet_address'), '0x1234567890abcdef1234567890abcdef12345678');
@@ -250,7 +250,7 @@ test('posts new-user signup fields to User_New without requiring an existing UID
   assert.equal(form.get('name'), 'Local New User');
 });
 
-test('does not report registration success if User_New omits the database ID', async () => {
+test('does not report registration success if UserNew omits the database ID', async () => {
   UserApiService.saveConfig({ userId: '' });
   installFetch(async () => jsonResponse({
     status_code: 200,
