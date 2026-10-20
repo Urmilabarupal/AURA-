@@ -29,7 +29,7 @@ export interface ApiConnectionConfig {
 
 const STORAGE_KEY_API_CONFIG = 'moneyx_api_config_v1';
 
-export const DEFAULT_API_ENDPOINT = 'http://localhost:3000/x.money/';
+export const DEFAULT_API_ENDPOINT = import.meta.env.VITE_XMONEY_API_BASE_URL?.trim() || '/x.money/';
 
 export class UserApiService {
   private static emptyConfig(): ApiConnectionConfig {
@@ -366,13 +366,13 @@ export class UserApiService {
       const controller = new AbortController();
       timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
-      const requestUrl = new URL(targetUrl);
+      const requestUrl = new URL(targetUrl, window.location.origin);
       if (requestUrl.protocol !== 'http:' && requestUrl.protocol !== 'https:') throw new Error('Only HTTP/HTTPS API URLs are supported.');
       if (requestUrl.username || requestUrl.password) throw new Error('API URL must not contain embedded credentials.');
       const localHost = ['localhost', '127.0.0.1', '::1'].includes(requestUrl.hostname.toLowerCase());
       const localPage = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
-      if (!localHost || !localPage) throw new Error('This connector is restricted to a local XAMPP test environment. Remote API hosts are not allowed.');
-      if (requestUrl.protocol === 'http:' && !localHost) throw new Error('For non-local APIs, HTTPS is required.');
+      if (requestUrl.protocol === 'http:' && !localHost) throw new Error('Remote x.money APIs must use HTTPS.');
+      if (localHost && !localPage) throw new Error('A deployed AURA site cannot call localhost. Configure VITE_XMONEY_API_BASE_URL with the public HTTPS PHP API URL.');
       requestUrl.search = '';
       requestUrl.hash = '';
       requestUrl.searchParams.set('api', 'User');

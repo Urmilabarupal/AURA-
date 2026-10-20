@@ -174,7 +174,7 @@ export class XMoneyApiService {
     const rawBase = config.endpointUrl.trim();
     let url: URL;
     try {
-      url = new URL(rawBase);
+      url = new URL(rawBase, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
     } catch {
       throw new Error('API base URL is invalid. Example: http://localhost/x.money/');
     }
@@ -182,8 +182,8 @@ export class XMoneyApiService {
     if (url.username || url.password) throw new Error('API URL must not contain embedded credentials.');
     const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(url.hostname.toLowerCase());
     const isLocalPage = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
-    if (!isLocalHost || !isLocalPage) throw new Error('This connector is restricted to a local XAMPP test environment. Remote API hosts are not allowed.');
-    if (url.protocol === 'http:' && !isLocalHost) throw new Error('For non-local APIs, HTTPS is required.');
+    if (url.protocol === 'http:' && !isLocalHost) throw new Error('Remote x.money APIs must use HTTPS.');
+    if (isLocalHost && !isLocalPage) throw new Error('A deployed AURA site cannot call localhost. Configure VITE_XMONEY_API_BASE_URL with the public HTTPS PHP API URL.');
     if (requireUserId && !config.userId?.trim()) throw new Error('Enter the x.money user UID in API Setup before loading account data.');
     url.search = '';
     url.hash = '';
@@ -213,7 +213,7 @@ export class XMoneyApiService {
     options: { method?: 'GET' | 'POST'; form?: URLSearchParams; requireUserId?: boolean } = {},
   ): Promise<unknown> {
     const method = options.method ?? 'GET';
-    const url = this.buildUrl(endpoint, extra, options.requireUserId ?? endpoint !== 'UserNew');
+    const url = this.buildUrl(endpoint, extra, options.requireUserId ?? !['UserNew', 'Register'].includes(endpoint));
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 8000);
     try {
@@ -259,7 +259,7 @@ export class XMoneyApiService {
   }
 
   /**
-   * Creates a new account using the legacy PHP User_New endpoint.
+   * Creates a new account using the dedicated PHP Register endpoint.
    * Uses a form-encoded POST so personal fields are not placed in the URL.
    * The backend must return the created database record ID before the UI
    * treats registration as successful.
@@ -284,13 +284,13 @@ export class XMoneyApiService {
       wallet_address: input.walletAddress.trim(),
     });
 
-    const payload = await this.request('UserNew', {}, {
+    const payload = await this.request('Register', {}, {
       method: 'POST',
       form,
       requireUserId: false,
     });
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-      throw new Error('User_New returned an invalid response. Check the x.money PHP endpoint before retrying.');
+      throw new Error('Register returned an invalid response. Check the x.money PHP endpoint before retrying.');
     }
 
     const envelope = payload as XMoneyEnvelope;
@@ -303,7 +303,7 @@ export class XMoneyApiService {
 
     const parsed = UserApiService.parseUserData(payload);
     if (!parsed.user.id) {
-      throw new Error('User_New did not return the created database user ID. Check the database before retrying to avoid creating a duplicate account.');
+      throw new Error('Register did not return the created database user ID. Check the database before retrying to avoid creating a duplicate account.');
     }
 
     const user: UserProfile = {

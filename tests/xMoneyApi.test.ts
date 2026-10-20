@@ -40,7 +40,7 @@ beforeEach(() => {
   Object.defineProperty(globalThis, 'window', {
     configurable: true,
     value: {
-      location: { hostname: 'localhost', protocol: 'http:' },
+      location: { hostname: 'localhost', protocol: 'http:', origin: 'http://localhost:3000' },
       setTimeout: globalThis.setTimeout.bind(globalThis),
       clearTimeout: globalThis.clearTimeout.bind(globalThis),
     } as unknown as Window & typeof globalThis,
@@ -148,15 +148,15 @@ test('parses stringified nested record collections and maps transactions', async
   assert.equal(url.searchParams.get('limit'), '100');
 });
 
-test('blocks a non-local API host before making a network request', async () => {
-  UserApiService.saveConfig({ endpointUrl: 'https://api.example.test/' });
+test('blocks insecure remote API hosts before making a network request', async () => {
+  UserApiService.saveConfig({ endpointUrl: 'http://api.example.test/' });
   let fetchCalled = false;
   installFetch(async () => {
     fetchCalled = true;
     return jsonResponse({});
   });
 
-  await assert.rejects(() => XMoneyApiService.request('User'), /restricted to a local XAMPP test environment/);
+  await assert.rejects(() => XMoneyApiService.request('User'), /Remote x.money APIs must use HTTPS/);
   assert.equal(fetchCalled, false);
 });
 
@@ -194,7 +194,7 @@ test('diagnoses every mapped read endpoint one by one and reports schema metadat
 
 
 test('uses a same-origin Vite proxy by default and migrates the previous Apache URL', () => {
-  assert.equal(DEFAULT_API_ENDPOINT, 'http://localhost:3000/x.money/');
+  assert.equal(DEFAULT_API_ENDPOINT, '/x.money/');
 
   persisted.set('moneyx_api_config_v1', JSON.stringify({
     endpointUrl: 'http://localhost/x.money/',
@@ -209,7 +209,7 @@ test('uses a same-origin Vite proxy by default and migrates the previous Apache 
 });
 
 
-test('posts new-user signup fields to UserNew without requiring an existing UID', async () => {
+test('posts new-user signup fields to Register without requiring an existing UID', async () => {
   UserApiService.saveConfig({ userId: '' });
   installFetch(async () => jsonResponse({
     status_code: 200,
@@ -240,7 +240,7 @@ test('posts new-user signup fields to UserNew without requiring an existing UID'
   assert.equal(requests[0].init?.method, 'POST');
   assert.equal(requests[0].init?.credentials, 'omit');
   const url = new URL(requests[0].url);
-  assert.equal(url.searchParams.get('api'), 'UserNew');
+  assert.equal(url.searchParams.get('api'), 'Register');
   assert.equal(url.searchParams.has('uid'), false);
   const form = new URLSearchParams(String(requests[0].init?.body));
   assert.equal(form.get('wallet_address'), '0x1234567890abcdef1234567890abcdef12345678');
