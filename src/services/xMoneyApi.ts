@@ -176,7 +176,7 @@ export class XMoneyApiService {
     try {
       url = new URL(rawBase, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
     } catch {
-      throw new Error('API base URL is invalid. Example: http://localhost/x.money/');
+      throw new Error('API base URL is invalid. Example: http://localhost/x.moneyy/');
     }
     if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Only HTTP/HTTPS API URLs are supported.');
     if (url.username || url.password) throw new Error('API URL must not contain embedded credentials.');
