@@ -18,7 +18,7 @@ export default defineConfig(({mode}) => {
       // Keep browser calls same-origin while Apache/XAMPP serves the PHP API on port 80.
       // Override XMONEY_PROXY_TARGET when Apache uses a different host or port.
       proxy: {
-        '/x.money': {
+        '/x.moneyy': {
           target: env.XMONEY_PROXY_TARGET || 'http://127.0.0.1',
           changeOrigin: true,
           secure: false,
