@@ -3,11 +3,11 @@
 
  PURPOSE:
  Dedicated service to connect to external User APIs (specifically the ?api=User endpoint
- such as http://localhost/x.money/?api=User), parse user ledger data, handle CORS / mixed-content
+ such as http://localhost/x.moneyy/?api=User), parse user ledger data, handle CORS / mixed-content
  situations gracefully, and provide a full live data sync bridge.
 
  RESPONSIBILITIES:
- - Store and manage the target API URL (e.g. http://localhost/x.money/?api=User)
+ - Store and manage the target API URL (e.g. http://localhost/x.moneyy/?api=User)
  - Fetch user data via HTTP GET / POST
  - Intelligently parse arbitrary user JSON schemas (nested data, flat fields, underscore or camelCase)
  - Allow direct pasting / importing of API JSON response payloads
@@ -29,7 +29,7 @@ export interface ApiConnectionConfig {
 
 const STORAGE_KEY_API_CONFIG = 'moneyx_api_config_v1';
 
-export const DEFAULT_API_ENDPOINT = import.meta.env?.VITE_XMONEY_API_BASE_URL?.trim() || '/x.money/';
+export const DEFAULT_API_ENDPOINT = import.meta.env?.VITE_XMONEY_API_BASE_URL?.trim() || '/x.moneyy/';
 
 export class UserApiService {
   private static emptyConfig(): ApiConnectionConfig {
@@ -67,7 +67,7 @@ export class UserApiService {
         // Raw API payloads contain personal data; never persist them in browser storage.
         parsed.rawResponse = null;
         // Migrate the previous direct-to-Apache default to the same-origin Vite proxy.
-        if (parsed.endpointUrl === 'http://localhost:3000/x.money/' || parsed.endpointUrl === 'http://localhost/x.money/' || parsed.endpointUrl === 'http://127.0.0.1/x.money/') {
+        if (parsed.endpointUrl === 'http://localhost:3000/x.money/' || parsed.endpointUrl === 'http://localhost/x.moneyy/' || parsed.endpointUrl === 'http://127.0.0.1/x.money/') {
           parsed.endpointUrl = DEFAULT_API_ENDPOINT;
         }
         return { ...this.emptyConfig(), ...parsed };
