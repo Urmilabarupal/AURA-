@@ -29,7 +29,7 @@ export interface ApiConnectionConfig {
 
 const STORAGE_KEY_API_CONFIG = 'moneyx_api_config_v1';
 
-export const DEFAULT_API_ENDPOINT = import.meta.env?.VITE_XMONEY_API_BASE_URL?.trim() || '/x.money/';
+export const DEFAULT_API_ENDPOINT = import.meta.env?.VITE_XMONEY_API_BASE_URL?.trim() || '/x.moneyy/';
 
 export class UserApiService {
   private static emptyConfig(): ApiConnectionConfig {
@@ -67,7 +67,15 @@ export class UserApiService {
         // Raw API payloads contain personal data; never persist them in browser storage.
         parsed.rawResponse = null;
         // Migrate the previous direct-to-Apache default to the same-origin Vite proxy.
-        if (parsed.endpointUrl === 'http://localhost:3000/x.money/' || parsed.endpointUrl === 'http://localhost/x.money/' || parsed.endpointUrl === 'http://127.0.0.1/x.money/') {
+        if (
+          parsed.endpointUrl === 'http://localhost:3000/x.money/' ||
+          parsed.endpointUrl === 'http://localhost/x.money/' ||
+          parsed.endpointUrl === 'http://127.0.0.1/x.money/' ||
+          parsed.endpointUrl === 'http://localhost:3000/x.moneyy/' ||
+          parsed.endpointUrl === 'http://localhost/x.moneyy/' ||
+          parsed.endpointUrl === 'http://127.0.0.1/x.moneyy/' ||
+          parsed.endpointUrl === '/x.money/'
+        ) {
           parsed.endpointUrl = DEFAULT_API_ENDPOINT;
         }
         return { ...this.emptyConfig(), ...parsed };

@@ -194,7 +194,7 @@ test('diagnoses every mapped read endpoint one by one and reports schema metadat
 
 
 test('uses a same-origin Vite proxy by default and migrates the previous Apache URL', () => {
-  assert.equal(DEFAULT_API_ENDPOINT, '/x.money/');
+  assert.equal(DEFAULT_API_ENDPOINT, '/x.moneyy/');
 
   persisted.set('moneyx_api_config_v1', JSON.stringify({
     endpointUrl: 'http://localhost/x.money/',

@@ -239,7 +239,8 @@ export class XMoneyApiService {
       }
       const env = payload && typeof payload === 'object' ? payload as XMoneyEnvelope : {};
       if (!response.ok || (typeof env.status_code === 'number' && env.status_code >= 400)) {
-        throw new Error(`x.money API ${endpoint} failed (HTTP ${response.status || env.status_code}).`);
+        const backendMessage = textFrom(env.message, env.error, env.o, env.c);
+        throw new Error(backendMessage || `x.money API ${endpoint} failed (HTTP ${response.status || env.status_code}).`);
       }
       if (typeof env.error === 'string' && env.error.trim()) {
         throw new Error(`x.money API ${endpoint}: ${env.error.trim()}`);

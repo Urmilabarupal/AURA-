@@ -112,7 +112,7 @@ export const ApiService = {
   },
 
   async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode?: string }>> {
-    return XMoneyApiService.failure<{ success: boolean; passcode?: string }>(new Error('Passcode setup is local-only and is disabled in read-only API preview.'));
+    return AuthoritativeBackend.setupPasscode(passcode);
   },
 
   getLastCreatedPasscode(): string {

@@ -54,6 +54,7 @@ export const ConnectSignUp: React.FC = () => {
   const [country, setCountry] = useState<string>('USA (+1)');
   const [mobileNumber, setMobileNumber] = useState<string>(''); // Empty initially
   const [fullName, setFullName] = useState<string>(''); // Empty initially (no hardcoded name)
+  const [manualWallet, setManualWallet] = useState<string>('');
 
   // Connected wallet state - strictly null on mount!
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -116,6 +117,13 @@ export const ConnectSignUp: React.FC = () => {
           setIsConnecting(false);
           return;
         }
+      }
+
+      if (!addr) {
+        setErrorMsg(res.error || 'MetaMask extension not detected. Please install MetaMask to connect your wallet.');
+        setNodeStatus('error');
+        setIsConnecting(false);
+        return;
       }
 
       // Success: replace button text with address & turn nodes green!
@@ -406,6 +414,62 @@ export const ConnectSignUp: React.FC = () => {
             </button>
 
             {/* Subtext under button */}
+            {connectedAddress && (
+              <button
+                type="button"
+                onClick={() => {
+                  setConnectedAddress(null);
+                  setNodeStatus('trying');
+                  setManualWallet('');
+                }}
+                className="text-[10px] text-slate-400 hover:text-red-400 underline mt-1 block mx-auto text-center cursor-pointer"
+              >
+                Disconnect / Change Wallet
+              </button>
+            )}
+            {!connectedAddress && (
+              <div className="mt-2 pt-2 border-t border-[#1b2434]/60">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-400">Or enter EVM address manually:</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={manualWallet}
+                    onChange={(e) => {
+                      const val = e.target.value.trim();
+                      setManualWallet(val);
+                      if (/^0x[a-fA-F0-9]{40}$/.test(val)) {
+                        setConnectedAddress(val);
+                        setNodeStatus('connected');
+                        setErrorMsg(null);
+                        showToast(`Wallet Address Set: ${val.slice(0, 6)}...${val.slice(-4)}`, 'success');
+                      }
+                    }}
+                    placeholder="0x..."
+                    className="flex-1 px-3 py-1.5 rounded-full bg-[#080b12] border border-[#161f30] text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3]"
+                  />
+                  {manualWallet && !connectedAddress && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (/^0x[a-fA-F0-9]{40}$/.test(manualWallet)) {
+                          setConnectedAddress(manualWallet);
+                          setNodeStatus('connected');
+                          setErrorMsg(null);
+                          showToast(`Wallet Address Set: ${manualWallet.slice(0, 6)}...${manualWallet.slice(-4)}`, 'success');
+                        } else {
+                          setErrorMsg('Enter a valid 42-character EVM wallet address starting with 0x.');
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-full bg-[#163824] hover:bg-[#1f4e32] text-[#00ffa3] text-xs font-semibold cursor-pointer"
+                    >
+                      Use
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             <p className="text-center text-[10px] sm:text-[11px] text-slate-400 mt-1.5 leading-snug">
               {connectedAddress
                 ? `Connected to ${shortAddress}. Complete details below and proceed.`
