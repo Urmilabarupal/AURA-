@@ -13,6 +13,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
 import { cookieService } from '../services/cookieService';
 import { web3Wallet } from '../services/web3Wallet';
+import { SecureAuthApi } from '../services/secureAuthApi';
 import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
 
@@ -52,9 +53,10 @@ interface AuthContextType {
   connectRealMetaMask: () => Promise<{ success: boolean; address?: string; error?: string }>;
   connectMobileWallet: () => Promise<{ success: boolean; address: string; error?: string }>;
   register: (data: { walletAddress?: string; referId?: string; country: string; mobile: string; name: string }) => Promise<{ success: boolean; message?: string }>;
+  loginWithWallet: (walletAddress: string) => Promise<{ success: boolean; message?: string }>;
   setupPasscode: (passcode: string, advanceToLocked?: boolean) => Promise<{ success: boolean; message?: string }>;
   verifyPasscode: (pin: string) => Promise<{ success: boolean; message?: string }>;
-  refreshUserData: () => Promise<void>;
+  refreshUserData: () => Promise<boolean>;
   logout: () => void;
   lockApp: () => void;
 }
@@ -225,43 +227,105 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.user.walletAddress) setWalletAddress(res.user.walletAddress);
       // Load all supported read-only records after UID validation.
       await refreshUserData();
-      // The x.money API currently lacks server-side authentication. This is a
-      // local-only, read-only development preview, never a production login.
-      const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
-      if (isLocalHost) setAuthStage('AUTHENTICATED');
+      // Read-only API preview can populate diagnostics but must never authenticate
+      // a user or unlock the dashboard without the server wallet + passcode flow.
       return { success: true, raw: res.raw };
     } else {
       return { success: false, error: res.error };
     }
   };
 
-  const refreshUserData = async () => {
+  const refreshUserData = async (): Promise<boolean> => {
     try {
+      // Restore an already-authorized real MetaMask account without triggering a popup.
+      // This must happen even when the backend session is locked/expired, otherwise
+      // the lock screen can incorrectly report "wallet not connected".
+      const connectedAccount = await web3Wallet.getConnectedAccount();
+      if (connectedAccount) {
+        setWalletAddress(connectedAccount);
+        setIsMetaMaskConnected(true);
+      }
+
+      // The backend PHP session is authoritative. A stale client cookie must not
+      // determine whether the dashboard is accessible.
+      const session = await SecureAuthApi.getSession();
+      if (!session.authenticated) {
+        setUser(null);
+        setWallets(null);
+        if (session.locked && !session.passcodeConfigured) setAuthStage('SETUP_PASSCODE');
+        else if (session.locked) setAuthStage('LOCKED');
+        else if (authStage === 'AUTHENTICATED') setAuthStage('UNAUTHENTICATED');
+        return false;
+      }
+
       const [profileRes, walletsRes] = await Promise.all([
         ApiService.getProfile(),
         ApiService.getWallets(),
       ]);
 
-      if (profileRes.success && profileRes.data) {
-        setUser(profileRes.data);
-        if (profileRes.data.walletAddress) {
-          setWalletAddress(profileRes.data.walletAddress);
-        }
+      // Prefer the authenticated Session endpoint's DB row as the canonical
+      // identity. Legacy User endpoints may return partial aliases and can
+      // otherwise send a successfully unlocked user back to "connect wallet".
+      const row = session.user;
+      let profile: UserProfile | null = null;
+      if (row && String(row.wallet_address ?? '').trim()) {
+        const id = String(row.id ?? row.userid ?? '');
+        const firstName = String(row.fname ?? '');
+        const lastName = String(row.lname ?? '');
+        const displayName = String(row.name ?? [firstName, lastName].filter(Boolean).join(' ')).trim();
+        profile = {
+          id,
+          username: String(row.username ?? row.userid ?? id),
+          name: displayName || String(row.username ?? 'AURA User'),
+          firstName,
+          lastName,
+          email: '',
+          mobile: String(row.mobile ?? ''),
+          country: String(row.country ?? ''),
+          walletAddress: String(row.wallet_address),
+          referId: '',
+          referBy: String(row.refer_by ?? ''),
+          createdAt: String(row.user_registered ?? ''),
+          passcodeConfigured: session.passcodeConfigured,
+          kycStatus: 'UNVERIFIED',
+        };
+      }
 
-        if (walletsRes.success && walletsRes.data) {
-          // Use only explicit values returned by x.money. Never infer or split balances.
-          setWallets(walletsRes.data);
-        } else {
-          setWallets(null);
-        }
-      } else {
+      // Use the legacy profile only as a fallback when it has a real database ID
+      // and a wallet address. Never synthesize an account from client-side state.
+      if (!profile && profileRes.success && profileRes.data?.id && profileRes.data?.walletAddress) {
+        profile = profileRes.data;
+      }
+
+      if (!profile || !profile.id || !profile.walletAddress) {
         setUser(null);
         setWallets(null);
-        cookieService.clearAuthSession();
+        setAuthStage('LOCKED');
+        console.error('Server session is unlocked but no valid account profile was returned.');
+        return false;
       }
-      setCreatedPasscode(ApiService.getLastCreatedPasscode());
+
+      // A wallet may hide eth_accounts after signing; the verified server session
+      // remains authoritative for the dashboard identity.
+      setIsMetaMaskConnected(true);
+      setUser(profile);
+      setWalletAddress(profile.walletAddress);
+      if (walletsRes.success && walletsRes.data) {
+        setWallets(walletsRes.data);
+      } else {
+        // Wallet API failure should not invalidate a verified account or send it
+        // to the public landing screen. Render the dashboard with a zero/empty state.
+        setWallets(null);
+      }
+      setCreatedPasscode('');
+      // A successful server session + profile load must enter the authenticated
+      // application shell, not leave the user on Landing after a reload.
+      setActiveRouteInternal('home');
+      setAuthStage('AUTHENTICATED');
+      return true;
     } catch (err) {
       console.error('Failed to load user session data', err);
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -276,11 +340,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const addr = accounts[0];
         setWalletAddress(addr);
         setIsMetaMaskConnected(true);
-        if (user) {
+        // A wallet account switch must not silently keep the previous account's
+        // authenticated dashboard open. Require a fresh signature for the new address.
+        if (user && user.walletAddress.toLowerCase() !== addr.toLowerCase()) {
+          setUser(null);
+          setWallets(null);
+          cookieService.clearAuthSession();
+          setAuthStage('UNAUTHENTICATED');
+        } else if (user) {
           setUser({ ...user, walletAddress: addr });
         }
       } else {
         setIsMetaMaskConnected(false);
+        setWalletAddress('');
       }
     });
   }, []);
@@ -323,6 +395,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(res.data.user);
         if (res.data.user.walletAddress) {
           setWalletAddress(res.data.user.walletAddress);
+          setIsMetaMaskConnected(true);
         }
         return { success: true, message: res.message };
       }
@@ -332,21 +405,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithWallet = async (address: string): Promise<{ success: boolean; message?: string }> => {
+    setIsLoading(true);
+    try {
+      const wallet = address.trim().toLowerCase();
+      if (!/^0x[a-f0-9]{40}$/.test(wallet)) throw new Error('Connect a valid wallet first.');
+      const challenge = await SecureAuthApi.getNonce(wallet);
+      const signed = await web3Wallet.signMessage(address, challenge);
+      if (!signed.success || !signed.signature) throw new Error(signed.error || 'Wallet signature was not approved.');
+      const verified = await SecureAuthApi.verifySignature(wallet, signed.signature);
+      if (!verified.registered) throw new Error('This wallet is not registered yet. Complete Sign Up first.');
+      ApiService.saveUserApiConfig({ userId: wallet });
+      setWalletAddress(address);
+      setIsMetaMaskConnected(true);
+      setUser(null);
+      setWallets(null);
+      setAuthStage(verified.passcodeConfigured ? 'LOCKED' : 'SETUP_PASSCODE');
+      return { success: true, message: verified.passcodeConfigured ? 'Wallet verified. Enter your passcode.' : 'Wallet verified. Create your passcode.' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Wallet sign in failed.' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const setupPasscode = async (passcode: string, advanceToLocked = false) => {
     setIsLoading(true);
     try {
-      const res = await ApiService.setupPasscode(passcode);
-      if (res.success) {
-        setCreatedPasscode(passcode);
-        if (user) {
-          setUser({ ...user, passcodeConfigured: true });
-        }
-        if (advanceToLocked) {
-          setAuthStage('LOCKED');
-        }
-        return { success: true, message: 'Passcode configured!' };
+      // Use the server-side PHP authentication endpoint, never the legacy
+      // client-side/demo passcode service.
+      await SecureAuthApi.setupPasscode(passcode);
+
+      // A newly registered user should not have to re-enter a PIN immediately:
+      // verify the just-created PIN with the server, load the real DB profile,
+      // then enter the authenticated dashboard. Returning users still use LOCKED.
+      if (advanceToLocked) {
+        setCreatedPasscode('');
+        setAuthStage('LOCKED');
+        return { success: true, message: 'Passcode configured. Your account is locked securely.' };
       }
-      return { success: false, message: res.error?.message || 'Failed to setup passcode' };
+
+      const verified = await SecureAuthApi.verifyPasscode(passcode);
+      if (!verified) {
+        return { success: false, message: 'Passcode was saved but the backend could not unlock the session. Please sign in again.' };
+      }
+      const profileLoaded = await refreshUserData();
+      if (!profileLoaded) {
+        return { success: false, message: 'Passcode was saved and verified, but your account profile could not be loaded. Check the backend Session/User API response.' };
+      }
+      setCreatedPasscode('');
+      setActiveRoute('home');
+      setAuthStage('AUTHENTICATED');
+      return { success: true, message: 'Passcode verified. Opening your dashboard.' };
     } finally {
       setIsLoading(false);
     }
@@ -355,24 +465,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyPasscode = async (pin: string) => {
     setIsLoading(true);
     try {
-      // The supplied x.money repository has no verified server-side login endpoint.
+      // The server-side PHP endpoint is authoritative for passcode verification.
       // Never accept a PIN stored in localStorage or mint a client-side session token.
-      const res = await ApiService.verifyPasscode(pin);
-      if (res.success && res.data?.verified) {
-        // Keep the account loaded by successful signup. A profile refresh here
-        // calls a separate API that may not support authenticated sessions yet;
-        // clearing the user on that unrelated failure sends the app back to Landing.
+      const verified = await SecureAuthApi.verifyPasscode(pin);
+      if (verified) {
+        const profileLoaded = await refreshUserData();
+        if (!profileLoaded) {
+          return { success: false, message: 'Passcode is correct, but the backend account profile could not be loaded.' };
+        }
+        setActiveRoute('home');
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
         return { success: true };
       }
-      return { success: false, message: res.error?.message || 'Server-side authentication is unavailable; use local read-only API preview.' };
+      return { success: false, message: 'The backend did not verify this passcode.' };
     } finally {
       setIsLoading(false);
     }
   };
 
   const logout = () => {
+    // Revoke the server-side PHP session as well as local UI state.
+    void SecureAuthApi.sessionAction('logout').catch((err) => console.warn('Server logout failed', err));
     // Strictly clear session cookies and return to Landing page without bottom menu
     cookieService.clearAuthSession();
     setAuthStage('LANDING');
@@ -385,6 +499,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const lockApp = () => {
+    void SecureAuthApi.sessionAction('lock').catch((err) => console.warn('Server lock request failed', err));
     setAuthStage('LOCKED');
   };
 
@@ -424,6 +539,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         connectRealMetaMask,
         connectMobileWallet,
         register,
+        loginWithWallet,
         setupPasscode,
         verifyPasscode,
         refreshUserData,

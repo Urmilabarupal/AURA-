@@ -23,7 +23,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { Loader2 } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { authStage, user, isLoading, setAuthStage } = useAuth();
+  const { authStage, user, isLoading, setAuthStage, refreshUserData } = useAuth();
 
   if (isLoading) {
     return (
@@ -36,18 +36,26 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Never silently present the public landing page after a successful unlock.
-  // Missing profile data is an authentication/data-loading failure, not a logout.
+  // Do not falsely report a disconnected wallet after a successful passcode.
+  // Retry the server-backed profile/session read first; only ask for a new
+  // wallet signature if the backend says the session is actually unauthenticated.
   if (authStage === 'AUTHENTICATED' && !user) {
     return (
       <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center gap-4 px-6 text-center text-slate-200">
-        <p className="text-sm">Your account profile could not be loaded. Please reconnect your wallet and try again.</p>
+        <p className="text-sm">Your wallet session was accepted, but the dashboard profile is still loading. Please retry before reconnecting your wallet.</p>
         <button
           type="button"
-          onClick={() => setAuthStage('UNAUTHENTICATED')}
+          onClick={() => { void refreshUserData(); }}
           className="rounded-full bg-[#00e699] px-5 py-3 font-semibold text-black"
         >
-          Reconnect wallet
+          Retry dashboard
+        </button>
+        <button
+          type="button"
+          onClick={() => setAuthStage('LOCKED')}
+          className="rounded-full border border-[#00e699]/50 px-5 py-3 font-semibold text-[#00e699]"
+        >
+          Return to passcode
         </button>
       </div>
     );

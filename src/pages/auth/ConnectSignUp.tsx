@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 
 export const ConnectSignUp: React.FC = () => {
-  const { register, setAuthStage, connectRealMetaMask } = useAuth();
+  const { register, loginWithWallet, setAuthStage, connectRealMetaMask } = useAuth();
   const { showToast, copyToClipboard } = useToast();
 
   // Form Fields - clean initial values as requested
@@ -123,6 +123,26 @@ export const ConnectSignUp: React.FC = () => {
       setNodeStatus('error');
     } finally {
       setIsConnecting(false);
+    }
+  };
+
+  const handleExistingAccountSignIn = async () => {
+    setErrorMsg(null);
+    if (!connectedAddress) {
+      setErrorMsg('Connect your MetaMask wallet first, then choose Sign In again.');
+      await handleConnectWallet();
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const result = await loginWithWallet(connectedAddress);
+      if (!result.success) {
+        setErrorMsg(result.message || 'Wallet sign in failed.');
+        return;
+      }
+      showToast(result.message || 'Wallet verified.', 'success');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -513,6 +533,15 @@ export const ConnectSignUp: React.FC = () => {
               className="w-full px-3.5 py-2 sm:py-2.5 rounded-full bg-[#080b12] border border-[#161f30] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] transition-colors font-mono"
             />
           </div>
+
+          <button
+            type="button"
+            onClick={handleExistingAccountSignIn}
+            disabled={isSubmitting}
+            className="w-full mt-2 rounded-xl border border-[#00ffa3]/40 px-4 py-3 text-sm font-semibold text-[#00ffa3] disabled:opacity-50"
+          >
+            Already registered? Sign in with wallet
+          </button>
 
           {/* SUBMIT BUTTON -> ADVANCES TO PASSCODE SETUP */}
           <div className="pt-1">

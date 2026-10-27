@@ -38,41 +38,33 @@ class Web3WalletService {
   public initProvider() {
     if (typeof window === 'undefined') return null;
 
-    let provider: any = (window as any).ethereum;
+    let injected: any = (window as any).ethereum;
+    let provider: any = null;
 
-    // Check for other injected providers if ethereum is not directly on window
-    if (!provider) {
-      provider =
-        (window as any).trustwallet ||
-        (window as any).coinbaseWalletExtension ||
-        (window as any).phantom?.ethereum ||
-        (window as any).okxwallet;
+    // Only select a provider explicitly identifying itself as MetaMask.
+    // Never silently connect a different wallet and label it MetaMask.
+    if (injected?.providers && Array.isArray(injected.providers)) {
+      provider = injected.providers.find((candidate: any) => candidate?.isMetaMask) || null;
+    } else if (injected?.isMetaMask) {
+      provider = injected;
     }
 
-    // Check if multiple providers are injected (e.g. MetaMask + Phantom + Coinbase)
-    if (provider?.providers && Array.isArray(provider.providers)) {
-      const mm = provider.providers.find((p: any) => p.isMetaMask);
-      provider = mm || provider.providers[0] || provider;
+    // Some browser wallet integrations expose MetaMask directly under this key.
+    if (!provider && (window as any).metamask?.isMetaMask) {
+      provider = (window as any).metamask;
     }
 
-    // Fallback to legacy web3 currentProvider if exists
-    if (!provider && (window as any).web3?.currentProvider) {
-      provider = (window as any).web3.currentProvider;
-    }
-
-    // Attempt to access parent frame if running inside an iframe (e.g. AI Studio preview)
+    // Cross-frame discovery is allowed only for an explicitly identified MetaMask.
     if (!provider && typeof window.parent !== 'undefined' && window.parent !== window) {
       try {
         const parentEth = (window.parent as any).ethereum;
-        if (parentEth) {
-          if (parentEth.providers && Array.isArray(parentEth.providers)) {
-            provider = parentEth.providers.find((p: any) => p.isMetaMask) || parentEth.providers[0];
-          } else {
-            provider = parentEth;
-          }
+        if (parentEth?.providers && Array.isArray(parentEth.providers)) {
+          provider = parentEth.providers.find((candidate: any) => candidate?.isMetaMask) || null;
+        } else if (parentEth?.isMetaMask) {
+          provider = parentEth;
         }
       } catch {
-        // Cross-origin iframe security restrictions
+        // Cross-origin iframe security restrictions.
       }
     }
 
@@ -219,6 +211,9 @@ class Web3WalletService {
         }
 
         const address = accounts[0];
+        if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+          return { success: false, isRealMetaMask: true, error: 'MetaMask returned an invalid account address.', message: 'Invalid MetaMask account.' };
+        }
         let chainId = '0x1';
         try {
           chainId = await provider.request({ method: 'eth_chainId' });
@@ -283,6 +278,18 @@ class Web3WalletService {
       error: 'METAMASK_NOT_INSTALLED',
       message: 'MetaMask extension not detected in this browser. Please install MetaMask or scan QR with mobile app.',
     };
+  }
+
+  /** Return an already-authorized MetaMask account without opening a popup. */
+  public async getConnectedAccount(): Promise<string | null> {
+    const provider = this.getEthereumProvider();
+    if (!provider || typeof provider.request !== 'function') return null;
+    try {
+      const accounts: string[] = await provider.request({ method: 'eth_accounts' });
+      return Array.isArray(accounts) && accounts.length > 0 ? accounts[0] : null;
+    } catch {
+      return null;
+    }
   }
 
   /**
