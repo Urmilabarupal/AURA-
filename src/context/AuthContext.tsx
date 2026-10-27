@@ -53,6 +53,7 @@ interface AuthContextType {
   connectRealMetaMask: () => Promise<{ success: boolean; address?: string; error?: string }>;
   connectMobileWallet: () => Promise<{ success: boolean; address: string; error?: string }>;
   register: (data: { walletAddress?: string; referId?: string; country: string; mobile: string; name: string }) => Promise<{ success: boolean; message?: string }>;
+  loginWithWallet: (walletAddress: string) => Promise<{ success: boolean; message?: string }>;
   setupPasscode: (passcode: string, advanceToLocked?: boolean) => Promise<{ success: boolean; message?: string }>;
   verifyPasscode: (pin: string) => Promise<{ success: boolean; message?: string }>;
   refreshUserData: () => Promise<void>;
@@ -344,6 +345,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithWallet = async (address: string): Promise<{ success: boolean; message?: string }> => {
+    setIsLoading(true);
+    try {
+      const wallet = address.trim().toLowerCase();
+      if (!/^0x[a-f0-9]{40}$/.test(wallet)) throw new Error('Connect a valid wallet first.');
+      const challenge = await SecureAuthApi.getNonce(wallet);
+      const signed = await web3Wallet.signMessage(address, challenge);
+      if (!signed.success || !signed.signature) throw new Error(signed.error || 'Wallet signature was not approved.');
+      const verified = await SecureAuthApi.verifySignature(wallet, signed.signature);
+      if (!verified.registered) throw new Error('This wallet is not registered yet. Complete Sign Up first.');
+      ApiService.saveUserApiConfig({ userId: wallet });
+      setWalletAddress(address);
+      setIsMetaMaskConnected(true);
+      setUser(null);
+      setWallets(null);
+      setAuthStage(verified.passcodeConfigured ? 'LOCKED' : 'SETUP_PASSCODE');
+      return { success: true, message: verified.passcodeConfigured ? 'Wallet verified. Enter your passcode.' : 'Wallet verified. Create your passcode.' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Wallet sign in failed.' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const setupPasscode = async (passcode: string, advanceToLocked = false) => {
     setIsLoading(true);
     try {
@@ -438,6 +463,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         connectRealMetaMask,
         connectMobileWallet,
         register,
+        loginWithWallet,
         setupPasscode,
         verifyPasscode,
         refreshUserData,
