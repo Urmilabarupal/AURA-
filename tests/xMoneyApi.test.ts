@@ -110,7 +110,7 @@ test('requests the PHP api parameter using expected casing and omits browser cre
   assert.equal(url.searchParams.get('api'), 'User');
   assert.equal(url.searchParams.get('uid'), 'test-uid-73');
   assert.equal(url.searchParams.has('user'), false);
-  assert.equal(requests[0].init?.credentials, 'omit');
+  assert.equal(requests[0].init?.credentials, 'include', 'PHP session cookies are required for authenticated wallet/passcode flows');
   assert.equal(requests[0].init?.redirect, 'error');
   assert.equal(requests[0].init?.cache, 'no-store');
   assert.equal(persisted.get('moneyx_api_config_v1')?.includes('sample@example.test'), false);
