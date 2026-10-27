@@ -432,10 +432,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setupPasscode = async (passcode: string, advanceToLocked = false) => {
     setIsLoading(true);
     try {
-      const res = await ApiService.setupPasscode(passcode);
-      if (!res.success) {
-        return { success: false, message: res.error?.message || 'Failed to setup passcode' };
-      }
+      // Use the server-side PHP authentication endpoint, never the legacy
+      // client-side/demo passcode service.
+      await SecureAuthApi.setupPasscode(passcode);
 
       // A newly registered user should not have to re-enter a PIN immediately:
       // verify the just-created PIN with the server, load the real DB profile,
@@ -446,9 +445,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true, message: 'Passcode configured. Your account is locked securely.' };
       }
 
-      const verified = await ApiService.verifyPasscode(passcode);
-      if (!verified.success || !verified.data?.verified) {
-        return { success: false, message: verified.error?.message || 'Passcode was saved but the backend could not unlock the session. Please sign in again.' };
+      const verified = await SecureAuthApi.verifyPasscode(passcode);
+      if (!verified) {
+        return { success: false, message: 'Passcode was saved but the backend could not unlock the session. Please sign in again.' };
       }
       const profileLoaded = await refreshUserData();
       if (!profileLoaded) {
@@ -468,8 +467,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // The supplied x.money repository has no verified server-side login endpoint.
       // Never accept a PIN stored in localStorage or mint a client-side session token.
-      const res = await ApiService.verifyPasscode(pin);
-      if (res.success && res.data?.verified) {
+      const verified = await SecureAuthApi.verifyPasscode(pin);
+      if (verified) {
         const profileLoaded = await refreshUserData();
         if (!profileLoaded) {
           return { success: false, message: 'Passcode is correct, but the backend account profile could not be loaded.' };
@@ -479,7 +478,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSecurityModalOpen(false);
         return { success: true };
       }
-      return { success: false, message: res.error?.message || 'The backend did not verify this passcode.' };
+      return { success: false, message: 'The backend did not verify this passcode.' };
     } finally {
       setIsLoading(false);
     }
