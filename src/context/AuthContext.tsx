@@ -56,7 +56,7 @@ interface AuthContextType {
   loginWithWallet: (walletAddress: string) => Promise<{ success: boolean; message?: string }>;
   setupPasscode: (passcode: string, advanceToLocked?: boolean) => Promise<{ success: boolean; message?: string }>;
   verifyPasscode: (pin: string) => Promise<{ success: boolean; message?: string }>;
-  refreshUserData: () => Promise<void>;
+  refreshUserData: () => Promise<boolean>;
   logout: () => void;
   lockApp: () => void;
 }
@@ -235,10 +235,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const refreshUserData = async () => {
+  const refreshUserData = async (): Promise<boolean> => {
     try {
-      // The backend session—not a JavaScript cookie or local storage flag—is the
-      // source of truth for whether the dashboard is unlocked.
+      // The backend PHP session is authoritative. A stale client cookie must not
+      // determine whether the dashboard is accessible.
       const session = await SecureAuthApi.getSession();
       if (!session.authenticated) {
         setUser(null);
@@ -246,35 +246,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session.locked && !session.passcodeConfigured) setAuthStage('SETUP_PASSCODE');
         else if (session.locked) setAuthStage('LOCKED');
         else if (authStage === 'AUTHENTICATED') setAuthStage('UNAUTHENTICATED');
-        return;
+        return false;
       }
+
+      const connectedAccount = await web3Wallet.getConnectedAccount();
+      if (connectedAccount) {
+        setWalletAddress(connectedAccount);
+        setIsMetaMaskConnected(true);
+      }
+
       const [profileRes, walletsRes] = await Promise.all([
         ApiService.getProfile(),
         ApiService.getWallets(),
       ]);
 
-      if (profileRes.success && profileRes.data) {
-        setUser(profileRes.data);
-        // Restore the dashboard only after the server confirms the session is unlocked.
-        setAuthStage('AUTHENTICATED');
-        if (profileRes.data.walletAddress) {
-          setWalletAddress(profileRes.data.walletAddress);
-        }
+      let profile: UserProfile | null = profileRes.success && profileRes.data ? profileRes.data : null;
+      // The secure Session endpoint returns the actual DB profile for an unlocked
+      // session. Use it if the legacy User endpoint has incompatible field names.
+      // Never invent balances; wallet values remain unavailable if their API fails.
+      if (!profile && session.user) {
+        const row = session.user;
+        const id = String(row.id ?? '');
+        const wallet = String(row.wallet_address ?? '');
+        const firstName = String(row.fname ?? '');
+        const lastName = String(row.lname ?? '');
+        const displayName = String(row.name ?? [firstName, lastName].filter(Boolean).join(' ')).trim();
+        profile = {
+          id,
+          username: String(row.username ?? row.userid ?? id),
+          name: displayName,
+          firstName,
+          lastName,
+          email: '',
+          mobile: String(row.mobile ?? ''),
+          country: String(row.country ?? ''),
+          walletAddress: wallet,
+          referId: '',
+          referBy: String(row.refer_by ?? ''),
+          createdAt: String(row.user_registered ?? ''),
+          passcodeConfigured: session.passcodeConfigured,
+          kycStatus: 'UNVERIFIED',
+        };
+      }
 
-        if (walletsRes.success && walletsRes.data) {
-          // Use only explicit values returned by x.money. Never infer or split balances.
-          setWallets(walletsRes.data);
-        } else {
-          setWallets(null);
-        }
-      } else {
+      if (!profile || !profile.id || !profile.walletAddress) {
         setUser(null);
         setWallets(null);
-        cookieService.clearAuthSession();
+        return false;
       }
-      setCreatedPasscode(ApiService.getLastCreatedPasscode());
+
+      setUser(profile);
+      setWalletAddress(profile.walletAddress);
+      if (walletsRes.success && walletsRes.data) {
+        setWallets(walletsRes.data);
+      } else {
+        setWallets(null);
+      }
+      setCreatedPasscode('');
+      return true;
     } catch (err) {
       console.error('Failed to load user session data', err);
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -373,18 +405,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const res = await ApiService.setupPasscode(passcode);
-      if (res.success) {
-        // Never retain the passcode in frontend state after the server stores its hash.
-        setCreatedPasscode('');
-        if (user) {
-          setUser({ ...user, passcodeConfigured: true });
-        }
-        if (advanceToLocked) {
-          setAuthStage('LOCKED');
-        }
-        return { success: true, message: 'Passcode configured!' };
+      if (!res.success) {
+        return { success: false, message: res.error?.message || 'Failed to setup passcode' };
       }
-      return { success: false, message: res.error?.message || 'Failed to setup passcode' };
+
+      // A newly registered user should not have to re-enter a PIN immediately:
+      // verify the just-created PIN with the server, load the real DB profile,
+      // then enter the authenticated dashboard. Returning users still use LOCKED.
+      if (advanceToLocked) {
+        setCreatedPasscode('');
+        setAuthStage('LOCKED');
+        return { success: true, message: 'Passcode configured. Your account is locked securely.' };
+      }
+
+      const verified = await ApiService.verifyPasscode(passcode);
+      if (!verified.success || !verified.data?.verified) {
+        return { success: false, message: verified.error?.message || 'Passcode was saved but the backend could not unlock the session. Please sign in again.' };
+      }
+      const profileLoaded = await refreshUserData();
+      if (!profileLoaded) {
+        return { success: false, message: 'Passcode was saved and verified, but your account profile could not be loaded. Check the backend Session/User API response.' };
+      }
+      setCreatedPasscode('');
+      setAuthStage('AUTHENTICATED');
+      return { success: true, message: 'Passcode verified. Opening your dashboard.' };
     } finally {
       setIsLoading(false);
     }
@@ -397,7 +441,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Never accept a PIN stored in localStorage or mint a client-side session token.
       const res = await ApiService.verifyPasscode(pin);
       if (res.success && res.data?.verified) {
-        await refreshUserData();
+        const profileLoaded = await refreshUserData();
+        if (!profileLoaded) {
+          return { success: false, message: 'Passcode is correct, but the backend account profile could not be loaded.' };
+        }
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
         return { success: true };
