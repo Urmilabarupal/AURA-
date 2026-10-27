@@ -211,6 +211,9 @@ class Web3WalletService {
         }
 
         const address = accounts[0];
+        if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+          return { success: false, isRealMetaMask: true, error: 'MetaMask returned an invalid account address.', message: 'Invalid MetaMask account.' };
+        }
         let chainId = '0x1';
         try {
           chainId = await provider.request({ method: 'eth_chainId' });
