@@ -64,7 +64,7 @@ export const CreatePasscode: React.FC = () => {
   };
 
   // Validation conditions: 1 to 6 numeric digits
-  const isLengthValid = passcode.length >= 1 && passcode.length <= 6 && /^\d{1,6}$/.test(passcode);
+  const isLengthValid = passcode.length === 6 && /^\d{6}$/.test(passcode);
   const isMatching = isLengthValid && passcode === confirmPasscode;
   const isFormValid = isLengthValid && isMatching;
 
@@ -72,7 +72,7 @@ export const CreatePasscode: React.FC = () => {
     e.preventDefault();
 
     if (!isLengthValid) {
-      setErrorMsg('Passcode must be between 1 and 6 numbers (digits only)');
+      setErrorMsg('Passcode must contain exactly 6 digits');
       return;
     }
 
