@@ -261,13 +261,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ]);
 
       let profile: UserProfile | null = profileRes.success && profileRes.data ? profileRes.data : null;
-      // The secure Session endpoint returns the actual DB profile for an unlocked
-      // session. Use it if the legacy User endpoint has incompatible field names.
-      // Never invent balances; wallet values remain unavailable if their API fails.
-      if (!profile && session.user) {
-        const row = session.user;
-        const id = String(row.id ?? '');
-        const wallet = String(row.wallet_address ?? '');
+      // The authenticated Session endpoint is the source of truth for identity.
+      // The legacy User API can return an incomplete profile (especially wallet
+      // address field aliases); prefer its data only when it includes a real wallet.
+      const sessionRow = session.user;
+      const sessionWallet = String(sessionRow?.wallet_address ?? '');
+      if (sessionRow && (!profile || !profile.id || !profile.walletAddress) && sessionWallet) {
+        const row = sessionRow;
+        const id = String(row.id ?? row.userid ?? '');
         const firstName = String(row.fname ?? '');
         const lastName = String(row.lname ?? '');
         const displayName = String(row.name ?? [firstName, lastName].filter(Boolean).join(' ')).trim();
@@ -280,7 +281,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: '',
           mobile: String(row.mobile ?? ''),
           country: String(row.country ?? ''),
-          walletAddress: wallet,
+          walletAddress: sessionWallet,
           referId: '',
           referBy: String(row.refer_by ?? ''),
           createdAt: String(row.user_registered ?? ''),
@@ -295,6 +296,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
+      // A wallet can remain authenticated by the server session even if the
+      // extension temporarily hides eth_accounts after the signature step.
+      setIsMetaMaskConnected(true);
       setUser(profile);
       setWalletAddress(profile.walletAddress);
       if (walletsRes.success && walletsRes.data) {
