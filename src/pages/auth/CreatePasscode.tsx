@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 
 export const CreatePasscode: React.FC = () => {
-  const { setupPasscode, setAuthStage } = useAuth();
+  const { setupPasscode } = useAuth();
   const { showToast } = useToast();
 
   const [passcode, setPasscode] = useState<string>('');
