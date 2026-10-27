@@ -13,6 +13,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
 import { cookieService } from '../services/cookieService';
 import { web3Wallet } from '../services/web3Wallet';
+import { SecureAuthApi } from '../services/secureAuthApi';
 import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
 
@@ -235,6 +236,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUserData = async () => {
     try {
+      // The backend session—not a JavaScript cookie or local storage flag—is the
+      // source of truth for whether the dashboard is unlocked.
+      const session = await SecureAuthApi.getSession();
+      if (!session.authenticated) {
+        setUser(null);
+        setWallets(null);
+        if (session.locked && !session.passcodeConfigured) setAuthStage('SETUP_PASSCODE');
+        else if (session.locked) setAuthStage('LOCKED');
+        else if (authStage === 'AUTHENTICATED') setAuthStage('UNAUTHENTICATED');
+        return;
+      }
       const [profileRes, walletsRes] = await Promise.all([
         ApiService.getProfile(),
         ApiService.getWallets(),
@@ -358,9 +370,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Never accept a PIN stored in localStorage or mint a client-side session token.
       const res = await ApiService.verifyPasscode(pin);
       if (res.success && res.data?.verified) {
-        // Keep the account loaded by successful signup. A profile refresh here
-        // calls a separate API that may not support authenticated sessions yet;
-        // clearing the user on that unrelated failure sends the app back to Landing.
+        await refreshUserData();
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
         return { success: true };
@@ -372,6 +382,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    // Revoke the server-side PHP session as well as local UI state.
+    void SecureAuthApi.sessionAction('logout').catch((err) => console.warn('Server logout failed', err));
     // Strictly clear session cookies and return to Landing page without bottom menu
     cookieService.clearAuthSession();
     setAuthStage('LANDING');
@@ -384,6 +396,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const lockApp = () => {
+    void SecureAuthApi.sessionAction('lock').catch((err) => console.warn('Server lock request failed', err));
     setAuthStage('LOCKED');
   };
 
