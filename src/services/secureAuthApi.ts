@@ -45,9 +45,9 @@ export const SecureAuthApi = {
     if (typeof message !== 'string' || !message) throw new Error('Backend did not return a wallet challenge.');
     return message;
   },
-  async verifySignature(walletAddress: string, signature: string): Promise<{ registered: boolean; userId?: string }> {
+  async verifySignature(walletAddress: string, signature: string): Promise<{ registered: boolean; userId?: string; passcodeConfigured: boolean }> {
     const response = await post('VerifySignature', { wallet_address: walletAddress, signature });
-    return { registered: response.c?.registered === true, userId: response.c?.user_id ? String(response.c.user_id) : undefined };
+    return { registered: response.c?.registered === true, userId: response.c?.user_id ? String(response.c.user_id) : undefined, passcodeConfigured: response.c?.passcode_configured === true };
   },
   async setupPasscode(passcode: string): Promise<void> {
     await post('PasscodeSetup', { passcode });
