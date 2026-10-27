@@ -109,9 +109,9 @@ export const ApiService = {
       }
       const verified = await SecureAuthApi.verifySignature(walletAddress, signed.signature);
       if (verified.registered) {
-        UserApiService.saveConfig({ userId: walletAddress });
-        const existing = await XMoneyApiService.getUser();
-        return XMoneyApiService.success({ user: existing.user, token: '' }, 'Wallet verified and existing account loaded.');
+        // Do not expose account data before the existing account's passcode has
+        // been verified. The dedicated returning-user login UI still needs wiring.
+        throw new Error('This wallet already has an account. Existing-account passcode login must be used; signup cannot create a duplicate.');
       }
       const user = await XMoneyApiService.registerUser({
         walletAddress,
