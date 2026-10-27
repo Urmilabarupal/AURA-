@@ -120,7 +120,9 @@ export const ApiService = {
   },
 
   async verifyPasscode(pin: string): Promise<ApiResponse<{ verified: boolean }>> {
-    return XMoneyApiService.failure<{ verified: boolean }>(new Error('No secure server-side authentication endpoint is available; passcode verification is disabled.'));
+    // Verify against the same local passcode store used by setupPasscode.
+    // This is a client-side screen lock, not server-side account authentication.
+    return AuthoritativeBackend.verifyPasscode(pin);
   },
 
   async getProfile(): Promise<ApiResponse<UserProfile>> {

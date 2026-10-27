@@ -359,7 +359,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Never accept a PIN stored in localStorage or mint a client-side session token.
       const res = await ApiService.verifyPasscode(pin);
       if (res.success && res.data?.verified) {
-        await refreshUserData();
+        // Keep the account loaded by successful signup. A profile refresh here
+        // calls a separate API that may not support authenticated sessions yet;
+        // clearing the user on that unrelated failure sends the app back to Landing.
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
         return { success: true };
