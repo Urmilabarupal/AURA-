@@ -263,14 +263,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ApiService.getWallets(),
       ]);
 
-      let profile: UserProfile | null = profileRes.success && profileRes.data ? profileRes.data : null;
-      // The authenticated Session endpoint is the source of truth for identity.
-      // The legacy User API can return an incomplete profile (especially wallet
-      // address field aliases); prefer its data only when it includes a real wallet.
-      const sessionRow = session.user;
-      const sessionWallet = String(sessionRow?.wallet_address ?? '');
-      if (sessionRow && (!profile || !profile.id || !profile.walletAddress) && sessionWallet) {
-        const row = sessionRow;
+      // Prefer the authenticated Session endpoint's DB row as the canonical
+      // identity. Legacy User endpoints may return partial aliases and can
+      // otherwise send a successfully unlocked user back to "connect wallet".
+      const row = session.user;
+      let profile: UserProfile | null = null;
+      if (row && String(row.wallet_address ?? '').trim()) {
         const id = String(row.id ?? row.userid ?? '');
         const firstName = String(row.fname ?? '');
         const lastName = String(row.lname ?? '');
@@ -278,13 +276,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         profile = {
           id,
           username: String(row.username ?? row.userid ?? id),
-          name: displayName,
+          name: displayName || String(row.username ?? 'AURA User'),
           firstName,
           lastName,
           email: '',
           mobile: String(row.mobile ?? ''),
           country: String(row.country ?? ''),
-          walletAddress: sessionWallet,
+          walletAddress: String(row.wallet_address),
           referId: '',
           referBy: String(row.refer_by ?? ''),
           createdAt: String(row.user_registered ?? ''),
@@ -293,20 +291,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
 
+      // Use the legacy profile only as a fallback when it has a real database ID
+      // and a wallet address. Never synthesize an account from client-side state.
+      if (!profile && profileRes.success && profileRes.data?.id && profileRes.data?.walletAddress) {
+        profile = profileRes.data;
+      }
+
       if (!profile || !profile.id || !profile.walletAddress) {
         setUser(null);
         setWallets(null);
+        setAuthStage('LOCKED');
+        console.error('Server session is unlocked but no valid account profile was returned.');
         return false;
       }
 
-      // A wallet can remain authenticated by the server session even if the
-      // extension temporarily hides eth_accounts after the signature step.
+      // A wallet may hide eth_accounts after signing; the verified server session
+      // remains authoritative for the dashboard identity.
       setIsMetaMaskConnected(true);
       setUser(profile);
       setWalletAddress(profile.walletAddress);
       if (walletsRes.success && walletsRes.data) {
         setWallets(walletsRes.data);
       } else {
+        // Wallet API failure should not invalidate a verified account or send it
+        // to the public landing screen. Render the dashboard with a zero/empty state.
         setWallets(null);
       }
       setCreatedPasscode('');
