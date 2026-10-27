@@ -87,9 +87,9 @@ export const CreatePasscode: React.FC = () => {
     try {
       const res = await setupPasscode(passcode, false);
       if (res.success) {
-        showToast('Passcode configured! Please enter your passcode to unlock.', 'success');
-        // Advance directly to the Screen Lock page!
-        setAuthStage('LOCKED');
+        showToast(res.message || 'Passcode configured. Opening your dashboard.', 'success');
+        // AuthContext verifies the newly-created passcode with the server and
+        // loads the session-backed profile before allowing the dashboard.
       } else {
         setErrorMsg(res.message || 'Failed to save passcode');
         setIsSubmitting(false);
