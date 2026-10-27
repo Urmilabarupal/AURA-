@@ -220,7 +220,7 @@ export class XMoneyApiService {
       const response = await fetch(url.toString(), {
         method,
         mode: 'cors',
-        credentials: 'omit',
+        credentials: 'include',
         cache: 'no-store',
         redirect: 'error',
         headers: {
