@@ -321,11 +321,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const addr = accounts[0];
         setWalletAddress(addr);
         setIsMetaMaskConnected(true);
-        if (user) {
+        // A wallet account switch must not silently keep the previous account's
+        // authenticated dashboard open. Require a fresh signature for the new address.
+        if (user && user.walletAddress.toLowerCase() !== addr.toLowerCase()) {
+          setUser(null);
+          setWallets(null);
+          cookieService.clearAuthSession();
+          setAuthStage('UNAUTHENTICATED');
+        } else if (user) {
           setUser({ ...user, walletAddress: addr });
         }
       } else {
         setIsMetaMaskConnected(false);
+        setWalletAddress('');
       }
     });
   }, []);
