@@ -254,6 +254,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profileRes.success && profileRes.data) {
         setUser(profileRes.data);
+        // Restore the dashboard only after the server confirms the session is unlocked.
+        setAuthStage('AUTHENTICATED');
         if (profileRes.data.walletAddress) {
           setWalletAddress(profileRes.data.walletAddress);
         }
