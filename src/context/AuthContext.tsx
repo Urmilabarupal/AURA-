@@ -237,6 +237,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUserData = async (): Promise<boolean> => {
     try {
+      // Restore an already-authorized real MetaMask account without triggering a popup.
+      // This must happen even when the backend session is locked/expired, otherwise
+      // the lock screen can incorrectly report "wallet not connected".
+      const connectedAccount = await web3Wallet.getConnectedAccount();
+      if (connectedAccount) {
+        setWalletAddress(connectedAccount);
+        setIsMetaMaskConnected(true);
+      }
+
       // The backend PHP session is authoritative. A stale client cookie must not
       // determine whether the dashboard is accessible.
       const session = await SecureAuthApi.getSession();
@@ -247,12 +256,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         else if (session.locked) setAuthStage('LOCKED');
         else if (authStage === 'AUTHENTICATED') setAuthStage('UNAUTHENTICATED');
         return false;
-      }
-
-      const connectedAccount = await web3Wallet.getConnectedAccount();
-      if (connectedAccount) {
-        setWalletAddress(connectedAccount);
-        setIsMetaMaskConnected(true);
       }
 
       const [profileRes, walletsRes] = await Promise.all([
@@ -307,6 +310,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setWallets(null);
       }
       setCreatedPasscode('');
+      // A successful server session + profile load must enter the authenticated
+      // application shell, not leave the user on Landing after a reload.
+      setActiveRouteInternal('home');
+      setAuthStageInternal('AUTHENTICATED');
       return true;
     } catch (err) {
       console.error('Failed to load user session data', err);
@@ -380,6 +387,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(res.data.user);
         if (res.data.user.walletAddress) {
           setWalletAddress(res.data.user.walletAddress);
+          setIsMetaMaskConnected(true);
         }
         return { success: true, message: res.message };
       }
