@@ -37,6 +37,8 @@
 import { AuthoritativeBackend } from './backendEngine';
 import { UserApiService, ApiConnectionConfig } from './userApiService';
 import { XMoneyApiService } from './xMoneyApi';
+import { SecureAuthApi } from './secureAuthApi';
+import { web3Wallet } from './web3Wallet';
 import {
   ApiResponse,
   CommunityLevelData,
@@ -98,6 +100,19 @@ export const ApiService = {
       if (!/^\d{10}$/.test(params.mobile.trim())) throw new Error('Enter a valid 10-digit mobile number.');
       if (!params.country.trim()) throw new Error('Choose your country.');
 
+      // A syntactically valid address is not proof of ownership. Require a
+      // fresh, server-generated nonce signed by the connected wallet first.
+      const challenge = await SecureAuthApi.getNonce(walletAddress);
+      const signed = await web3Wallet.signMessage(walletAddress, challenge);
+      if (!signed.success || !signed.signature) {
+        throw new Error(signed.error || 'Wallet signature was not approved.');
+      }
+      const verified = await SecureAuthApi.verifySignature(walletAddress, signed.signature);
+      if (verified.registered) {
+        UserApiService.saveConfig({ userId: walletAddress });
+        const existing = await XMoneyApiService.getUser();
+        return XMoneyApiService.success({ user: existing.user, token: '' }, 'Wallet verified and existing account loaded.');
+      }
       const user = await XMoneyApiService.registerUser({
         walletAddress,
         referId: params.referId?.trim() || '',
@@ -105,14 +120,20 @@ export const ApiService = {
         mobile: params.mobile.trim(),
         name: params.name.trim(),
       });
-      return XMoneyApiService.success({ user, token: '' }, 'UserNew accepted registration and returned a database user ID.');
+      UserApiService.saveConfig({ userId: walletAddress });
+      return XMoneyApiService.success({ user, token: '' }, 'Wallet ownership verified and account registered.');
     } catch (error) {
       return XMoneyApiService.failure<{ user: UserProfile; token: string }>(error);
     }
   },
 
-  async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode?: string }>> {
-    return AuthoritativeBackend.setupPasscode(passcode);
+  async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean }>> {
+    try {
+      await SecureAuthApi.setupPasscode(passcode);
+      return XMoneyApiService.success({ success: true }, 'Passcode saved by the backend.');
+    } catch (error) {
+      return XMoneyApiService.failure<{ success: boolean }>(error);
+    }
   },
 
   getLastCreatedPasscode(): string {
@@ -120,9 +141,12 @@ export const ApiService = {
   },
 
   async verifyPasscode(pin: string): Promise<ApiResponse<{ verified: boolean }>> {
-    // Verify against the same local passcode store used by setupPasscode.
-    // This is a client-side screen lock, not server-side account authentication.
-    return AuthoritativeBackend.verifyPasscode(pin);
+    try {
+      const verified = await SecureAuthApi.verifyPasscode(pin);
+      return XMoneyApiService.success({ verified }, verified ? 'Passcode verified by the backend.' : 'Passcode was not verified.');
+    } catch (error) {
+      return XMoneyApiService.failure<{ verified: boolean }>(error);
+    }
   },
 
   async getProfile(): Promise<ApiResponse<UserProfile>> {
