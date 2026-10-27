@@ -313,7 +313,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // A successful server session + profile load must enter the authenticated
       // application shell, not leave the user on Landing after a reload.
       setActiveRouteInternal('home');
-      setAuthStageInternal('AUTHENTICATED');
+      setAuthStage('AUTHENTICATED');
       return true;
     } catch (err) {
       console.error('Failed to load user session data', err);
