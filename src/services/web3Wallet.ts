@@ -124,21 +124,8 @@ class Web3WalletService {
    * for users browsing inside mobile Chrome/Safari where extensions cannot be installed.
    */
   public getOrCreateMobileSessionWallet(): string {
-    if (typeof window === 'undefined') return '0x7ACc9bEC21DCDAE112Eef3C95973F27daC02d9b8';
-    
-    const key = 'xah_mobile_wallet_address';
-    const existing = localStorage.getItem(key);
-    if (existing && existing.startsWith('0x') && existing.length === 42) {
-      return existing;
-    }
-
-    const hexChars = '0123456789abcdef';
-    let addr = '0x';
-    for (let i = 0; i < 40; i++) {
-      addr += hexChars[Math.floor(Math.random() * hexChars.length)];
-    }
-    localStorage.setItem(key, addr);
-    return addr;
+    // Real-wallet-only policy: never generate a wallet address in the browser.
+    return '';
   }
 
   /**
@@ -194,12 +181,8 @@ class Web3WalletService {
         console.warn('Could not read real on-chain balance:', err);
       }
     }
-    // Check if stored in session
-    if (typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem(`xah_wallet_bal_${address}`);
-      if (stored) return stored;
-    }
-    return '1.4850';
+    // No provider balance was available; never substitute a fabricated balance.
+    return '0.0000';
   }
 
   /**

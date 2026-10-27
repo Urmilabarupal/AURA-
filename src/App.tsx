@@ -36,10 +36,21 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // If a stale client-side session exists without an API-loaded profile,
-  // return to the landing screen instead of hanging on an infinite spinner.
+  // Never silently present the public landing page after a successful unlock.
+  // Missing profile data is an authentication/data-loading failure, not a logout.
   if (authStage === 'AUTHENTICATED' && !user) {
-    return <LandingPage />;
+    return (
+      <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center gap-4 px-6 text-center text-slate-200">
+        <p className="text-sm">Your account profile could not be loaded. Please reconnect your wallet and try again.</p>
+        <button
+          type="button"
+          onClick={() => setAuthStage('UNAUTHENTICATED')}
+          className="rounded-full bg-[#00e699] px-5 py-3 font-semibold text-black"
+        >
+          Reconnect wallet
+        </button>
+      </div>
+    );
   }
 
   switch (authStage) {
