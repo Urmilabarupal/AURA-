@@ -439,6 +439,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, message: 'Passcode was saved and verified, but your account profile could not be loaded. Check the backend Session/User API response.' };
       }
       setCreatedPasscode('');
+      setActiveRoute('home');
       setAuthStage('AUTHENTICATED');
       return { success: true, message: 'Passcode verified. Opening your dashboard.' };
     } finally {
@@ -457,6 +458,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!profileLoaded) {
           return { success: false, message: 'Passcode is correct, but the backend account profile could not be loaded.' };
         }
+        setActiveRoute('home');
         setAuthStage('AUTHENTICATED');
         setSecurityModalOpen(false);
         return { success: true };
