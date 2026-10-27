@@ -82,9 +82,9 @@ export const EnterPasscode: React.FC = () => {
       const res = await verifyPasscode(pinToTest);
       if (res.success) {
         setIsSuccess(true);
-        setTimeout(async () => {
-          await refreshUserData();
-          // Open Dashboard (Screen 10)
+        setTimeout(() => {
+          // verifyPasscode already verified the backend session and loaded the
+          // account profile. Do not run a second refresh that can race the transition.
           setAuthStage('AUTHENTICATED');
         }, 350);
       } else {
