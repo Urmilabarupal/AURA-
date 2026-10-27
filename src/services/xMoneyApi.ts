@@ -272,52 +272,8 @@ export class XMoneyApiService {
     mobile: string;
     name: string;
   }): Promise<UserProfile> {
-    const cleanName = input.name.trim();
-    const nameParts = cleanName.split(/\s+/);
-    const form = new URLSearchParams({
-      name: cleanName,
-      username: cleanName,
-      fname: nameParts[0] ?? cleanName,
-      lname: nameParts.slice(1).join(' '),
-      country: input.country.trim(),
-      mobile: input.mobile.trim(),
-      refer_id: input.referId.trim(),
-      wallet_address: input.walletAddress.trim(),
-    });
-
-    const payload = await this.request('Register', {}, {
-      method: 'POST',
-      form,
-      requireUserId: false,
-    });
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-      throw new Error('Register returned an invalid response. Check the x.money PHP endpoint before retrying.');
-    }
-
-    const envelope = payload as XMoneyEnvelope;
-    if (envelope.success === false || envelope.s === 0 ||
-        (typeof envelope.status_code === 'number' && envelope.status_code >= 400) ||
-        (typeof envelope.error === 'string' && envelope.error.trim())) {
-      const detail = textFrom(envelope.message, envelope.error, envelope.o, envelope.c);
-      throw new Error(detail || 'x.money rejected the new user request.');
-    }
-
-    const parsed = UserApiService.parseUserData(payload);
-    if (!parsed.user.id) {
-      throw new Error('Register did not return the created database user ID. Check the database before retrying to avoid creating a duplicate account.');
-    }
-
-    const user: UserProfile = {
-      ...parsed.user,
-      username: parsed.user.username && parsed.user.username !== parsed.user.id ? parsed.user.username : cleanName,
-      name: parsed.user.name || cleanName,
-      mobile: parsed.user.mobile || input.mobile.trim(),
-      country: parsed.user.country || input.country.trim(),
-      walletAddress: parsed.user.walletAddress || input.walletAddress.trim(),
-      referBy: parsed.user.referBy || input.referId.trim(),
-    };
-    this.accountUserId = user.id;
-    return user;
+    void input;
+    throw new Error('Unsigned registration is disabled. x.money must verify a backend-issued nonce and MetaMask signature before account creation.');
   }
 
   static async getUser(): Promise<{ user: UserProfile; wallets?: UserWallets; raw: unknown }> {

@@ -23,7 +23,7 @@
  6. Registration must succeed on the server before the passcode screen opens
 */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import { MoneyXLogo } from '../../components/common/MoneyXLogo';
@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 
 export const ConnectSignUp: React.FC = () => {
-  const { register, setAuthStage, connectRealMetaMask } = useAuth();
+  const { register, setAuthStage, connectRealMetaMask, walletAddress } = useAuth();
   const { showToast, copyToClipboard } = useToast();
 
   // Form Fields - clean initial values as requested
@@ -65,6 +65,11 @@ export const ConnectSignUp: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setConnectedAddress(walletAddress || null);
+    setNodeStatus(walletAddress ? 'connected' : 'trying');
+  }, [walletAddress]);
 
   const countryOptions = [
     { label: 'USA (+1)', code: '+1' },
@@ -213,6 +218,10 @@ export const ConnectSignUp: React.FC = () => {
 
       {/* ----------------- MAIN COLUMN (Compressed, 1-screen fit) ----------------- */}
       <div className="w-full max-w-[440px] flex flex-col items-center text-center my-auto py-1 space-y-3 z-10 shrink-0">
+
+        <div role="status" className="w-full rounded-xl border border-amber-500/40 bg-amber-950/30 px-3 py-2 text-left text-[11px] leading-relaxed text-amber-200">
+          Secure signup and passcode login are unavailable: the x.money backend does not yet verify wallet signatures or issue authenticated sessions. No account or Dashboard access will be granted by this frontend until those server endpoints exist.
+        </div>
         
         {/* ----------------- 3 STATUS LOADING NODES (Smaller on Success as requested) ----------------- */}
         <div className="w-full grid grid-cols-3 gap-2 px-1">
@@ -264,103 +273,33 @@ export const ConnectSignUp: React.FC = () => {
                 ? 'Connected ✓'
                 : nodeStatus === 'error'
                 ? 'Failed'
-                : 'Still Trying'}
+                : 'Not connected'}
             </span>
           </div>
 
           {/* Node 2: Sign Up */}
           <div className="flex flex-col items-center text-center">
-            <div
-              className={`rounded-full flex items-center justify-center transition-all duration-300 relative ${
-                nodeStatus === 'connected'
-                  ? 'w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_16px_rgba(0,255,163,0.5)]'
-                  : nodeStatus === 'error'
-                  ? 'w-12 h-12 sm:w-13 sm:h-13 bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_14px_rgba(255,59,92,0.4)]'
-                  : 'w-12 h-12 sm:w-13 sm:h-13 bg-[#09121a] border-2 border-[#1c293c] shadow-md'
-              }`}
-            >
-              {nodeStatus === 'connected' ? (
-                <Check size={18} className="stroke-[3.5] text-black animate-scaleIn" />
-              ) : nodeStatus === 'error' ? (
-                <X size={18} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
-              ) : (
-                <div className="relative w-7 h-7 flex items-center justify-center">
-                  <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeDasharray="4 4"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <User size={11} className="absolute text-slate-400" />
-                </div>
-              )}
+            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center bg-[#09121a] border-2 border-[#1c293c] shadow-md">
+              <User size={16} className="text-slate-400" />
             </div>
-            <span className={`text-xs sm:text-[13px] font-black mt-1.5 leading-tight ${
-              nodeStatus === 'connected' ? 'text-white' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-200'
-            }`}>
+            <span className="text-xs sm:text-[13px] font-black text-slate-200 mt-1.5 leading-tight">
               Sign Up
             </span>
-            <span className={`text-[9px] sm:text-[10px] leading-tight mt-0.5 ${
-              nodeStatus === 'connected' ? 'text-[#00ffa3] font-bold' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-400'
-            }`}>
-              {nodeStatus === 'connected'
-                ? 'Registered ✓'
-                : nodeStatus === 'error'
-                ? 'Failed'
-                : 'No DApp Found'}
+            <span className="text-[9px] sm:text-[10px] leading-tight mt-0.5 text-slate-400">
+              Backend unavailable
             </span>
           </div>
 
           {/* Node 3: Sign In */}
           <div className="flex flex-col items-center text-center">
-            <div
-              className={`rounded-full flex items-center justify-center transition-all duration-300 relative ${
-                nodeStatus === 'connected'
-                  ? 'w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-[#00ffa3] to-[#00b875] text-black shadow-[0_0_16px_rgba(0,255,163,0.5)]'
-                  : nodeStatus === 'error'
-                  ? 'w-12 h-12 sm:w-13 sm:h-13 bg-[#1f0a0d] border-2 border-[#ff3b5c] shadow-[0_0_14px_rgba(255,59,92,0.4)]'
-                  : 'w-12 h-12 sm:w-13 sm:h-13 bg-[#09121a] border-2 border-[#1c293c] shadow-md'
-              }`}
-            >
-              {nodeStatus === 'connected' ? (
-                <Check size={18} className="stroke-[3.5] text-black animate-scaleIn" />
-              ) : nodeStatus === 'error' ? (
-                <X size={18} className="stroke-[3] text-[#ff3b5c] animate-scaleIn" />
-              ) : (
-                <div className="relative w-7 h-7 flex items-center justify-center">
-                  <svg className="w-full h-full text-slate-300 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeDasharray="4 4"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <Lock size={11} className="absolute text-slate-400" />
-                </div>
-              )}
+            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center bg-[#09121a] border-2 border-[#1c293c] shadow-md">
+              <Lock size={16} className="text-slate-400" />
             </div>
-            <span className={`text-xs sm:text-[13px] font-black mt-1.5 leading-tight ${
-              nodeStatus === 'connected' ? 'text-white' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-200'
-            }`}>
+            <span className="text-xs sm:text-[13px] font-black text-slate-200 mt-1.5 leading-tight">
               Sign In
             </span>
-            <span className={`text-[9px] sm:text-[10px] leading-tight mt-0.5 ${
-              nodeStatus === 'connected' ? 'text-[#00ffa3] font-bold' : nodeStatus === 'error' ? 'text-[#ff3b5c]' : 'text-slate-400'
-            }`}>
-              {nodeStatus === 'connected'
-                ? 'Authorized ✓'
-                : nodeStatus === 'error'
-                ? 'Failed'
-                : 'No DApp Found'}
+            <span className="text-[9px] sm:text-[10px] leading-tight mt-0.5 text-slate-400">
+              Session unavailable
             </span>
           </div>
 
@@ -407,7 +346,6 @@ export const ConnectSignUp: React.FC = () => {
                 onClick={() => {
                   setConnectedAddress(null);
                   setNodeStatus('trying');
-                  setManualWallet('');
                 }}
                 className="text-[10px] text-slate-400 hover:text-red-400 underline mt-1 block mx-auto text-center cursor-pointer"
               >
@@ -544,7 +482,7 @@ export const ConnectSignUp: React.FC = () => {
       <div className="pb-2 z-30 shrink-0">
         <div className="px-3.5 py-1.5 rounded-full bg-[#0d141c]/90 border border-[#1c293c] text-slate-300 text-[11px] font-semibold shadow-lg flex items-center gap-2 backdrop-blur-md">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00ffa3] animate-pulse" />
-          <span>Trying to Auto Sign In...</span>
+          <span>Backend authentication is not configured.</span>
         </div>
       </div>
 

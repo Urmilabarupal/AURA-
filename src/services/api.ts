@@ -89,40 +89,21 @@ export const ApiService = {
     mobile: string;
     name: string;
   }): Promise<ApiResponse<{ user: UserProfile; token: string }>> {
-    try {
-      const walletAddress = params.walletAddress?.trim() || '';
-      if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
-        throw new Error('Connect a valid EVM wallet address before registering.');
-      }
-      if (params.name.trim().length < 2) throw new Error('Enter your full name.');
-      if (!/^\d{10}$/.test(params.mobile.trim())) throw new Error('Enter a valid 10-digit mobile number.');
-      if (!params.country.trim()) throw new Error('Choose your country.');
-
-      const user = await XMoneyApiService.registerUser({
-        walletAddress,
-        referId: params.referId?.trim() || '',
-        country: params.country.trim(),
-        mobile: params.mobile.trim(),
-        name: params.name.trim(),
-      });
-      return XMoneyApiService.success({ user, token: '' }, 'UserNew accepted registration and returned a database user ID.');
-    } catch (error) {
-      return XMoneyApiService.failure<{ user: UserProfile; token: string }>(error);
-    }
+    return XMoneyApiService.failure<{ user: UserProfile; token: string }>(
+      new Error('Signup is disabled until x.money verifies a backend-issued nonce and wallet signature before creating the account.'),
+    );
   },
 
   async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode?: string }>> {
-    return AuthoritativeBackend.setupPasscode(passcode);
-  },
-
-  getLastCreatedPasscode(): string {
-    return '';
+    return XMoneyApiService.failure<{ success: boolean; passcode?: string }>(
+      new Error('Passcode setup is unavailable: the backend SetPasscode endpoint is not bound to a verified wallet session.'),
+    );
   },
 
   async verifyPasscode(pin: string): Promise<ApiResponse<{ verified: boolean }>> {
-    // Verify against the same local passcode store used by setupPasscode.
-    // This is a client-side screen lock, not server-side account authentication.
-    return AuthoritativeBackend.verifyPasscode(pin);
+    return XMoneyApiService.failure<{ verified: boolean }>(
+      new Error('Passcode unlock is unavailable: VerifyPasscode does not establish an authenticated server session.'),
+    );
   },
 
   async getProfile(): Promise<ApiResponse<UserProfile>> {

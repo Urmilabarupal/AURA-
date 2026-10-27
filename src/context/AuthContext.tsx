@@ -11,7 +11,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ApiService } from '../services/api';
-import { cookieService } from '../services/cookieService';
 import { web3Wallet } from '../services/web3Wallet';
 import { ApiConnectionConfig } from '../services/userApiService';
 import { UserProfile, UserWallets } from '../types';
@@ -119,32 +118,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initialPath = typeof window !== 'undefined' ? window.location.pathname : '/home';
   
   const getInitialState = (): { stage: AuthStage; route: string } => {
-    const session = cookieService.getAuthSession();
     if (initialPath === '/connect-wallet' || initialPath === '/auth') {
       return { stage: 'UNAUTHENTICATED', route: 'home' };
     }
-    if (initialPath === '/setup-passcode') {
-      return { stage: 'SETUP_PASSCODE', route: 'home' };
+    if (['/setup-passcode', '/lock'].includes(initialPath)) {
+      return { stage: 'UNAUTHENTICATED', route: 'home' };
     }
-    if (initialPath === '/lock') {
-      return { stage: 'LOCKED', route: 'home' };
-    }
-    if (session.isAuthenticated) {
-      if (initialPath === '/deposit') return { stage: 'AUTHENTICATED', route: 'deposit' };
-      if (initialPath === '/withdraw') return { stage: 'AUTHENTICATED', route: 'withdraw' };
-      if (initialPath === '/wallets' || initialPath === '/wallet') return { stage: 'AUTHENTICATED', route: 'wallets' };
-      if (initialPath === '/single-wallet' || initialPath === '/wallet-detail') return { stage: 'AUTHENTICATED', route: 'single-wallet' };
-      if (initialPath === '/menu' || initialPath === '/ecosystem') return { stage: 'AUTHENTICATED', route: 'menu' };
-      if (initialPath === '/trade') return { stage: 'AUTHENTICATED', route: 'trade' };
-      if (initialPath === '/staking') return { stage: 'AUTHENTICATED', route: 'staking' };
-      if (initialPath === '/farming') return { stage: 'AUTHENTICATED', route: 'farming' };
-      if (initialPath === '/community') return { stage: 'AUTHENTICATED', route: 'community' };
-      if (initialPath === '/profile') return { stage: 'AUTHENTICATED', route: 'profile' };
-      if (initialPath === '/transactions') return { stage: 'AUTHENTICATED', route: 'transactions' };
-      if (initialPath === '/convert') return { stage: 'AUTHENTICATED', route: 'convert' };
-      if (initialPath === '/dashboard') return { stage: 'AUTHENTICATED', route: 'home' };
-      return { stage: 'AUTHENTICATED', route: 'home' };
-    }
+    if (initialPath !== '/' && initialPath !== '/home') return { stage: 'UNAUTHENTICATED', route: 'home' };
     return { stage: 'LANDING', route: 'home' };
   };
 
@@ -157,8 +137,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [emptyStateMode, setEmptyStateMode] = useState<boolean>(false);
   const [activeRoute, setActiveRouteInternal] = useState<string>(initial.route);
 
+  useEffect(() => {
+    if (authStage === 'UNAUTHENTICATED' && window.location.pathname !== '/connect-wallet') {
+      syncBrowserUrl('/connect-wallet');
+    }
+  }, []);
+
   // Sync state transitions to browser URL & document title
   const setAuthStage = (stage: AuthStage) => {
+    // No frontend-generated cookie or local PIN can establish an authenticated session.
+    // The supplied backend has no nonce/signature or authenticated-session endpoint.
+    if (stage === 'AUTHENTICATED') {
+      setAuthStageInternal('UNAUTHENTICATED');
+      syncBrowserUrl('/connect-wallet');
+      return;
+    }
     setAuthStageInternal(stage);
     const path = getPathForRoute(stage, activeRoute);
     syncBrowserUrl(path);
@@ -174,22 +167,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handlePopState = () => {
       const currentPath = window.location.pathname;
-      const session = cookieService.getAuthSession();
       if (currentPath === '/connect-wallet' || currentPath === '/auth') {
         setAuthStageInternal('UNAUTHENTICATED');
-      } else if (currentPath === '/setup-passcode') {
-        setAuthStageInternal('SETUP_PASSCODE');
-      } else if (currentPath === '/lock') {
-        setAuthStageInternal('LOCKED');
+      } else if (currentPath === '/setup-passcode' || currentPath === '/lock') {
+        setAuthStageInternal('UNAUTHENTICATED');
       } else if (currentPath === '/home' || currentPath === '/') {
         setAuthStageInternal('LANDING');
       } else {
-        const cleanRoute = currentPath.replace(/^\//, '');
-        const targetRoute = cleanRoute === 'dashboard' ? 'home' : cleanRoute;
-        setActiveRouteInternal(targetRoute);
-        if (session.isAuthenticated) {
-          setAuthStageInternal('AUTHENTICATED');
-        }
+        setAuthStageInternal('UNAUTHENTICATED');
       }
       document.title = getPageTitle(currentPath);
     };
@@ -198,8 +183,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
   const [createdPasscode, setCreatedPasscode] = useState<string>(() => {
-    // Remove legacy client-side PIN storage from previous demo versions.
-    if (typeof localStorage !== 'undefined') localStorage.removeItem('xah_custom_passcode');
     return '';
   });
   const [walletAddress, setWalletAddress] = useState<string>('');
@@ -225,10 +208,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.user.walletAddress) setWalletAddress(res.user.walletAddress);
       // Load all supported read-only records after UID validation.
       await refreshUserData();
-      // The x.money API currently lacks server-side authentication. This is a
-      // local-only, read-only development preview, never a production login.
-      const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname.toLowerCase());
-      if (isLocalHost) setAuthStage('AUTHENTICATED');
       return { success: true, raw: res.raw };
     } else {
       return { success: false, error: res.error };
@@ -257,9 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setUser(null);
         setWallets(null);
-        cookieService.clearAuthSession();
       }
-      setCreatedPasscode(ApiService.getLastCreatedPasscode());
     } catch (err) {
       console.error('Failed to load user session data', err);
     } finally {
@@ -270,19 +247,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     refreshUserData();
 
-    // Listen to MetaMask account switches
-    web3Wallet.onAccountsChanged(async (accounts) => {
-      if (accounts && accounts.length > 0) {
-        const addr = accounts[0];
-        setWalletAddress(addr);
-        setIsMetaMaskConnected(true);
-        if (user) {
-          setUser({ ...user, walletAddress: addr });
-        }
-      } else {
-        setIsMetaMaskConnected(false);
-      }
-    });
+    const invalidateWalletSession = (accounts: string[] = []) => {
+      setWalletAddress(accounts[0] || '');
+      setIsMetaMaskConnected(accounts.length > 0);
+      setUser(null);
+      setWallets(null);
+      setAuthStageInternal('UNAUTHENTICATED');
+      syncBrowserUrl('/connect-wallet');
+    };
+
+    // Any account change or provider disconnect invalidates wallet-bound identity.
+    const unsubscribeAccounts = web3Wallet.onAccountsChanged(invalidateWalletSession);
+    const unsubscribeDisconnect = web3Wallet.onDisconnect(() => invalidateWalletSession());
+    return () => {
+      unsubscribeAccounts();
+      unsubscribeDisconnect();
+    };
   }, []);
 
   const connectRealMetaMask = async (): Promise<{ success: boolean; address?: string; error?: string }> => {
@@ -291,10 +271,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const addr = res.address;
       setWalletAddress(addr);
       setIsMetaMaskConnected(true);
-      if (user) {
-        setUser({ ...user, walletAddress: addr });
-      }
-
       return { success: true, address: addr };
     }
     return { success: false, error: res.message || res.error || 'Connection failed' };
@@ -373,14 +349,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    // Strictly clear session cookies and return to Landing page without bottom menu
-    cookieService.clearAuthSession();
+    setUser(null);
+    setWallets(null);
+    setWalletAddress('');
+    setIsMetaMaskConnected(false);
     setAuthStage('LANDING');
     setActiveRoute('home');
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('aura_session_token');
-      localStorage.removeItem('xah_custom_passcode');
-    }
     setCreatedPasscode('');
   };
 

@@ -51,8 +51,7 @@ class Web3WalletService {
 
     // Check if multiple providers are injected (e.g. MetaMask + Phantom + Coinbase)
     if (provider?.providers && Array.isArray(provider.providers)) {
-      const mm = provider.providers.find((p: any) => p.isMetaMask);
-      provider = mm || provider.providers[0] || provider;
+      provider = provider.providers.find((p: any) => p.isMetaMask) || null;
     }
 
     // Fallback to legacy web3 currentProvider if exists
@@ -204,6 +203,14 @@ class Web3WalletService {
 
     // 1. If MetaMask / Injected Web3 extension is present in browser:
     if (provider && typeof provider.request === 'function') {
+      if (provider.isMetaMask !== true) {
+        return {
+          success: false,
+          isRealMetaMask: false,
+          error: 'A MetaMask provider was not detected. Select MetaMask or install its browser extension.',
+          message: 'MetaMask provider not detected.',
+        };
+      }
       try {
         const accounts: string[] = await provider.request({
           method: 'eth_requestAccounts',
@@ -317,11 +324,22 @@ class Web3WalletService {
   /**
    * Listen for account changes
    */
-  public onAccountsChanged(callback: (accounts: string[]) => void) {
+  public onAccountsChanged(callback: (accounts: string[]) => void): () => void {
     const provider = this.getEthereumProvider();
     if (provider && provider.on) {
       provider.on('accountsChanged', callback);
+      return () => provider.removeListener?.('accountsChanged', callback);
     }
+    return () => undefined;
+  }
+
+  public onDisconnect(callback: () => void): () => void {
+    const provider = this.getEthereumProvider();
+    if (provider && provider.on) {
+      provider.on('disconnect', callback);
+      return () => provider.removeListener?.('disconnect', callback);
+    }
+    return () => undefined;
   }
 
   /**

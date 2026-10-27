@@ -85,26 +85,12 @@ const DEFAULT_WALLETS: UserWallets = {
 // Seed Transactions (Empty by default for real user operations)
 const DEFAULT_TRANSACTIONS: Transaction[] = [];
 
-// Helper to hash passcode (simple SHA256 simulation for demo)
-function hashPasscode(pin: string): string {
-  let hash = 0;
-  for (let i = 0; i < pin.length; i++) {
-    const char = pin.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0;
-  }
-  return `hash_${Math.abs(hash).toString(16)}_${pin.length}`;
-}
-
 export class AuthoritativeBackend {
   private static user: UserProfile = { ...DEFAULT_USER };
 
   private static wallets: UserWallets = { ...DEFAULT_WALLETS };
 
   private static transactions: Transaction[] = [...DEFAULT_TRANSACTIONS];
-  private static passHash: string = hashPasscode('1234');
-  private static lastCreatedPasscode: string = '1234';
-  private static authToken: string | null = 'demo_session_token_xyz987';
 
   public static setUser(newUser: UserProfile): void {
     // API-sourced personal data stays in memory only; do not persist PII in localStorage.
@@ -297,136 +283,6 @@ export class AuthoritativeBackend {
   // ==========================================
   // AUTHENTICATION & SESSION METHODS
   // ==========================================
-
-  public static async register(data: {
-    walletAddress?: string;
-    referId?: string;
-    country: string;
-    mobile: string;
-    name: string;
-  }): Promise<ApiResponse<{ user: UserProfile; token: string }>> {
-    if (!data.name || data.name.trim().length < 2) {
-      return {
-        success: false,
-        error: { code: 'INVALID_NAME', message: 'Name must be at least 2 characters long.' },
-      };
-    }
-
-    if (!data.mobile || data.mobile.trim().length < 6) {
-      return {
-        success: false,
-        error: { code: 'INVALID_MOBILE', message: 'Please provide a valid phone number.' },
-      };
-    }
-
-    const newId = `HX${Math.floor(100000000 + Math.random() * 900000000)}`;
-    const randomHex = Math.random().toString(16).substring(2, 8);
-    const generatedWallet =
-      data.walletAddress || `0x7A${randomHex}BFC2DC0A1135ef3C95973F27d0C02a11b0`;
-
-    this.user = {
-      id: newId,
-      username: `0x7A****${randomHex}`,
-      name: data.name,
-      firstName: data.name.split(' ')[0] || data.name,
-      lastName: data.name.split(' ').slice(1).join(' ') || '',
-      email: `${data.name.toLowerCase().replace(/\s+/g, '.') || 'user'}@${BRAND.domain}`,
-      mobile: data.mobile,
-      country: data.country,
-      walletAddress: generatedWallet,
-      referId: `${BRAND.name.slice(0, 2).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`,
-      referBy: data.referId || BRAND.defaultReferId,
-      createdAt: new Date().toISOString(),
-      passcodeConfigured: false,
-      kycStatus: 'UNVERIFIED',
-    };
-
-    this.wallets = {
-      spotBalanceUSDT: 0.0,
-      spotBalanceNative: 0.0,
-      mainBalanceUSDT: 0.0,
-      mainBalanceNative: 0.0,
-      fundingBalanceUSDT: 0.0,
-      fundingBalanceNative: 0.0,
-      jackpotBalanceUSDT: 0.0,
-      extraBalanceHXC: 0.0,
-      totalBalanceUSDT: 0.0,
-      totalDepositUSDT: 0.0,
-      totalWithdrawUSDT: 0.0,
-    };
-    this.transactions = [];
-
-    this.authToken = `aura_sess_${Date.now()}_${randomHex}`;
-
-
-    return {
-      success: true,
-      data: { user: { ...this.user }, token: this.authToken },
-      message: 'Account successfully registered.',
-    };
-  }
-
-  public static async setupPasscode(passcode: string): Promise<ApiResponse<{ success: boolean; passcode: string }>> {
-    if (!passcode || passcode.length < 1 || passcode.length > 6 || !/^\d{1,6}$/.test(passcode)) {
-      return {
-        success: false,
-        error: { code: 'INVALID_PASSCODE', message: 'Passcode must be between 1 and 6 digits in numbers format only.' },
-      };
-    }
-
-    this.passHash = hashPasscode(passcode);
-    this.lastCreatedPasscode = passcode;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('xah_custom_passcode', passcode);
-    }
-    this.user.passcodeConfigured = true;
-
-    return {
-      success: true,
-      data: { success: true, passcode },
-      message: 'Passcode successfully configured and secured.',
-    };
-  }
-
-  public static getLastCreatedPasscode(): string {
-    if (this.lastCreatedPasscode) return this.lastCreatedPasscode;
-    if (typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem('xah_custom_passcode');
-      if (stored) {
-        this.lastCreatedPasscode = stored;
-        this.passHash = hashPasscode(stored);
-        return stored;
-      }
-    }
-    return '';
-  }
-
-  public static async verifyPasscode(enteredPin: string): Promise<ApiResponse<{ verified: boolean }>> {
-    let expectedHash = this.passHash;
-    if (!expectedHash && typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem('xah_custom_passcode');
-      if (stored) {
-        expectedHash = hashPasscode(stored);
-        this.passHash = expectedHash;
-        this.lastCreatedPasscode = stored;
-      }
-    }
-
-    const testHash = hashPasscode(enteredPin);
-
-    if (expectedHash && testHash === expectedHash) {
-      return {
-        success: true,
-        data: { verified: true },
-        message: 'Passcode verified.',
-      };
-    } else {
-      return {
-        success: false,
-        error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect passcode entered. Please try again.' },
-      };
-    }
-  }
 
   public static async getProfile(): Promise<ApiResponse<UserProfile>> {
     return {

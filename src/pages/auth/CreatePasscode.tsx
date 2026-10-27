@@ -63,8 +63,8 @@ export const CreatePasscode: React.FC = () => {
     if (errorMsg) setErrorMsg(null);
   };
 
-  // Validation conditions: 1 to 6 numeric digits
-  const isLengthValid = passcode.length >= 1 && passcode.length <= 6 && /^\d{1,6}$/.test(passcode);
+  // The backend accepts only 4–6 numeric digits.
+  const isLengthValid = passcode.length >= 4 && passcode.length <= 6 && /^\d{4,6}$/.test(passcode);
   const isMatching = isLengthValid && passcode === confirmPasscode;
   const isFormValid = isLengthValid && isMatching;
 
@@ -72,7 +72,7 @@ export const CreatePasscode: React.FC = () => {
     e.preventDefault();
 
     if (!isLengthValid) {
-      setErrorMsg('Passcode must be between 1 and 6 numbers (digits only)');
+      setErrorMsg('Passcode must be between 4 and 6 digits.');
       return;
     }
 
@@ -135,7 +135,7 @@ export const CreatePasscode: React.FC = () => {
                 Set Your <span className="text-[#00ffa3]">Passcode</span>
               </h1>
               <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-                Setup a 1 to 6 digit numeric passcode to lock and protect your account on this device.
+                Set a 4 to 6 digit numeric passcode for your account.
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ export const CreatePasscode: React.FC = () => {
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <label className="text-xs sm:text-[13px] font-semibold text-slate-200 block">
-                  Enter Passcode (1 - 6 Numbers)
+                  Enter Passcode (4 - 6 digits)
                 </label>
                 <span className="text-[10px] font-mono text-slate-400">
                   {passcode.length}/6 digits
@@ -172,7 +172,7 @@ export const CreatePasscode: React.FC = () => {
                   maxLength={6}
                   value={passcode}
                   onChange={(e) => handlePasscodeChange(e.target.value)}
-                  placeholder="Enter 1 to 6 digit numbers"
+                  placeholder="Enter 4 to 6 digits"
                   autoFocus
                   className="w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#030905] border border-[#173021] text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] focus:shadow-[0_0_15px_rgba(0,255,163,0.25)] transition-all tracking-widest"
                 />
@@ -208,7 +208,7 @@ export const CreatePasscode: React.FC = () => {
                   maxLength={6}
                   value={confirmPasscode}
                   onChange={(e) => handleConfirmChange(e.target.value)}
-                  placeholder="Re-enter 1 to 6 digit numbers"
+                  placeholder="Re-enter 4 to 6 digits"
                   className="w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#030905] border border-[#173021] text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffa3] focus:shadow-[0_0_15px_rgba(0,255,163,0.25)] transition-all tracking-widest"
                 />
                 <button
@@ -231,7 +231,7 @@ export const CreatePasscode: React.FC = () => {
                   <div className="w-3.5 h-3.5 rounded-full border border-slate-600 shrink-0" />
                 )}
                 <span className={isLengthValid ? 'text-slate-200 font-medium' : 'text-slate-500'}>
-                  1 to 6 numbers (numeric digits only)
+                  4 to 6 digits (numeric only)
                 </span>
               </div>
 

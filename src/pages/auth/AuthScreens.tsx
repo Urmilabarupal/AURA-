@@ -20,7 +20,6 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import { MoneyXLogo } from '../../components/common/MoneyXLogo';
-import { cookieService } from '../../services/cookieService';
 import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
@@ -209,12 +208,12 @@ export const WalletOptionsScreen: React.FC = () => {
 /* SCREEN 3: "MetaMask Connect Screen (Real MetaMask UI)"                    */
 /* ========================================================================= */
 export const MetaMaskConnectScreen: React.FC = () => {
-  const { setAuthStage, connectRealMetaMask, register, walletAddress } = useAuth();
+  const { setAuthStage, connectRealMetaMask, walletAddress } = useAuth();
   const { showToast } = useToast();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const displayAddress = walletAddress || '0x3a56D4869c9b4e1837015E5aE4F4D3C5237F2B';
+  const displayAddress = walletAddress;
   const shortDisplay = `${displayAddress.slice(0, 6)}...${displayAddress.slice(-4)}`;
 
   const handleConnect = async () => {
@@ -223,16 +222,12 @@ export const MetaMaskConnectScreen: React.FC = () => {
 
     try {
       const res = await connectRealMetaMask();
-      const addr = res.address || displayAddress;
+      if (!res.success || !res.address) {
+        setErrorMsg(res.error || 'MetaMask connection failed.');
+        return;
+      }
 
-      await register({
-        walletAddress: addr,
-        name: 'Sandeep Kumar',
-        country: 'India (+91)',
-        mobile: '+91 98765-43210',
-      });
-
-      showToast(`MetaMask Connected: ${addr.slice(0, 6)}...${addr.slice(-4)}`, 'success');
+      showToast(`MetaMask Connected: ${res.address.slice(0, 6)}...${res.address.slice(-4)}`, 'success');
       // Advance to Screen 4: Wallet Connected
       setAuthStage('WALLET_CONNECTED');
     } catch (err: any) {
@@ -312,8 +307,7 @@ export const MetaMaskConnectScreen: React.FC = () => {
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 via-orange-500 to-blue-600 shrink-0" />
               <div>
                 <p className="text-xs font-bold text-slate-900">Account 1</p>
-                <p className="text-[11px] font-mono text-slate-500">{shortDisplay}</p>
-                <p className="text-[11px] font-bold text-slate-700">2.1564 ETH</p>
+                <p className="text-[11px] font-mono text-slate-500">{shortDisplay || 'Connect MetaMask to view address'}</p>
               </div>
             </div>
             <Copy size={14} className="text-slate-400 hover:text-slate-600 cursor-pointer" />
@@ -356,7 +350,7 @@ export const WalletConnectedScreen: React.FC = () => {
   const { setAuthStage, walletAddress } = useAuth();
   const { copyToClipboard } = useToast();
 
-  const displayAddress = walletAddress || '0x3a56D4869c9b4e1837015E5aE4F4D3C5237F2B';
+  const displayAddress = walletAddress;
   const shortAddress = `${displayAddress.slice(0, 6)}...${displayAddress.slice(-4)}`;
 
   return (
@@ -678,18 +672,9 @@ export const ConfirmPasscodeScreen: React.FC = () => {
 /* SCREEN 7: "Passcode Success"                                              */
 /* ========================================================================= */
 export const PasscodeSuccessScreen: React.FC = () => {
-  const { setAuthStage, walletAddress, user } = useAuth();
+  const { setAuthStage } = useAuth();
 
   const handleContinueToDashboard = () => {
-    // Save authentication session cookie
-    const activeAddr = walletAddress || user?.walletAddress || '0x3a56D4869c9b4e1837015E5aE4F4D3C5237F2B';
-    cookieService.saveAuthSession({
-      token: `moneyx_sec_${Date.now()}`,
-      walletAddress: activeAddr,
-      passcodeConfigured: true,
-      userId: user?.id || 'MX-829104',
-    });
-
     setAuthStage('AUTHENTICATED');
   };
 

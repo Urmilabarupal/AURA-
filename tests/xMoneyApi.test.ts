@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import { DEFAULT_API_ENDPOINT, UserApiService } from '../src/services/userApiService';
+import { ApiService } from '../src/services/api';
 import { XMoneyApiService, X_MONEY_READ_ENDPOINTS } from '../src/services/xMoneyApi';
 
 const originalFetch = globalThis.fetch;
@@ -209,55 +210,8 @@ test('uses a same-origin Vite proxy by default and migrates the previous Apache 
 });
 
 
-test('posts new-user signup fields to Register without requiring an existing UID', async () => {
+test('blocks unsigned registration before making a database write request', async () => {
   UserApiService.saveConfig({ userId: '' });
-  installFetch(async () => jsonResponse({
-    status_code: 200,
-    s: 1,
-    data: {
-      ID: 742,
-      user_login: 'new-local-user',
-      display_name: 'Local New User',
-      mobile: '9876543210',
-      country: 'India',
-      wallet_address: '0x1234567890abcdef1234567890abcdef12345678',
-      refer_by: 'REF123',
-    },
-  }));
-
-  const user = await XMoneyApiService.registerUser({
-    walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
-    referId: 'REF123',
-    country: 'India',
-    mobile: '9876543210',
-    name: 'Local New User',
-  });
-
-  assert.equal(user.id, '742');
-  assert.equal(user.name, 'Local New User');
-  assert.equal(user.mobile, '9876543210');
-  assert.equal(requests.length, 1);
-  assert.equal(requests[0].init?.method, 'POST');
-  assert.equal(requests[0].init?.credentials, 'omit');
-  const url = new URL(requests[0].url);
-  assert.equal(url.searchParams.get('api'), 'Register');
-  assert.equal(url.searchParams.has('uid'), false);
-  const form = new URLSearchParams(String(requests[0].init?.body));
-  assert.equal(form.get('wallet_address'), '0x1234567890abcdef1234567890abcdef12345678');
-  assert.equal(form.get('mobile'), '9876543210');
-  assert.equal(form.get('refer_id'), 'REF123');
-  assert.equal(form.get('country'), 'India');
-  assert.equal(form.get('name'), 'Local New User');
-});
-
-test('does not report registration success if UserNew omits the database ID', async () => {
-  UserApiService.saveConfig({ userId: '' });
-  installFetch(async () => jsonResponse({
-    status_code: 200,
-    s: 1,
-    data: { message: 'ok', name: 'Local New User' },
-  }));
-
   await assert.rejects(
     () => XMoneyApiService.registerUser({
       walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
@@ -266,6 +220,17 @@ test('does not report registration success if UserNew omits the database ID', as
       mobile: '9876543210',
       name: 'Local New User',
     }),
-    /did not return the created database user ID/,
+    /Unsigned registration is disabled/,
   );
+  assert.equal(requests.length, 0, 'signup must not write an account before backend signature verification exists');
+});
+
+test('fails closed for passcode setup and unlock without a server-issued session', async () => {
+  const setup = await ApiService.setupPasscode('1234');
+  const verify = await ApiService.verifyPasscode('1234');
+
+  assert.equal(setup.success, false);
+  assert.match(setup.error?.message ?? '', /not bound to a verified wallet session/);
+  assert.equal(verify.success, false);
+  assert.match(verify.error?.message ?? '', /does not establish an authenticated server session/);
 });
