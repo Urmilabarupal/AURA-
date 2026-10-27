@@ -56,4 +56,18 @@ export const SecureAuthApi = {
     const response = await post('PasscodeVerify', { passcode });
     return response.c?.verified === true;
   },
+  async getSession(): Promise<{ authenticated: boolean; locked: boolean; passcodeConfigured: boolean }> {
+    const response = await fetch(apiUrl('Session'), { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-store', redirect: 'error', headers: { Accept: 'application/json' } });
+    const text = await response.text();
+    let body: Envelope;
+    try { body = JSON.parse(text) as Envelope; } catch { throw new Error('Session API did not return valid JSON.'); }
+    if (!response.ok || (typeof body.status_code === 'number' && body.status_code >= 400) || body.s === 0) {
+      if (response.status === 401 || body.status_code === 401) return { authenticated: false, locked: false, passcodeConfigured: false };
+      throw new Error(body.message || body.o || 'Could not verify the server session.');
+    }
+    return { authenticated: body.c?.authenticated === true, locked: body.c?.locked === true, passcodeConfigured: body.c?.passcode_configured === true };
+  },
+  async sessionAction(action: 'lock' | 'logout'): Promise<void> {
+    await post('Session', { action });
+  },
 };
