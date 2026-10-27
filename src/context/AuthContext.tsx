@@ -465,7 +465,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyPasscode = async (pin: string) => {
     setIsLoading(true);
     try {
-      // The supplied x.money repository has no verified server-side login endpoint.
+      // The server-side PHP endpoint is authoritative for passcode verification.
       // Never accept a PIN stored in localStorage or mint a client-side session token.
       const verified = await SecureAuthApi.verifyPasscode(pin);
       if (verified) {
